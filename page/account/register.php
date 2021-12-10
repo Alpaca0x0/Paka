@@ -40,7 +40,7 @@ $password = sha1($password);
 # Check if the user is not exist
 $DB->Query("SELECT `username`,`email` FROM `account` WHERE `username`=:username OR `email`=:email;");
 $result = $DB->Execute([':username'=>$username, ':email'=>$email]);
-if(!$result){ $Loger->Push('error','db_cannot_insert'); $Loger->Resp(); }
+if(!$result){ $Loger->Push('error','db_cannot_query'); $Loger->Resp(); }
 # DB query successfully
 $row = $DB->FetchAll($result,'assoc');
 if(in_array($username, array_column($row,'username'))){ $Loger->Push('warning','username_exist'); }

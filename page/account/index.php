@@ -121,12 +121,26 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 </div>
 
 
-<script type="text/javascript" src="<?php echo JS('axios/axios.min'); ?>"></script>
+<script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
+<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 <script type="text/javascript">
 	// Initialize
 	$('#Account.ui.accordion').accordion();
 	$('form#SignUp #gender.selection').dropdown();
 	$('.ui.checkbox').checkbox();
+
+	// Loger tables
+	Loger.Tables['Display'] = {
+		"db_insert_successfully": 		"Welcome to join us",
+		"data_missing": 				"Data missing",
+		"username_format_not_match": 	"Username format not match",
+		"email_format_not_match": 		"Email format not match",
+		"password_format_not_match": 	"Password format not match",
+		"db_cannot_query": 				"Database has some problems",
+		"username_exist": 				'Username is exist',
+		'email_exist': 					'Email is exist',
+		'db_cannot_insert': 			'Database has some problems when inserting your data',
+	}
 
 	// Authenticate form
 	$('form.ui.form#SignUp')
@@ -135,7 +149,6 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		// delay: 800,
 		onSuccess: function(event, fields){
 			event.preventDefault();
-			console.log(fields);
 
 			let form = this;
 			form.classList.add('loading');
@@ -146,7 +159,8 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
     			data: fields,
     			dataType: 'json',
     			success: function(resp){
-    				console.log(resp);
+    				Loger.Log('info',resp);
+    				Loger.Display(resp);
     			},
     		}).then(function(){
     			form.classList.remove('loading');
