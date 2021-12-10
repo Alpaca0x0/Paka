@@ -1,5 +1,7 @@
 window.Loger = new Array();
 
+// sweetalert
+
 // all of response types
 Loger.Types = ["unknown", "error", "warning", "success", "message",];
 
@@ -28,10 +30,13 @@ Loger.Have = function(logs=[], contents=[]){
 	});
 }
 
-Loger.Display = function(logs, tables=Loger.Tables['Display']){
-	let contents=Object.keys(tables), dispalys=Object.values(tables), type, first=contents.length-1;
-	let title=false, text=false, icon=false, confirmButtonText=false, timer=false, timerProcessBar=false;
+Loger.Swal = function(logs, tables=Loger.Tables['Display']){
+return new Promise((resolve, reject) => {
+	let contents=Object.keys(tables), dispalys=Object.values(tables), type, first=contents.length;
+	let title=false, text=false, icon=false, confirmButtonText='Got it', timer=false, timerProcessBar=false;
 
+	// get the content of tables which is the smallest key and exist in logs
+	// return: first = smallest key OR contents.length
 	logs.forEach(function(log,key,arr){
 		have = contents.indexOf(log[1]);
 		if(have>-1 && have<first){
@@ -40,7 +45,15 @@ Loger.Display = function(logs, tables=Loger.Tables['Display']){
 		}
 	});
 
-	if(first<0){ return false; }
+	// not found any key, set it to be unexpected error
+	if(first>=contents.length){
+		type = 'unknown';
+		text = 'Unexpected response';
+	}else{
+		text = dispalys[first];
+	}
+
+	// transform format for sweetalert
 	let current = logs[first];
 	if(['error','unknown'].includes(type)){ type = 'error'; }
 	else if(['warning'].includes(type)){ type = 'warning'; }
@@ -48,11 +61,18 @@ Loger.Display = function(logs, tables=Loger.Tables['Display']){
 	else if(['message'].includes(type)){ type = 'info'; }
 	else{ type = 'info'; }
 
+	// display
 	Swal.fire({
 		icon: type,
 		title: type,
-		html: dispalys[first],
+		html: text,
+		confirmButtonText: confirmButtonText,
+		timer: timer,
+		timerProcessBar: timerProcessBar,
+	}).then(value => {
+		resolve(value);
 	});
+});
 }
 
 // custom the log function

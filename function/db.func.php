@@ -6,4 +6,8 @@
 
 <?php
 $DB = new DB();
-if(!$DB->Connect()){ die('DB - Can not connect.'); };
+if(!$DB->Connect()){
+	@include_once(Func('loger'));
+	$Loger->Push('error','database_cannot_connect');
+	$Loger->Resp();
+};
