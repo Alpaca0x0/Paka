@@ -1,5 +1,7 @@
 <?php ini_set('display_errors','1'); error_reporting(E_ALL);
+if(!isset($_SESSION)){ session_start(); }
 define('INIT', true); // defined('INIT') or die('NO INIT');
+date_default_timezone_set('Asia/Taipei');
 
 /****************************************************************/
 # Basic paths

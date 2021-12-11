@@ -17,7 +17,7 @@ class Loger{
 	function Push($type, $content, $arg=false){
 		$type = trim($type);
 		if (!in_array($type, $this->Types)){ return false; }
-		$content = trim($content);
+		$content = is_array($content)?$content:trim($content);
 		$log = $arg ? [$type, $content, $arg] : [$type, $content];
 		array_push($this->Logs, $log);
 		return true;

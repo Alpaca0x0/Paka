@@ -30,46 +30,55 @@ Loger.Have = function(logs=[], contents=[]){
 	});
 }
 
-Loger.Swal = function(logs, tables=Loger.Tables['Display']){
+Loger.Swal = function(logs, tables=[],custom={}){
 return new Promise((resolve, reject) => {
-	let contents=Object.keys(tables), dispalys=Object.values(tables), type, first=contents.length;
-	let title=false, text=false, icon=false, confirmButtonText='Got it', timer=false, timerProcessBar=false;
+	let contents=Object.keys(tables), dispalys=Object.values(tables);
+	let config = {
+		icon: 'info',
+		title: 'info',
+		html: false,
+		icon: false,
+		timer: false,
+		timerProgressBar: true,
+		// confirmButtonText: 'Got it',
+	}
 
 	// get the content of tables which is the smallest key and exist in logs
 	// return: first = smallest key OR contents.length
+	let first=contents.length, have;
 	logs.forEach(function(log,key,arr){
 		have = contents.indexOf(log[1]);
 		if(have>-1 && have<first){
 			first = have;
-			type = log[0];
+			config.icon = log[0];
 		}
 	});
 
 	// not found any key, set it to be unexpected error
 	if(first>=contents.length){
-		type = 'unknown';
-		text = 'Unexpected response';
+		custom.type = 'unknown';
+		custom.html = 'Unexpected response';
 	}else{
-		text = dispalys[first];
+		config.html = dispalys[first];
 	}
 
 	// transform format for sweetalert
 	let current = logs[first];
-	if(['error','unknown'].includes(type)){ type = 'error'; }
-	else if(['warning'].includes(type)){ type = 'warning'; }
-	else if(['success'].includes(type)){ type = 'success'; }
-	else if(['message'].includes(type)){ type = 'info'; }
-	else{ type = 'info'; }
+	if(['error','unknown'].includes(config.icon)){ config.icon = 'error'; }
+	else if(['warning'].includes(config.icon)){ config.icon = 'warning'; }
+	else if(['success'].includes(config.icon)){ config.icon = 'success'; }
+	else if(['message'].includes(config.icon)){ config.icon = 'info'; }
+	else{ config.icon = 'info'; }
+
+	config.title = config.icon;
+
+	// custom configuration
+	Object.keys(custom).forEach((val)=>{
+		config[val] = custom[val];
+	});
 
 	// display
-	Swal.fire({
-		icon: type,
-		title: type,
-		html: text,
-		confirmButtonText: confirmButtonText,
-		timer: timer,
-		timerProcessBar: timerProcessBar,
-	}).then(value => {
+	Swal.fire(config).then(function(value){
 		resolve(value);
 	});
 });

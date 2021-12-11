@@ -13,28 +13,27 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 	<!-- Accordion -->
 	<div class="ui styled fluid accordion" id="Account">
 		<!-- Sign In -->
-		<div class="title"><i class="dropdown icon"></i> I'm already a member </div>
-		<div class="content">
+		<div class="title" :class="isLogin?'active':null"><i class="dropdown icon"></i> I'm already a member </div>
+		<div class="content" :class="isLogin?'active':null">
 			<h2 class="content-title">Sign In</h2>
-			<form class="ui form" id="SignIn">
-
+			<form class="ui form" id="Login" ref="login" method="POST">
 				<div class="two fields">
 					<div class="field error">
-						<label>First Name</label>
-						<input placeholder="First Name" type="text">
+						<label>Username</label>
+						<input type="text" name="username" id="username" ref='login_username' placeholder="Username">
 					</div>
-					<div class="field">
-						<label>Last Name</label>
-						<input placeholder="Last Name" type="text">
+					<div class="field error">
+						<label>Password</label>
+						<input type="password" name="password" id="password" ref='login_password' placeholder="Password">
+						<a href="#" class="ui red right floated button">(Forgot password?)</a>
 					</div>
 				</div>
 
-				<div class="inline field error">
-					<div class="ui checkbox">
-						<input type="checkbox" tabindex="0" class="hidden">
-						<label>我同意遵守使用條款</label>
-					</div>
-				</div>
+				<div class="ui error message"></div>
+
+				<h4 class="ui horizontal divider header">
+					<i class="bar chart icon"></i> Random string here...
+				</h4>
 
 				<button class="fluid ui black button">Verify Identity</button>
 			</form>
@@ -42,41 +41,31 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		<!-- End Sign In -->
 
 
-
-
 		<!-- Sign Up -->
-		<div class="title active"><i class="dropdown icon"></i> I have no account, join now </div>
-		<div class="content active">
+		<div class="title" :class="isRegister?'active':null"><i class="dropdown icon"></i> I have no account, join now </div>
+		<div class="content" :class="isRegister?'active':null">
 			<h2 class="content-title">Sign Up</h2>
-			<form class="ui form" id="SignUp" method="POST" autocomplete="off">
+			<form class="ui form" id="Register" ref="register" method="POST" autocomplete="off">
 
 				<div class="two fields">
-					<div class="field">
+					<div class="field error">
 						<label>Username</label>
-						<input type="text" name="username" id="username" ref='username' placeholder="Username" value="alpaca0x0">
+						<input type="text" name="username" id="username" ref='register_username' placeholder="Username">
 					</div>
 					<div class="field error">
 						<label>Password</label>
-						<input type="password" name="password" id="password" ref='password' placeholder="Password" value="passw0rd">
+						<input type="password" name="password" id="password" ref='register_password' placeholder="Password">
 					</div>
 				</div>
 
 				<div class="two fields">
-					<!-- <div class="field">
-						<label>Gender</label>
-						<select name="gender" class="ui dropdown" id="gender">
-							<option value="">Gender</option>
-							<option value="male"><i class="male icon"></i>Male</option>
-							<option value="female"><i class="female icon"></i>Female</option>
-						</select>
-					</div> -->
 					<div class="field error">
 						<label>Email</label>
-						<input type="email" name="email" id="email" ref='email' placeholder="E-Mail" value="alpaca0x0@gmail.com">
+						<input type="email" name="email" id="email" ref='register_email' placeholder="E-Mail">
 					</div>
 					<div class="field error">
 						<label>Gender</label>
-						<div class="ui selection dropdown" id="gender" ref='gender'>
+						<div class="ui selection dropdown" id="gender" ref='register_gender'>
 							<input type="hidden" name="gender">
 							<i class="dropdown icon"></i>
 							<div class="default text">Gender</div>
@@ -125,163 +114,256 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 <script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 <script type="module">
 	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
-	createApp({
-		datas(){return{
-			//
+
+	// vue app
+	const app = createApp({
+		data(){return{
+			isRegister: false,
+			isLogin: false,
+			login: {
+				test: false,
+			},
+			register: {
+				test: false,
+			}
 		}},
 		mounted(){
-			let _this = this;
-
-			// Register form
-
-			// Initialize
-			$('#Account.ui.accordion').accordion();
-			$('form#SignUp #gender.selection').dropdown();
-			$('.ui.checkbox').checkbox();
-
-			// Loger tables
-			Loger.Tables['Display'] = {
-				"db_insert_successfully": 		"Welcome to join us",
-				"data_missing": 				"Data missing",
-				"username_format_not_match": 	"Username format not match",
-				"email_format_not_match": 		"Email format not match",
-				"password_format_not_match": 	"Password format not match",
-				"db_cannot_query": 				"Database has some problems",
-				"username_exist": 				'Username is exist',
-				'email_exist': 					'Email is exist',
-				'database_cannot_connect': 		'Database has some problems when connecting',
-				'db_cannot_insert': 			'Database has some problems when inserting your data',
-			}
-
-			// the username or email is exist
-			let exist = new Array();
-			exist['username'] = [];
-			exist['email'] = [];
-
-			// Authenticate form
-			let form = $('form.ui.form#SignUp');
-
-			// custom the function of authentication
-			form.form.settings.rules.exist = function(value,type){
-				return !exist[type].includes(value);
-			}
-
-			form.form({
-				on: 'change',
-				inline: true,
-				keyboardShortcuts: false,
-				// delay: 800,
-				onSuccess: function(event, fields){
-					event.preventDefault();
-
-					// if(fields['email'].includes(exist['email'])){}
-					// if(fields['email'].includes(exist['email'])){}
-
-					this.classList.add('loading');
-
-					console.log(`onSuccess()`);
-
-		    		$.ajax({
-		    			type: "POST",
-		    			url: 'register.php',
-		    			data: fields,
-		    			dataType: 'json',
-		    			success: (resp)=>{
-		    				console.log(`ajax success()`);
-		    				Loger.Log('info','Response',resp);
-		    				// check if data is exist
-		    				if(Loger.Have(resp,['username_exist','email_exist'])){
-		    					// log exist datas
-		    					Loger.Log('warning','Exist Datas',exist);
-		    					// if username is exist
-			    				if(Loger.Have(resp,'username_exist') && !exist['username'].includes(fields['username'])){
-		    						exist['username'].push(fields['username']);
-			    				}
-			    				// if email is exist
-			    				if(Loger.Have(resp,'email_exist') && !exist['email'].includes(fields['email'])){
-		    						exist['email'].push(fields['email']);
-			    				};
-		    				}
-		    				Loger.Swal(resp).then(()=>{
-		    					console.log(`swal then`);
-								// update the UI status
-								form.form('validate form');
-				    			this.classList.remove('loading');
-		    				});
-		    			},
-		    		}).then(()=>{
-		    			console.log(`ajax then`);
-		    		});
-					return false;
-				},
-				onFailure: function(formErrors, fields){
-					console.log(`onFailure()`);
-					if(!form.form('validate field','username')){ console.log('focus username'); _this.$refs.username.focus(); }
-					else if(!form.form('validate field','password')){ console.log('focus password'); _this.$refs.password.focus(); }
-					else if(!form.form('validate field','email')){ console.log('focus email'); _this.$refs.email.focus(); }
-					else if(!form.form('validate field','gender')){ console.log('focus gender'); _this.$refs.gender.focus(); }
-					return false;
-				},
-				fields: {
-					username: {
-						identifier: 'username',
-						rules: [
-							{
-								type	 : 'regExp[<?php echo $ac_regex["username"]; ?>]',
-								prompt : 'Your username must be at format {ruleValue}'
-							},
-							{
-								type: 	'exist',
-								value: 	'username',
-								prompt: 	'This usernmae is exist'
-							}
-						]
-					},
-					password: {
-						identifier: 'password',
-						rules: [
-							{
-								type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
-								prompt : 'Your password must be at format {ruleValue}'
-							},
-						]
-					},
-					email: {
-						identifier: 'email',
-						rules: [
-							{
-								type	 : 'regExp[<?php echo $ac_regex["email"]; ?>]',
-								prompt : 'Your email must be at format {ruleValue}'
-							},
-							{
-								type: 	'exist',
-								value: 	'email',
-								prompt: 	'This email is exist'
-							}
-						]
-					},
-					gender: {
-						identifier: 'gender',
-						rules: [
-							{
-								type	 : 'empty',
-								prompt : 'Please select a gender'
-							},
-						]
-					},
-					terms: {
-						identifier: 'terms',
-						rules: [
-							{
-								type	 : 'checked',
-								prompt : 'You must agree to the terms and conditions'
-							},
-						]
-					}
-				}
-			}); // semantic
+			this.isRegister = <?php echo isset($_GET['register'])?'true':'false'; ?>;
+			this.isLogin = !this.isRegister;
 		} // vue
-	}).mount('form#SignUp');
+	}).mount('#Account');
+
+	// ********************************************************************************** //
+
+	// Initialize
+	$('#Account.ui.accordion').accordion();
+	$('form#Register #gender.selection').dropdown();
+	$('.ui.checkbox').checkbox();
+
+	// defined form
+	let form = new Array();
+	form['register'] = $('form.ui.form#Register');
+	form['login'] = $('form.ui.form#Login');
+
+	// defined var
+	let tables = new Array();
+	
+	// ********************************************************************************** //
+
+	// Login form
+
+	// Loger tables
+	tables['login'] = {
+		"login_successfully": 			"Login successfully",
+		"data_missing": 				"Data missing",
+		"username_format_not_match": 	"Username format not match",
+		"password_format_not_match": 	"Password format not match",
+		"db_cannot_query": 				"Database has some problems",
+		"cannot_verify_your_identity": 	"Sorry, can not verify your identity! <br>Maybe you typed the incorrect info, try again!",
+	};
+
+	form['login'].form({
+		on: 'change',
+		inline: true,
+		keyboardShortcuts: false,
+		// delay: 800,
+		onSuccess: function(event, fields){
+			if(event){ // fix: in promise, event is undefined
+				event.preventDefault();
+
+				this.classList.add('loading');
+
+				$.ajax({
+					type: "POST",
+					url: 'login.php',
+					data: fields,
+					dataType: 'json',
+					success: function(resp){
+						Loger.Log('info','Response',resp);
+						// check if success
+						let isSuccess = Loger.Check(resp,'success');
+						let swal_config = isSuccess ? { timer:2000, } : {};
+						Loger.Swal(resp, tables['login'], swal_config).then((val)=>{
+							if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
+							// update the UI status
+							// it will call back to the onSuccess()
+							form['login'].form('validate form'); // fix: in promise, event is undefined
+						});
+					},
+				}).then(()=>{
+					this.classList.remove('loading');
+				});
+			}
+			return false;
+		},
+		onFailure: function(formErrors, fields){
+			if(!form['login'].form('validate field','username')){ app.$refs.login_username.focus(); }
+			else if(!form['login'].form('validate field','password')){ app.$refs.login_password.focus(); }
+			return false;
+		},
+		fields: {
+			username: {
+				identifier: 'username',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["username"]; ?>]',
+						prompt : 'Your username must be at format {ruleValue}'
+					}
+				]
+			},
+			password: {
+				identifier: 'password',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
+						prompt : 'Your password must be at format {ruleValue}'
+					},
+				]
+			}
+		}
+	});
+
+	// ********************************************************************************** //
+
+	// Register form
+
+	// Loger tables
+	tables['register'] = {
+		"db_insert_successfully": 		"Welcome to join us",
+		"data_missing": 				"Data missing",
+		"username_format_not_match": 	"Username format not match",
+		"email_format_not_match": 		"Email format not match",
+		"password_format_not_match": 	"Password format not match",
+		"db_cannot_query": 				"Database has some problems",
+		"username_exist": 				'Username is exist',
+		'email_exist': 					'Email is exist',
+		'database_cannot_connect': 		'Database has some problems when connecting',
+		'db_cannot_insert': 			'Database has some problems when inserting your data',
+	};
+
+	// the username or email is exist
+	let exist = new Array();
+	exist['username'] = [];
+	exist['email'] = [];
+
+
+	// custom the function of authentication
+	form['register'].form.settings.rules.exist = function(value,type){
+		return !exist[type].includes(value);
+	}
+
+	form['register'].form({
+		on: 'change',
+		inline: true,
+		keyboardShortcuts: false,
+		// delay: 800,
+		onSuccess: function(event, fields){
+			if(event){ // fix: in promise, event is undefined
+				event.preventDefault();
+
+				this.classList.add('loading');
+
+				$.ajax({
+					type: "POST",
+					url: 'register.php',
+					data: fields,
+					dataType: 'json',
+					success: (resp)=>{
+						Loger.Log('info','Response',resp);
+						// check if data is exist
+						if(Loger.Have(resp,['username_exist','email_exist'])){
+							// log exist datas
+							Loger.Log('warning','Exist Datas',exist);
+							// if username is exist
+		    				if(Loger.Have(resp,'username_exist') && !exist['username'].includes(fields['username'])){
+								exist['username'].push(fields['username']);
+		    				}
+		    				// if email is exist
+		    				if(Loger.Have(resp,'email_exist') && !exist['email'].includes(fields['email'])){
+								exist['email'].push(fields['email']);
+		    				};
+						}
+						// check if success
+						let isSuccess = Loger.Check(resp,'success');
+						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Login now!' } : {};
+						Loger.Swal(resp, tables['register'], swal_config).then((val)=>{
+							if(isSuccess){ window.location.replace('?login'); }
+							// update the UI status
+							// it will call back to the onSuccess()
+							form['login'].form('validate form'); // fix: in promise, event is undefined
+						});
+					},
+				}).then(()=>{
+					this.classList.remove('loading');
+				});
+			}
+			return false;
+		},
+		onFailure: function(formErrors, fields){
+			if(!form['register'].form('validate field','username')){ app.$refs.register_username.focus(); }
+			else if(!form['register'].form('validate field','password')){ app.$refs.register_password.focus(); }
+			else if(!form['register'].form('validate field','email')){ app.$refs.register_email.focus(); }
+			else if(!form['register'].form('validate field','gender')){ app.$refs.register_gender.focus(); }
+			return false;
+		},
+		fields: {
+			username: {
+				identifier: 'username',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["username"]; ?>]',
+						prompt : 'Your username must be at format {ruleValue}'
+					},
+					{
+						type: 	'exist',
+						value: 	'username',
+						prompt: 	'This usernmae is exist'
+					}
+				]
+			},
+			password: {
+				identifier: 'password',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
+						prompt : 'Your password must be at format {ruleValue}'
+					},
+				]
+			},
+			email: {
+				identifier: 'email',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["email"]; ?>]',
+						prompt : 'Your email must be at format {ruleValue}'
+					},
+					{
+						type: 	'exist',
+						value: 	'email',
+						prompt: 	'This email is exist'
+					}
+				]
+			},
+			gender: {
+				identifier: 'gender',
+				rules: [
+					{
+						type	 : 'empty',
+						prompt : 'Please select a gender'
+					},
+				]
+			},
+			terms: {
+				identifier: 'terms',
+				rules: [
+					{
+						type	 : 'checked',
+						prompt : 'You must agree to the terms and conditions'
+					},
+				]
+			}
+		}
+	});
 </script>
 
 
