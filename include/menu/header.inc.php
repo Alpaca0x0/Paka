@@ -3,6 +3,7 @@
 <?php @include_once(Inc('sidebar/header')); ?>
 <?php @include_once(Inc('navbar')); ?>
 
+<div class="ui hidden divider"></div>
 
 
 <?php

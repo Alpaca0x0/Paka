@@ -31,7 +31,7 @@ if(!preg_match($regex['password'], $password)){ $Loger->Push('warning','password
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
 
 # Transform
-$password = sha1($password);
+$password = hash('sha256',$password);
 
 # Start to using database
 @include_once(Func('db'));
@@ -52,6 +52,7 @@ $_SESSION['account'] = [
     'identity' => $row['identity'],
 ];
 $_SESSION['timeout'] = time();
+$_SESSION['token'] = trim(hash('sha256',bin2hex(random_bytes(16))));
 
 # response
 $Loger->Push('success','login_successfully',$_SESSION['account']['username']);

@@ -32,7 +32,7 @@ if(!preg_match($regex['password'], $password)){ $Loger->Push('warning','password
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
 
 # Transform
-$password = sha1($password);
+$password = hash('sha256',$password);
 
 # Start to using database
 @include_once(Func('db'));

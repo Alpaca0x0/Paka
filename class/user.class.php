@@ -25,7 +25,6 @@ class User{
 
 			break;case 'info':
 				return (isset($_SESSION['account'])?$_SESSION['account']:$replace);
-			
 
 			break;case 'id':
 				return (isset($this->Info['id'])?$this->Info['id']:$replace);
@@ -33,8 +32,11 @@ class User{
 			break;case 'identity':
 				return (isset($this->Info['identity'])?$this->Info['identity']:$replace);
 			
-			break;case 'username':
+			break;case 'username':case 'name':
 				return (isset($this->Info['username'])?$this->Info['username']:$replace);
+
+			break;case 'token':
+				return (isset($_SESSION['token'])?$_SESSION['token']:$replace);
 			
 			break;default:
 				return 'Error';
@@ -47,6 +49,9 @@ class User{
 		switch (strtolower(trim($what))) {
 			case 'login':
 				return ($this->Get('status')=='login');
+
+			case 'logout':
+				return ($this->Get('status')!='login');
 			
 			break;case 'timeout':
 				return ($this->Get('status')=='timeout');
