@@ -1,8 +1,14 @@
-<?php ini_set('display_errors','1'); error_reporting(E_ALL);
+<?php
+/****************************************************************/
+# Read Me
+# Do NOT output any thing on this page
+# Every page need to include this file or exit()
+/****************************************************************/
+# Initialize
+ini_set('display_errors','1'); error_reporting(E_ALL);
 if(!isset($_SESSION)){ session_start(); }
-define('INIT', true); // defined('INIT') or die('NO INIT');
 date_default_timezone_set('Asia/Taipei');
-
+define('INIT', true); // defined('INIT') or die('NO INIT');
 /****************************************************************/
 # Basic paths
 {
