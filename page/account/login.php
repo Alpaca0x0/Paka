@@ -51,7 +51,7 @@ $_SESSION['account'] = [
     'username' => $row['username'],
     'identity' => $row['identity'],
 ];
-$_SESSION['timeout'] = time();
+$_SESSION['spawntime'] = time();
 $_SESSION['token'] = trim(hash('sha256',bin2hex(random_bytes(16))));
 
 # response
