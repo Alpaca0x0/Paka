@@ -9,7 +9,10 @@
 
 <?php
 	@include_once(Func('user'));
-	echo $User->Get('id','please login first');
+	echo $User->Get('identity','no').'<br>';
+	echo $User->Update().'<br>';
+	// $_SESSION['timeout'] = time();
+	echo $User->Get('identity','no').'<br>';
 ?>
 
 

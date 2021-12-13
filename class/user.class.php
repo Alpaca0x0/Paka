@@ -1,20 +1,25 @@
 <?php defined('INIT') or die('NO INIT'); ?>
 
+<?php 
+@include_once(Func('db'));
+?>
+
 <?php
 class User{
-	private $Info = false;
+	// private $Info = false;
 
 	function __construct(){
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
 	}
 
 	function Init(){
-		$this->Info = $this->Get('info');
+		// $this->Info = $this->Get('info');
 	}
 
 	// get the user info, info[] or false or "timeout"
 	function Get($what, $replace=false){
-		switch (strtolower(trim($what))) {
+		$what = strtolower(trim($what));
+		switch ($what) {
 			case 'status':
 				if(!isset($_SESSION['account']) || !isset($_SESSION['timeout']) ){
 					return "logout";
@@ -26,17 +31,20 @@ class User{
 			break;case 'info':
 				return (isset($_SESSION['account'])?$_SESSION['account']:$replace);
 
-			break;case 'id':
-				return (isset($this->Info['id'])?$this->Info['id']:$replace);
-			
-			break;case 'identity':
-				return (isset($this->Info['identity'])?$this->Info['identity']:$replace);
-			
-			break;case 'username':case 'name':
-				return (isset($this->Info['username'])?$this->Info['username']:$replace);
+			break;case 'id': case 'identity':
+				return (isset($_SESSION['account'][$what])?$_SESSION['account'][$what]:$replace);
+
+			break;case 'username': case 'name':
+				return (isset($_SESSION['account']['username'])?$_SESSION['account']['username']:$replace);
 
 			break;case 'token':
 				return (isset($_SESSION['token'])?$_SESSION['token']:$replace);
+
+			break;case 'timeout':
+				return (isset($_SESSION['timeout'])?$_SESSION['timeout']:$replace);
+
+			break;case 'time':
+				return (isset($_SESSION['timeout'])?(time()-$_SESSION['timeout']):$replace);
 			
 			break;default:
 				return 'Error';
@@ -63,5 +71,28 @@ class User{
 	}
 
 	function Logout(){ session_destroy(); return true; }
+
+	function Update(){
+		// check if timeout
+		if($this->Is('timeout')){ $this->Logout(); return 'timeout'; }
+		// check $DB
+		global $DB;
+		if(!isset($DB)){ die('user.class: need to include DB class'); }
+		// update from database
+		$id = $this->Get('id','');
+		$username = $this->Get('username','');
+		$DB->Query("SELECT * FROM `account` WHERE `id`=:id AND `username`=:username;");
+		$result = $DB->Execute([':id' => $id, ':username' => $username]);
+		if(!$result){ $this->Logout(); return false; }
+		$row = $DB->Fetch($result,'assoc');
+		if(!$row){ $this->Logout(); return 'notfound'; }
+		$_SESSION['account'] = [
+		    'id' => $row['id'],
+		    'username' => $row['username'],
+		    'identity' => $row['identity'],
+		];
+		$_SESSION['timeout'] = time();
+		return 'updated';
+	}
 
 }
