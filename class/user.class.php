@@ -6,7 +6,7 @@
 
 <?php
 class User{
-	// private $Info = false;
+	private $isUpdated = false;
 
 	function __construct(){
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
@@ -70,28 +70,31 @@ class User{
 		}
 	}
 
-	function Logout(){ session_destroy(); return true; }
+	function Logout(){ @session_destroy(); return true; }
 
-	function Update(){
+	function Update($force=false){
 		// check if timeout
 		if($this->Is('timeout')){ $this->Logout(); return 'timeout'; }
 		// check $DB
 		global $DB;
 		if(!isset($DB)){ die('user.class: need to include DB class'); }
 		// update from database
-		$id = $this->Get('id','');
-		$username = $this->Get('username','');
-		$DB->Query("SELECT * FROM `account` WHERE `id`=:id AND `username`=:username;");
-		$result = $DB->Execute([':id' => $id, ':username' => $username]);
-		if(!$result){ $this->Logout(); return false; }
-		$row = $DB->Fetch($result,'assoc');
-		if(!$row){ $this->Logout(); return 'notfound'; }
-		$_SESSION['account'] = [
-		    'id' => $row['id'],
-		    'username' => $row['username'],
-		    'identity' => $row['identity'],
-		];
-		$_SESSION['timeout'] = time();
+		if(!$this->isUpdated || $force){
+			$id = $this->Get('id','');
+			$username = $this->Get('username','');
+			$DB->Query("SELECT * FROM `account` WHERE `id`=:id AND `username`=:username;");
+			$result = $DB->Execute([':id' => $id, ':username' => $username]);
+			if(!$result){ $this->Logout(); return false; }
+			$row = $DB->Fetch($result,'assoc');
+			if(!$row){ $this->Logout(); return 'notfound'; }
+			$_SESSION['account'] = [
+			    'id' => $row['id'],
+			    'username' => $row['username'],
+			    'identity' => $row['identity'],
+			];
+			$_SESSION['timeout'] = time();
+			$this->isUpdated = true;
+		}
 		return 'updated';
 	}
 

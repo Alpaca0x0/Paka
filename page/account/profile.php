@@ -1,6 +1,8 @@
 <?php @include_once('../../init.php'); ?>
 
 <?php
+@include_once(Func('user'));
+$User->Update();
 $User->Is('login') OR exit(header("Location: ".Root('index')));
 ?>
 

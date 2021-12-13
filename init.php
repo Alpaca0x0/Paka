@@ -67,9 +67,6 @@ date_default_timezone_set('Asia/Taipei');
 /****************************************************************/
 
 /****************************************************************/
-
-// auto run
-@include_once(Func('user'));
-$User->Update();
+// dont run other function, that will be infinity loop
 
 /****************************************************************/

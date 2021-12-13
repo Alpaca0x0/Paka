@@ -2,6 +2,7 @@
 
 <?php 
     @include_once(Func('user'));
+    $User->Update();
 ?>
 <script type="text/javascript" src="<?php echo JS('user'); ?>"></script>
 <script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
@@ -105,6 +106,7 @@
                                 });
                             },
                             error: (resp) => {
+                                Loger.Log('error','Logout Unexpected Errors', resp);
                                 Swal.fire('Sorry, we got the some expected errors...', 'Error', 'error');
                             },
                         });
