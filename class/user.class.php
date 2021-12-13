@@ -7,13 +7,14 @@
 <?php
 class User{
 	private $isUpdated = false;
+	private $timeout = 0;
 
 	function __construct(){
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
 	}
 
-	function Init(){
-		// $this->Info = $this->Get('info');
+	function Init($config){
+		$this->timeout = $config['timeout'];
 	}
 
 	// get the user info, info[] or false or "timeout"
@@ -23,7 +24,7 @@ class User{
 			case 'status':
 				if(!isset($_SESSION['account']) || !isset($_SESSION['timeout']) ){
 					return "logout";
-				}else if( (time()-$_SESSION['timeout']) > (60*60*16) ){
+				}else if( (time()-$_SESSION['timeout']) > ($this->timeout) ){
 					return "timeout";
 				}else{ return "login"; }
 				return "error";
@@ -40,11 +41,11 @@ class User{
 			break;case 'token':
 				return (isset($_SESSION['token'])?$_SESSION['token']:$replace);
 
-			break;case 'timeout':
-				return (isset($_SESSION['timeout'])?$_SESSION['timeout']:$replace);
+			break;case 'spawntime':
+				return (isset($_SESSION['spawntime'])?$_SESSION['spawntime']:$replace);
 
-			break;case 'time':
-				return (isset($_SESSION['timeout'])?(time()-$_SESSION['timeout']):$replace);
+			break;case 'life':
+				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
 			
 			break;default:
 				return 'Error';
