@@ -13,7 +13,7 @@ class User{
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
 	}
 
-	function Init($config){
+	function Init($config=false){
 		$this->timeout = $config['timeout'];
 	}
 
@@ -22,9 +22,9 @@ class User{
 		$what = strtolower(trim($what));
 		switch ($what) {
 			case 'status':
-				if(!isset($_SESSION['account']) || !isset($_SESSION['timeout']) ){
+				if(!isset($_SESSION['account']) || !isset($_SESSION['spawntime']) ){
 					return "logout";
-				}else if( (time()-$_SESSION['timeout']) > ($this->timeout) ){
+				}else if( (time()-$_SESSION['spawntime']) > ($this->timeout) ){
 					return "timeout";
 				}else{ return "login"; }
 				return "error";
@@ -47,15 +47,19 @@ class User{
 			break;case 'life':
 				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
 			
+			break;case 'users':
+				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
+			
 			break;default:
-				return 'Error';
+				return 'error';
 			break;
 		}
 	}
 
 	// check the status
 	function Is($what){
-		switch (strtolower(trim($what))) {
+		$what = strtolower(trim($what));
+		switch ($what) {
 			case 'login':
 				return ($this->Get('status')=='login');
 
@@ -66,7 +70,7 @@ class User{
 				return ($this->Get('status')=='timeout');
 			
 			break;default:
-				return 'Error';
+				return 'error';
 			break;
 		}
 	}
@@ -93,7 +97,7 @@ class User{
 			    'username' => $row['username'],
 			    'identity' => $row['identity'],
 			];
-			$_SESSION['timeout'] = time();
+			$_SESSION['spawntime'] = time();
 			$this->isUpdated = true;
 		}
 		return 'updated';

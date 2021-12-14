@@ -8,13 +8,14 @@
 <?php @include_once(Inc('menu/header')); ?>
 
 <?php
-	@include_once(Func('user'));
-	echo $User->Get('identity','no').'<br>';
-	echo $User->Update().'<br>';
-	// $_SESSION['timeout'] = time();
-	echo $User->Get('identity','no').'<br>';
+	//
 ?>
 
+<script type="text/javascript">
+	var posts = $.post('<?php echo API('post'); ?>', (resp) => {
+		console.log(resp);
+	});
+</script>
 
 <?php @include_once(Inc('menu/footer')); ?>
 <?php @include_once(Inc('footer')); ?>

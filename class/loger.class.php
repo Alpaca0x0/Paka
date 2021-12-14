@@ -14,11 +14,13 @@ class Loger{
 		$this->Logs = $array;
 	}
 
-	function Push($type, $content, $arg=false){
-		$type = trim($type);
-		if (!in_array($type, $this->Types)){ return false; }
-		$content = is_array($content)?$content:trim($content);
-		$log = $arg ? [$type, $content, $arg] : [$type, $content];
+	function Push($type, $content=false, $arg=false){
+		if(!is_array($type)){ $type = trim($type); }
+		if($content && !is_array($content)){ $content = trim($content); }
+		if ($content && !in_array($type, $this->Types)){ return false; }
+		if(!$content){ $log = [$type]; }
+		else if(!$arg){ $log = [$type, $content]; }
+		else{ $log = [$type, $content, $arg]; }
 		array_push($this->Logs, $log);
 		return true;
 	}

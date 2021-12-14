@@ -19,6 +19,10 @@ class DB{
 		try{
 			$this->Connect = new PDO("mysql:host=".DB['host'].";dbname=".DB['name'].";charset=utf8", DB['user'], DB['pass']);
 			if(!$this->Connect){ return false; }
+			// setting PDO
+			$this->Connect->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			// dont convert column to string
+			$this->Connect->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
 		}catch(Exception $e){ return false; }
 		return true;
 	}

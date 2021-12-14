@@ -8,7 +8,7 @@ define('DB', [
 	'pass'=>'a1pacapassw0rd',
 	'name'=>'AlpacaTech',
 	'tables'=>[
-		'account',
+		'account','post','post_event'
 	],
 	'columns'=>[
 		'account'=>[

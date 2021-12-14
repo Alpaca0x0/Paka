@@ -36,6 +36,7 @@ define('INIT', true); // defined('INIT') or die('NO INIT');
 	define('CSS', Asset.'css/');
 	define('IMG', Asset.'image/');
 	define('Page', ROOT.'page/');
+	define('API', ROOT.'api/');
 }
 /****************************************************************/
 # Get-Path functions
@@ -52,6 +53,7 @@ define('INIT', true); // defined('INIT') or die('NO INIT');
 	function CSS($name,$exname='css'){ return rtrim(CSS."$name.$exname",' .'); }
 	function IMG($name,$exname='png'){ return rtrim(IMG."$name.$exname",' .'); }
 	function Page($name,$exname='php'){ return rtrim(Page."$name.$exname",' .'); }
+	function API($name,$exname='php'){ return rtrim(API."$name.$exname",' .'); }
 }
 # Function
 {
