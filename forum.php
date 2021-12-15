@@ -39,41 +39,43 @@
 		<p>{{ post.content }}</p>
 		<!-- <div class="ui right aligned container"><h5 class="ui grey header">{{ timeToString(post.datetime) }}</h5></div> -->
 		<!-- post comment -->
-		<button class="fluid ui button"><i class="dropdown icon"></i> 看看大家都說了些什麼 </button>
+		<button class="fluid ui button" @click="getReply(post.id)"><i class="dropdown icon"></i> 看看大家都說了些什麼 </button>
 		<div class="ui container">
 			<div class="content">
 				<!-- comments -->
-				<div class="ui comments collapsed">
+				<div class="ui comments" :class="{ collapsed: !post.showReply }">
 					<!-- reply form -->
-					<form class="ui reply form">
+					<form class="ui reply form" @submit="reply('post',post.id);" onsubmit="return false;">
 						<div class="two fields">
-							<div class="field"><input type="text"></div>
-							<div class="field"><div class="ui blue labeled submit icon button"><i class="icon edit"></i> Add Reply</div></div>
+							<div class="field"><input type="text" v-model="post.reply"></div>
+							<div class="field"><div class="ui blue labeled submit icon button" @click="reply('post',post.id);"><i class="icon edit"></i> Add Reply</div></div>
 						</div>
 					</form><!-- end reply form -->
 					<!-- comment -->
-					<div class="comment">
-						<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
-						<div class="content">
-							<a class="author">警察</a>
-							<div class="metadata"><span class="date">2 天前</span></div>
-							<div class="text">這裏是葛飾區龜有公園前派出所 </div>
-							<div class="actions"><a class="reply">Reply</a></div>
-						</div>
-						<!-- replies -->
-						<div class="comments">
-							<!-- reply of replies -->
-							<div class="comment">
-								<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
-								<div class="content">
-									<a class="author">蔡依婷</a>
-									<div class="metadata"><span class="date">1 天前</span></div>
-									<div class="text">No, it wont</div>
-									<div class="actions"><a class="reply">Reply</a></div>
-								</div>
-							</div><!-- end reply of replies -->
-						</div><!-- end replies -->
-					</div><!-- end comment -->
+					<template v-if="post.replies" v-for="reply in post.replies">
+						<div class="comment" v-if="isReplyToPost(post.replies,reply.id)">
+							<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
+							<div class="content">
+								<a class="author">{{ reply.replier_username }}</a>
+								<div class="metadata"><span class="date">? 天前</span></div>
+								<div class="text">{{ reply.content }} </div>
+								<div class="actions"><a class="reply">Reply</a></div>
+							</div>
+							<!-- replies -->
+							<div class="comments">
+								<!-- reply of replies -->
+								<div class="comment" v-for="secondReply in getAllSecondReply(post.replies, reply.id)">
+									<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
+									<div class="content">
+										<a class="author">{{ secondReply.replier_username }}</a>
+										<div class="metadata"><span class="date">? 天前</span></div>
+										<div class="text">{{ secondReply.content }}</div>
+										<div class="actions"><a class="reply">Reply</a></div>
+									</div>
+								</div><!-- end reply of replies -->
+							</div><!-- end replies -->
+						</div><!-- end comment -->
+					</template>
 				</div><!-- end comments -->
 			</div><!-- end content -->
 		</div><!-- end post comment -->
@@ -94,6 +96,8 @@
 			// 	content: '',
 			// 	poster: '',
 			// 	datetime: '',
+			//  showReply: false,
+			//  replies: []
 			// }],
 			isLoaded: false,
 			skip: 0,
@@ -144,7 +148,65 @@
 						});
 					}
 				});
-			}
+			},
+			getReply: (postId) => {
+				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+				// done run again
+				if(Posts.posts[postKey].showReply){ Posts.posts[postKey].showReply = false; return false; }
+				else{ Posts.posts[postKey].showReply = true; }
+				if(Posts.posts[postKey].replies){ return false; }
+				// get replies
+				$.ajax({
+					type: "GET",
+					url: '<?php echo API('post/reply'); ?>',
+					data: { postId: postId,  },
+					dataType: 'json',
+					success: (resp) => {
+						Loger.Log('info','Reply API',resp);
+						Posts.posts[postKey].replies = resp;
+					},
+				}).then(()=>{
+					// this.isLoaded = true;
+					// console.log
+				});
+			},
+			reply: (type, postId)=>{
+				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+				let content = Posts.posts[postKey].reply===undefined?'':Posts.posts[postKey].reply;
+				if(content === undefined || content.length < 2){ Swal.fire({icon:'warning',title:'Wait',html:'You need more content.'});return false; }
+				$.ajax({
+					type: "POST",
+					url: '<?php echo Page('post/reply'); ?>',
+					data: { postId: postId, content: content, reply: ''},
+					dataType: 'json',
+					success: (resp)=>{
+						Loger.Log('info','Reply',resp);
+						let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+						let table = {
+							'is_logout': 'Oh no, you are not login.',
+							'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+							'content_too_short': `Your need to type more contnet!`,
+							'type_incorrect': 'Un... seems has some errors, sorry.',
+							'failed_reply': 'Sorry, seems we got the errors.',
+							'replied': 'Done, you successfuly replied.',
+						}
+						Loger.Swal(resp,table);
+						if(Loger.Check(resp,'success')){
+							Posts.posts[postKey].reply = '';
+							Posts.posts[postKey].replies.unshift(resp.find(r => r[0]==='success')[2]);
+						}
+					},
+				});
+				return false;
+			},
+			isReplyToPost: (replies, replyId)=>{
+				let replyKey = replies.findIndex(((reply) => reply.id === replyId));
+				return replies[replyKey].reply === null;
+			},
+			getAllSecondReply: (replies, replyId)=>{
+				let ret = replies.filter(reply => { if(reply.reply===replyId){ return reply; } });
+				return ret;
+			},
 		},
 		mounted(){
 			// get posts

@@ -9,11 +9,14 @@
 @include_once(Func('user'));
 $User->Update();
 if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
+
 // must have post data
 $needed_datas = ['postId',];
 foreach ($needed_datas as $data){
 	if(!isset($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
-}if($Loger->Check()){ $Loger->Resp(); }
+}
+if($Loger->Check()){ $Loger->Resp(); }
+
 // start to write
 @include_once(Func('post'));
 $postId = (int)$_POST['postId'];

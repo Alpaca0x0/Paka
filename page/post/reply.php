@@ -11,34 +11,32 @@ $User->Update();
 if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
 
 // must have post data
-$needed_datas = ['title','content',];
+$needed_datas = ['postId','content','reply'];
 foreach ($needed_datas as $data){
 	if(!isset($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
 }if($Loger->Check()){ $Loger->Resp(); }
 
 // get data
 @include_once(Func('post'));
-$title = trim(@$_POST['title']);
+$postId = (int)(@$_POST['postId']);
 $content = trim(@$_POST['content']);
+$reply = trim(@$_POST['reply']);
 
 // filter
 // make some special chars be space " "
-$title = preg_replace('/[\n\r\t]/', ' ', trim($title)); 
-$content = preg_replace('/[\n\r\t]/', ' ', trim($content));
+$content = preg_replace('/[\n\r\t]/', ' ', $content);
 // remove multiple spaces
-$title = preg_replace('/\s(?=\s)/', '', $title);
 $content = preg_replace('/\s(?=\s)/', '', $content);
-if(strlen($title)<2){ $Loger->Push('warning','title_too_short'); }
+
+// format
 if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
 if($Loger->Check()){ $Loger->Resp(); }
-// $title = "It is a test title";
-// $content = "Here is a test content, it can type more text.";
-$result = $Post->Create($title, $content);
 
-$resps = ['logout', 'error_insert', ];
-
-if(in_array($result, $resps)){ $Loger->Push('warning','failed_create_post',$result); }
-else if(is_array($result)){ $Loger->Push('success','created_post',$result); }
-else{ $Loger->Push('error','error',$result); }
+// start to reply
+$result = $Post->Reply($postId,$content);
+$resps = ['logout', 'no_replier', 'error',];
+if(in_array($result, $resps)){ $Loger->Push('warning','failed_reply',$result); }
+else if(is_array($result)){ $Loger->Push('success','replied',$result); }
+else{ $Loger->Push('error','Unexpected error', $result); }
 
 $Loger->Resp();

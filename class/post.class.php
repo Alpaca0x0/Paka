@@ -23,15 +23,7 @@ class Post{
 		$poster_username = $User->Get('username',false);
 		$poster_identity = $User->Get('identity',false);
 		$datetime = time();
-		// filter
-		// make some special chars be space " "
-		$title = preg_replace('/[\n\r\t]/', ' ', trim($title)); 
-		$content = preg_replace('/[\n\r\t]/', ' ', trim($content));
-		// remove multiple spaces
-		$title = preg_replace('/\s(?=\s)/', '', $title);
-		$content = preg_replace('/\s(?=\s)/', '', $content);
-		if(strlen($title)<2){ return 'title_too_short'; }
-		if(strlen($content)<2){ return 'content_too_short'; }
+		
 		// start to create post
 		$sql = "INSERT INTO `post`(`title`, `content`, `poster`, `datetime`) VALUES (:title, :content, :poster, :t)";
 		$DB->Query($sql);
@@ -45,6 +37,33 @@ class Post{
 			'datetime' => $datetime,
 			'poster_username' => $poster_username,
 			'poster_identity' => $poster_identity,
+		];
+	}
+
+	function Reply($postId, $content, $reply=null){
+		global $DB, $User;
+		if($User->Is('logout')){ return 'logout'; }
+		$replier = $User->Get('id',false);
+		$replier_username = $User->Get('username',false);
+		$replier_identity = $User->Get('identity',false);
+		$datetime = time();
+		$reply = $reply;
+		//check
+		if(!$replier) { return 'no_replier'; }
+		// start to reply
+		$sql = "INSERT INTO `reply`(`post`, `content`, `reply`, `replier`, `datetime`) VALUES (:postId, :content, :reply, :replier, :t)";
+		$DB->Query($sql);
+		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':replier' => $replier, ':t' => $datetime,]);
+		if(!$result){ return $datetime; } // error
+		return [
+			'id' => $DB->Connect->lastInsertId(),
+			'post' => $postId,
+			'content' => $content,
+			'reply' => $reply,
+			'replier' => $replier,
+			'datetime' => $datetime,
+			'replier_username' => $replier_username,
+			'replier_identity' => $replier_identity,
 		];
 	}
 
@@ -98,8 +117,9 @@ class Post{
 				return $row;
 
 			break;case 'posts':
-				$limit = $args[1];
-				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT 5;";
+				if(isset($args[1])){ $limit = $args[1]; }
+				else{ $limit = [0,5]; }
+				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute()){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
@@ -117,6 +137,28 @@ class Post{
 				if(!$row){ return false; } // not found
 				return $row;
 			
+			break;case 'reply':
+				$postId = $args[1];
+				if(isset($args[2])){ $limit = $args[2]; }
+				else{ $limit = [0,5]; }
+				$sql = "SELECT `id`,`reply`,`content`,`replier`,`datetime`,`post` FROM `reply` WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$DB->Query($sql);
+				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
+				$row = $DB->FetchAll($result,'assoc');
+				if(!$row){ return false; } // not found
+				return $row;
+
+			break;case 'reply_replier':
+				$postId = $args[1];
+				if(isset($args[2])){ $limit = $args[2]; }
+				else{ $limit = [0,5]; }
+				$sql = "SELECT `reply`.`id`, `reply`.`reply`, `reply`.`content`, `reply`.`replier`, `reply`.`datetime`, `reply`.`post`, `account`.`username`as`replier_username`, `account`.`identity`as`replier_identity` FROM `reply` INNER JOIN `account` ON (`reply`.`replier`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$DB->Query($sql);
+				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
+				$row = $DB->FetchAll($result,'assoc');
+				if(!$row){ return false; } // not found
+				return $row;
+
 			break;default:
 				return 'error';
 			break;

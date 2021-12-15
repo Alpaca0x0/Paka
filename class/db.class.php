@@ -47,7 +47,7 @@ class DB{
 		}catch (Exception $e) { return false; }
 	}
 
-	private function Sentence(){
+	 function Sentence(){
 		if(!$this->Connection()){ return false; }
 		return $this->Query->queryString;
 	}
