@@ -30,14 +30,14 @@
 			</div>
 
 			<div class="center aligned author">
-				<img class="ui avatar image" src="https://semantic-ui.com/images/avatar/small/jenny.jpg"> {{ post.poster_username }}
+				<img class="ui avatar image" src="https://semantic-ui.com/images/avatar/small/jenny.jpg"> {{ post.poster_username }} ({{ timeToStatus(post.datetime) }})
 			</div>
-			<h5 class="ui grey header">(#{{ post.id }}) {{ timeToString(post.datetime) }}</h5>
+			
 			<h2 class="ui left aligned header"> {{ post.title }}</h2>
 		</div>
 		<!-- post content -->
 		<p>{{ post.content }}</p>
-		<!-- <div class="ui right aligned container"><h5 class="ui grey header">{{ timeToString(post.datetime) }}</h5></div> -->
+		<div class="ui right aligned container"><h5 class="ui grey header">(#{{ post.id }}) {{ timeToString(post.datetime) }}</h5></div>
 		<!-- post comment -->
 		<button class="fluid ui button" @click="getReply(post.id)"><i class="dropdown icon"></i> 看看大家都說了些什麼 </button>
 		<div class="ui container">
@@ -57,7 +57,7 @@
 							<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
 							<div class="content">
 								<a class="author">{{ reply.replier_username }}</a>
-								<div class="metadata"><span class="date">? 天前</span></div>
+								<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
 								<div class="text">{{ reply.content }} </div>
 								<div class="actions"><a class="reply">Reply</a></div>
 							</div>
@@ -68,7 +68,7 @@
 									<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
 									<div class="content">
 										<a class="author">{{ secondReply.replier_username }}</a>
-										<div class="metadata"><span class="date">? 天前</span></div>
+										<div class="metadata"><span class="date">{{ timeToStatus(secondReply.datetime) }}</span></div>
 										<div class="text">{{ secondReply.content }}</div>
 										<div class="actions"><a class="reply">Reply</a></div>
 									</div>
@@ -113,6 +113,51 @@
 				let minutes = t.getMinutes();
 				let seconds = t.getSeconds();
 				return `${years}/${months}/${days} ${hours}:${minutes}:${seconds}`;
+			},
+			timeToStatus: (datetime)=>{
+				let t = new Date(datetime*1000);
+				let ct = new Date();
+				let result = (ct - t)/1000;
+				let ret = "-", unit='-';
+
+				let i = 60, h = i*60, d = h*24, w = d*7;
+				if(result < 60){
+					// just
+					ret = ''; unit='剛剛';
+				}
+				else if(result < h){
+					// minutes
+					unit='分鐘前';
+					if(result > i && result < i*2){ ret = '1'; }
+					else if(result > i*2 && result < i*3 ){ ret = '2'; }
+					else if(result > i*3 && result < i*5 ){ ret = '3'; }
+					else if(result > i*5 && result < i*10 ){ ret = '5'; }
+					else if(result > i*10 && result < i*20 ){ ret = '10'; }
+					else if(result > i*20 && result < i*30 ){ ret = '20'; }
+					else if(result > i*30 && result < i*40 ){ ret = '30'; }
+					else if(result > i*40 && result < i*50 ){ ret = '40'; }
+					else if(result > i*50 && result ){ ret = '50'; }
+				}
+				else if(result < d){
+					// hours
+					unit='小時前';
+					if(result > h && result < h*2){ ret = '1'; }
+					else if(result > h*2 && result < h*3 ){ ret = '2'; }
+					else if(result > h*3 && result < h*5 ){ ret = '3'; }
+					else if(result > h*5 && result < h*10 ){ ret = '5'; }
+					else if(result > h*10 && result < h*20 ){ ret = '10'; }
+					else if(result > h*20 ){ ret = '20'; }
+				}
+				else if(result < w){
+					// days
+					unit='天前'; ret=result%d;
+				}
+				else{
+					// days
+					unit='周前'; ret=result%w;
+				}
+				return `${ret} ${unit}`;
+				
 			},
 			removePost: (postId) => {
 				Swal.fire({
