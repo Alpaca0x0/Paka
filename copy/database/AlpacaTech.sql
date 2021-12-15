@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 16, 2021 at 04:01 AM
+-- Generation Time: Dec 16, 2021 at 04:00 AM
 -- Server version: 8.0.27-0ubuntu0.20.04.1
 -- PHP Version: 7.4.3
 
@@ -21,6 +21,27 @@ SET time_zone = "+00:00";
 --
 -- Database: `AlpacaTech`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `account`
+--
+
+CREATE TABLE `account` (
+  `id` int NOT NULL,
+  `username` varchar(32) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `password` varchar(77) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `identity` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL DEFAULT 'member',
+  `email` varchar(128) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+
+--
+-- Dumping data for table `account`
+--
+
+INSERT INTO `account` (`id`, `username`, `password`, `identity`, `email`) VALUES
+(1, 'alpaca0x0', '8f0e2f76e22b43e2855189877e7dc1e1e7d98c226c95db247cd1d547928334a9', 'admin', 'alpaca0x0.tw@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -81,9 +102,55 @@ INSERT INTO `post` (`id`, `title`, `content`, `poster`, `datetime`, `status`) VA
 (37, '看到 Bug 並不可怕', '看不到的那種瑟瑟發抖', 1, 1639577564, 'alive'),
 (38, '測試文章', '哈囉哈囉', 1, 1639583546, 'removed');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `post_event`
+--
+
+CREATE TABLE `post_event` (
+  `id` int NOT NULL,
+  `action` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'reply,report,good,suck',
+  `who` int NOT NULL,
+  `datetime` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reply`
+--
+
+CREATE TABLE `reply` (
+  `id` int NOT NULL,
+  `reply` int DEFAULT NULL COMMENT 'reply id or null for post',
+  `content` varchar(320) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `replier` int NOT NULL COMMENT 'id who reply',
+  `datetime` int NOT NULL,
+  `post` int NOT NULL COMMENT 'in which post',
+  `status` varchar(16) COLLATE utf8_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+
+--
+-- Dumping data for table `reply`
+--
+
+INSERT INTO `reply` (`id`, `reply`, `content`, `replier`, `datetime`, `post`, `status`) VALUES
+(1, NULL, 'dsadsad', 1, 1639586919, 37, 'alive'),
+(2, 1, 'test reply reply', 1, 1639586999, 37, 'alive'),
+(3, NULL, 'omg 我完成了回覆功能', 1, 1639596016, 37, 'alive'),
+(4, NULL, '這是一個回覆測試', 1, 1639596097, 37, 'alive'),
+(5, NULL, 'hello', 1, 1639596251, 37, 'alive');
+
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `account`
+--
+ALTER TABLE `account`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `post`
@@ -92,14 +159,44 @@ ALTER TABLE `post`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `post_event`
+--
+ALTER TABLE `post_event`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `reply`
+--
+ALTER TABLE `reply`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `account`
+--
+ALTER TABLE `account`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `post`
 --
 ALTER TABLE `post`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+
+--
+-- AUTO_INCREMENT for table `post_event`
+--
+ALTER TABLE `post_event`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `reply`
+--
+ALTER TABLE `reply`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
