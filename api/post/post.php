@@ -1,4 +1,4 @@
-<?php @include_once('../init.php'); ?>
+<?php @include_once('../../init.php'); ?>
 
 <?php
 header('Content-Type: application/json; charset=utf-8');

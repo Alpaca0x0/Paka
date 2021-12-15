@@ -20,9 +20,10 @@
                 <i class="right arrow icon"></i>
             </div>
         </div>
-        <a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
         <a class="item" :class="about.isActive" :href="about.link">{{ about.name }}</a>
         <a class="item" :class="announcement.isActive" :href="announcement.link">{{ announcement.name }}</a>
+        <a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
+        <a class="item" :class="forum.isActive" :href="forum.link">{{ forum.name }}</a>
         
         <div class="right menu" id="account">
             <!-- Not Login -->
@@ -54,6 +55,12 @@
                 name: "Home",
                 isActive: false,
                 link: `<?php echo Root('index'); ?>`,
+            },
+            forum: {
+                id: '<?php echo ID('page',Root('forum')); ?>',
+                name: "Forum",
+                isActive: false,
+                link: `<?php echo Root('forum'); ?>`,
             },
             about: {
                 id: '<?php echo ID('page',Root('about')); ?>',
