@@ -18,8 +18,11 @@ class Post{
 
 	function Create($title, $content){
 		global $DB, $User;
+		if($User->Is('logout')){ return 'logout'; }
 		$poster = $User->Get('id',false);
-		if($User->Is('logout') || !$poster){ return false; }
+		$poster_username = $User->Get('username',false);
+		$poster_identity = $User->Get('identity',false);
+		$datetime = time();
 		// filter
 		// make some special chars be space " "
 		$title = preg_replace('/[\n\r\t]/', ' ', trim($title)); 
@@ -27,14 +30,22 @@ class Post{
 		// remove multiple spaces
 		$title = preg_replace('/\s(?=\s)/', '', $title);
 		$content = preg_replace('/\s(?=\s)/', '', $content);
-		if(strlen($title)<2){ return false; }
-		if(strlen($content)<2){ return false; }
+		if(strlen($title)<2){ return 'title_too_short'; }
+		if(strlen($content)<2){ return 'content_too_short'; }
 		// start to create post
 		$sql = "INSERT INTO `post`(`title`, `content`, `poster`, `datetime`) VALUES (:title, :content, :poster, :t)";
 		$DB->Query($sql);
-		$result = $DB->Execute([':title' => $title, ':content' => $content, ':poster' => $poster, 't' => time(),]);
-		if(!$result){ return false; }
-		return true;
+		$result = $DB->Execute([':title' => $title, ':content' => $content, ':poster' => $poster, 't' => $datetime,]);
+		if(!$result){ return 'error_insert'; }
+		return [
+			'id' => $DB->Connect->lastInsertId(),
+			'title' => $title,
+			'content' => $content,
+			'poster' => $poster,
+			'datetime' => $datetime,
+			'poster_username' => $poster_username,
+			'poster_identity' => $poster_identity,
+		];
 	}
 
 	function Remove($postId){
@@ -90,15 +101,15 @@ class Post{
 				$limit = $args[1];
 				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT 5;";
 				$DB->Query($sql);
-				$result = $DB->Execute();
-				if(!$result){ return false; } // error
+				if(!$result = $DB->Execute()){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
 
 			break;case 'posts_poster':
-				$limit = $args[1];
-				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity` FROM `post` INNER JOIN `account` ON (`post`.`poster`=`account`.`id`) WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT 5;";
+				if(isset($args[1])){ $limit = $args[1]; }
+				else{ $limit = [0,5]; }
+				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity` FROM `post` INNER JOIN `account` ON (`post`.`poster`=`account`.`id`) WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				$result = $DB->Execute();
 				if(!$result){ return false; } // error

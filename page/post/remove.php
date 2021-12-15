@@ -18,6 +18,6 @@ foreach ($needed_datas as $data){
 @include_once(Func('post'));
 $postId = (int)$_POST['postId'];
 if($Post->Remove($postId)){ $Loger->Push('success','removed_post'); }
-else{ $Loger->Push('warning','failed_remove_post'); }
+else{ $Loger->Push('error','failed_remove_post'); }
 
 $Loger->Resp();

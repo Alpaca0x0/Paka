@@ -13,21 +13,21 @@
 	<p>Welcome to AlpacaTech.</p>
 
 	<!-- write post form -->
-	<form class="ui form" id="WritePost">
-		<div class="field"><input type="text" name="title" id="title" ref="title" placeholder="Title..."></div>
-		<div class="field"><textarea name="content" id="content" ref="content" placeholder="Content..."></textarea></div>
+	<form class="ui form" id="CreatePost" ref='CreatePost'>
+		<div class="field"><input type="text" name="title" id="title" ref='title' placeholder="Title..."></div>
+		<div class="field"><textarea name="content" id="content" ref='content' placeholder="Content..."></textarea></div>
 		<div class="ui blue labeled submit icon button right floated"><i class="icon edit"></i> Post it</div>
 	</form><!-- end write post form -->
 
 	<h4 class="ui horizontal divider header"><i class="tag icon"></i> 今天想說點什麼? </h4>
 
 	<!-- post -->
-	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ loading: !isLoaded }">
+	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': !isLoaded, }">
 		<!-- post title -->
 		<div class="ui container">
 			<div class="ui small basic icon right floated buttons">
 				<button class="ui button"><i class="edit blue icon"></i></button>
-				<button class="ui button" @click="removePost(post_key)"><i class="trash alternate red icon"></i></button>
+				<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
 			</div>
 
 			<div class="center aligned author">
@@ -82,19 +82,23 @@
 </div><!-- end container -->
 
 <script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
+<script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
 
 <script type="module">
 	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
 	const Posts = createApp({
 		data(){return{
-			posts: [{
-				id: '',
-				title: '',
-				content: '',
-				poster: '',
-				datetime: '',
-			}],
+			posts:[],
+			// [{
+			// 	id: '',
+			// 	title: '',
+			// 	content: '',
+			// 	poster: '',
+			// 	datetime: '',
+			// }],
 			isLoaded: false,
+			skip: 0,
+			limit: 16,
 		}},
 		methods:{
 			timeToString: (datetime)=>{
@@ -107,30 +111,36 @@
 				let seconds = t.getSeconds();
 				return `${years}/${months}/${days} ${hours}:${minutes}:${seconds}`;
 			},
-			removePost: (key) => {
-				// let postId = Posts.posts[key].id;
-				// use postId better
+			removePost: (postId) => {
 				Swal.fire({
 					icon: 'warning',
 					title: 'Sure?',
-					html: 'You sure want to remove the post?',
+					html: `You sure want to remove the post? (#${postId})`,
 					showDenyButton: true,
 					confirmButtonText: 'Remove it !',
 					denyButtonText: `Don't !`,
+					focusDeny: true,
 				}).then((result)=>{
 					if(result.isConfirmed){
 						$.ajax({
 							type: "POST",
 							url: '<?php echo Page('post/remove'); ?>',
-							date: { postId: postId },
+							data: { postId: postId },
 							dataType: 'json',
 							success: (resp)=>{
-								Swal.fire({
-									icon: 'success',
-									title: 'Done',
-									html: `You removed the post! (${postId})`,
-								});
-								Posts.posts.splice(key,1);
+								Loger.Log('info','Remove Post',resp);
+								let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+								let table = {
+									'is_logout': 'Oh no, you are not login.',
+									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+									'removed_post': `You removed the post! ${postId}`,
+									'failed_remove_post': 'Un... seems has some errors, sorry.',
+								}
+								Loger.Swal(resp,table);
+								if(Loger.Check(resp,'success')){
+									Posts.posts.splice(postKey,1);
+									Posts.skip -= 1;
+								}
 							},
 						});
 					}
@@ -138,39 +148,41 @@
 			}
 		},
 		mounted(){
+			// get posts
 			$.ajax({
-				type: "POST",
+				type: "GET",
 				url: '<?php echo API('post'); ?>',
-				data: {},
+				data: {skip: this.skip, limit: this.limit, },
 				dataType: 'json',
 				success: (resp) => {
-					this.$data.posts = resp;
-					console.log(resp);
+					this.posts = resp;
+					this.skip += this.limit;
+					Loger.Log('info','Post API',resp);
 				},
 			}).then(()=>{
 				this.isLoaded = true;
+				// console.log
 			});
 					
 		},
 	}).mount('div#Comments');
 
 	let form = new Array();
-	form['WritePost'] = $('form#WritePost');
+	form['CreatePost'] = $('form#CreatePost');
 
-	const WritePost = createApp({
+	// create post board
+	const CreatePost = createApp({
 		date(){return{
 			//
 		}},
 		mounted(){
 			
 		},
-	}).mount('form#WritePost');
+	}).mount('form#CreatePost');
 
 
-
-
-	form['WritePost'].form({
-		on: 'blur',
+	form['CreatePost'].form({
+		on: 'submit',
 		inline: true,
 		keyboardShortcuts: false,
 		// delay: 800,
@@ -180,32 +192,51 @@
 
 				this.classList.add('loading');
 
-				$.ajax({
-					type: "POST",
-					url: '<?php echo Page('post/create'); ?>',
-					data: fields,
-					dataType: 'json',
-					success: function(resp){
-						Loger.Log('info','Response',resp);
-						// check if success
-						// let isSuccess = Loger.Check(resp,'success');
-						// let swal_config = isSuccess ? { timer:2000, } : {};
-						// Loger.Swal(resp, tables['login'], swal_config).then((val)=>{
-						// 	if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
-						// 	// update the UI status
-						// 	// it will call back to the onSuccess()
-						// 	form['WritePost'].form('validate form'); // fix: in promise, event is undefined
-						// });
-					},
-				}).then(()=>{
-					this.classList.remove('loading');
-				});
+				Swal.fire({
+					icon: 'info',
+					title: 'Sure?',
+					html: `You sure done the write, and ready to post?`,
+					showDenyButton: true,
+					confirmButtonText: 'Post it',
+					denyButtonText: `Wait`,
+					focusDeny: true,
+				}).then((result)=>{
+					if(result.isConfirmed){
+						$.ajax({
+							type: "POST",
+							url: '<?php echo Page('post/create'); ?>',
+							data: fields,
+							dataType: 'json',
+							success: function(resp){
+								Loger.Log('info','Create Post',resp);
+								let table = {
+									'is_logout': 'Oh no, you are not login.',
+									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+									'created_post': `You created the post!`,
+									'failed_create_post': 'Un... seems has some errors, sorry.',
+								}
+								// update new post into page
+								if(Loger.Check(resp,'success')){
+									form['CreatePost'].form('reset');
+									Posts.posts.unshift(resp.find(r => r[0]==='success')[2]);
+									this.skip += 1;
+								}
+								Loger.Swal(resp, table);
+
+							},
+						}).then(()=>{
+							this.classList.remove('loading');
+						});
+					}else{
+						this.classList.remove('loading');
+					}
+				}); // end swal
 			}
 			return false;
 		},
-		onFailure: function(formErrors, fields){
-			if(!form['WritePost'].form('validate field','title')){ this.$refs.title.focus(); }
-			else if(!form['WritePost'].form('validate field','content')){ this.$refs.content.focus(); }
+		onFailure: (formErrors, fields)=>{
+			if(!form['CreatePost'].form('validate field','title')){ form['CreatePost'].find('#title').focus(); }
+			else if(!form['CreatePost'].form('validate field','content')){ form['CreatePost'].find('#content').focus(); }
 			return false;
 		},
 		fields: {
@@ -214,7 +245,7 @@
 				rules: [
 					{
 						type	 : 'minLength[2]',
-						prompt : 'Title 必須至少 4 個字'
+						prompt : 'Title 必須至少 4 個字元長度(中文為2字元長度)'
 					}
 				]
 			},
@@ -223,7 +254,7 @@
 				rules: [
 					{
 						type	 : 'minLength[4]',
-						prompt : 'Content 必須至少 4 個字'
+						prompt : 'Content 必須至少 4 個字元長度(中文為2字元長度)'
 					},
 				]
 			}

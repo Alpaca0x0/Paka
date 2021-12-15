@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 4.9.5deb2
 -- https://www.phpmyadmin.net/
 --
--- 主機： 127.0.0.1
--- 產生時間： 2021-12-14 05:18:42
--- 伺服器版本： 10.4.21-MariaDB
--- PHP 版本： 8.0.10
+-- Host: localhost:3306
+-- Generation Time: Dec 15, 2021 at 05:55 PM
+-- Server version: 8.0.27-0ubuntu0.20.04.1
+-- PHP Version: 7.4.3
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,49 +19,50 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫: `alpacatech`
+-- Database: `AlpacaTech`
 --
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `post`
+-- Table structure for table `post`
 --
 
 CREATE TABLE `post` (
-  `id` int(32) NOT NULL,
-  `title` varchar(24) COLLATE utf8_bin NOT NULL,
-  `content` varchar(535) COLLATE utf8_bin NOT NULL,
-  `poster` int(9) NOT NULL,
-  `datetime` int(16) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  `id` int NOT NULL,
+  `title` varchar(24) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `content` varchar(535) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `poster` int NOT NULL,
+  `datetime` int NOT NULL,
+  `status` varchar(16) COLLATE utf8_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
 --
--- 傾印資料表的資料 `post`
+-- Dumping data for table `post`
 --
 
-INSERT INTO `post` (`id`, `title`, `content`, `poster`, `datetime`) VALUES
-(1, 'Hello World', 'This is first post on this site, hello guys, hope you have fun on here.', 1, 1639450634);
+INSERT INTO `post` (`id`, `title`, `content`, `poster`, `datetime`, `status`) VALUES
+(1, 'Hello World', 'This is first post on this site, hello guys, hope you have fun on here.', 1, 1639450634, 'alive');
 
 --
--- 已傾印資料表的索引
+-- Indexes for dumped tables
 --
 
 --
--- 資料表索引 `post`
+-- Indexes for table `post`
 --
 ALTER TABLE `post`
   ADD PRIMARY KEY (`id`);
 
 --
--- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `post`
+-- AUTO_INCREMENT for table `post`
 --
 ALTER TABLE `post`
-  MODIFY `id` int(32) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -4,7 +4,7 @@
 
 <?php
 class DB{
-	private $Connect = false;
+	public $Connect = false;
 	private $Query = false; // $this->Query->execute([...])
 
 	function __construct(){}

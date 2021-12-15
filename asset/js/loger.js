@@ -32,7 +32,7 @@ Loger.Have = function(logs=[], contents=[]){
 
 Loger.Swal = function(logs, tables=[],custom={}){
 	if(!Swal){ console.log('Need to include Swal'); return false; }
-return new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 	let contents=Object.keys(tables), dispalys=Object.values(tables);
 	let config = {
 		icon: 'info',
