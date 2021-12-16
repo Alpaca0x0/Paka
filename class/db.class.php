@@ -17,7 +17,7 @@ class DB{
 	function Connect(){
 		if($this->Connection()){ return true; }
 		try{
-			$this->Connect = new PDO("mysql:host=".DB['host'].";dbname=".DB['name'].";charset=utf8", DB['user'], DB['pass']);
+			$this->Connect = new PDO("mysql:host=".DB['host'].";dbname=".DB['name'].";charset=utf8mb4", DB['user'], DB['pass']);
 			if(!$this->Connect){ return false; }
 			// setting PDO
 			$this->Connect->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);

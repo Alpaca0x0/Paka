@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 4.9.5deb2
 -- https://www.phpmyadmin.net/
 --
--- 主機： 127.0.0.1
--- 產生時間： 2021-12-14 05:18:45
--- 伺服器版本： 10.4.21-MariaDB
--- PHP 版本： 8.0.10
+-- Host: localhost:3306
+-- Generation Time: Dec 16, 2021 at 08:24 PM
+-- Server version: 8.0.27-0ubuntu0.20.04.1
+-- PHP Version: 7.4.3
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,41 +19,41 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫: `alpacatech`
+-- Database: `AlpacaTech`
 --
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `post_event`
+-- Table structure for table `post_event`
 --
 
 CREATE TABLE `post_event` (
-  `id` int(44) NOT NULL,
-  `action` varchar(16) COLLATE utf8_bin NOT NULL COMMENT 'reply,report,good,suck',
-  `who` int(9) NOT NULL,
-  `datetime` int(16) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  `id` int NOT NULL,
+  `action` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'reply,report,good,suck',
+  `who` int NOT NULL,
+  `datetime` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
 --
--- 已傾印資料表的索引
+-- Indexes for dumped tables
 --
 
 --
--- 資料表索引 `post_event`
+-- Indexes for table `post_event`
 --
 ALTER TABLE `post_event`
   ADD PRIMARY KEY (`id`);
 
 --
--- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `post_event`
+-- AUTO_INCREMENT for table `post_event`
 --
 ALTER TABLE `post_event`
-  MODIFY `id` int(44) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
