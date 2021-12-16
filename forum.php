@@ -69,7 +69,7 @@
 									<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
 									<div class="content">
 										<a class="author">{{ secondReply.replier_username }}</a>
-										<div class="metadata"><span class="date">{{ timeToStatus(secondReply.datetime) }}</span></div>
+										<div class="metadata"><span class="date">{{ timeToStatus(secondReply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
 										<div class="text">{{ secondReply.content }}</div>
 										<div class="actions"><a class="reply">Reply</a></div>
 									</div>
