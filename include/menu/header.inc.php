@@ -175,7 +175,8 @@
                 // active
                 let id = '<?php echo ID('page'); ?>'; // current page id
                 let current = Object.keys(this.$data).find(item => {
-                    if(!Array.isArray(this[item].id)){ this[item].id = [this[item].id]; }
+                    if(!this[item].id){ return; }
+                    else if(!Array.isArray(this[item].id)){ this[item].id = [this[item].id]; }
                     return this[item].id.includes(id);
                 });
                 // if current page is found in items of menu
