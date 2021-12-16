@@ -8,13 +8,15 @@
 <?php @include_once(Inc('menu/header')); ?>
 
 <?php
-	//
+
 ?>
 
-<script type="text/javascript">
-	var posts = $.post('<?php echo API('post'); ?>', (resp) => {
-		console.log(resp);
-	});
+<script type="text/javascript" src="<?php echo JS('device-detect'); ?>"></script>
+<script type="module">
+
+	// console.log(Device.Is('Mobile'));
+	console.log(document.body.clientWidth);
+	
 </script>
 
 <?php @include_once(Inc('menu/footer')); ?>

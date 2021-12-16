@@ -9,6 +9,7 @@
 @include_once(Func('user'));
 $User->Update();
 if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
+$remover = $User->Get('id','-');
 
 // must have post data
 $needed_datas = ['postId',];
@@ -17,9 +18,13 @@ foreach ($needed_datas as $data){
 }
 if($Loger->Check()){ $Loger->Resp(); }
 
-// start to write
+// check access
 @include_once(Func('post'));
 $postId = (int)$_POST['postId'];
+if($Post->Get('poster',$postId)['id'] !== $remover){ $Loger->Push('warning','no_access',$postId); $Loger->Resp(); };
+
+// start to write
+@include_once(Func('post'));
 if($Post->Remove($postId)){ $Loger->Push('success','removed_post'); }
 else{ $Loger->Push('error','failed_remove_post'); }
 

@@ -24,7 +24,8 @@
 	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': !isLoaded, }">
 		<!-- post title -->
 		<div class="ui container">
-			<div class="ui small basic icon right floated buttons">
+			<!-- edit, remove -->
+			<div class="ui small basic icon right floated buttons" v-if="post.poster=='<?php echo $User->Get('id','-'); ?>'">
 				<button class="ui button"><i class="edit blue icon"></i></button>
 				<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
 			</div>
@@ -179,8 +180,9 @@
 								Loger.Log('info','Remove Post',resp);
 								let postKey = Posts.posts.findIndex(((post) => post.id === postId));
 								let table = {
-									'is_logout': 'Oh no, you are not login.',
 									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+									'is_logout': 'Oh no, you are not login.',
+									'no_access': 'Sorry, you cannot do it',
 									'removed_post': `You removed the post! ${postId}`,
 									'failed_remove_post': 'Un... seems has some errors, sorry.',
 								}
@@ -190,6 +192,9 @@
 									Posts.skip -= 1;
 								}
 							},
+							error: (resp)=>{
+								Loger.Log('error','Error Remove Post',resp);
+							}
 						});
 					}
 				});
