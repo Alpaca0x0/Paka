@@ -40,30 +40,58 @@ class Post{
 		];
 	}
 
-	function Reply($postId, $content, $reply=null){
+	function Comment($postId, $content, $reply=null){
 		global $DB, $User;
 		if($User->Is('logout')){ return 'logout'; }
-		$replier = $User->Get('id',false);
-		$replier_username = $User->Get('username',false);
-		$replier_identity = $User->Get('identity',false);
+		$commenter = $User->Get('id',false);
+		$commenter_username = $User->Get('username',false);
+		$commenter_identity = $User->Get('identity',false);
 		$datetime = time();
 		$reply = $reply;
 		//check
-		if(!$replier) { return 'no_replier'; }
+		if(!$commenter) { return 'no_commenter'; }
 		// start to reply
-		$sql = "INSERT INTO `reply`(`post`, `content`, `reply`, `replier`, `datetime`) VALUES (:postId, :content, :reply, :replier, :t)";
+		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
 		$DB->Query($sql);
-		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':replier' => $replier, ':t' => $datetime,]);
-		if(!$result){ return $datetime; } // error
+		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
+		if(!$result){ return "$postId, $content, $reply, $commenter, $datetime"; } // error
 		return [
 			'id' => $DB->Connect->lastInsertId(),
 			'post' => $postId,
 			'content' => $content,
 			'reply' => $reply,
-			'replier' => $replier,
+			'commenter' => $commenter,
 			'datetime' => $datetime,
-			'replier_username' => $replier_username,
-			'replier_identity' => $replier_identity,
+			'commenter_username' => $commenter_username,
+			'commenter_identity' => $commenter_identity,
+		];
+	}
+
+	function Reply($postId, $replyTarget, $content){
+		// remove the $postId, it should be auto search
+		global $DB, $User;
+		if($User->Is('logout')){ return 'logout'; }
+		$commenter = $User->Get('id',false);
+		$commenter_username = $User->Get('username',false);
+		$commenter_identity = $User->Get('identity',false);
+		$datetime = time();
+		$reply = (int)($replyTarget);
+		//check
+		if(!$commenter) { return 'no_commenter'; }
+		// start to reply
+		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
+		$DB->Query($sql);
+		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
+		if(!$result){ return 'unexpected'; } // error
+		return [
+			'id' => $DB->Connect->lastInsertId(),
+			'post' => $postId,
+			'content' => $content,
+			'reply' => $reply,
+			'commenter' => $commenter,
+			'datetime' => $datetime,
+			'commenter_username' => $commenter_username,
+			'commenter_identity' => $commenter_identity,
 		];
 	}
 
@@ -84,10 +112,16 @@ class Post{
 		if(!$row){ return false; }
 		// start to remove post
 		// $sql = "DELETE FROM `post` WHERE `post`.`id`=:postId";
-		$sql = "UPDATE `post` SET `status` = 'removed' WHERE `post`.`id`=:postId;";
+		$sql = "UPDATE `post` SET `status` = 'removed' WHERE `id`=:postId;";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId,]);
 		if(!$result){ return false; }
+		// remove comment
+		$sql = "UPDATE `comment` SET `status` = 'removed' WHERE `post`=:postId;";
+		$DB->Query($sql);
+		$result = $DB->Execute([':postId' => $postId,]);
+		if(!$result){ return false; }
+
 		return true;
 	}
 
@@ -116,45 +150,45 @@ class Post{
 				if(!$row){ return false; } // not found
 				return $row;
 
+			// break;case 'posts':
+			// 	if(isset($args[1])){ $limit = $args[1]; }
+			// 	else{ $limit = [0,5]; }
+			// 	$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+			// 	$DB->Query($sql);
+			// 	if(!$result = $DB->Execute()){ return false; } // error
+			// 	$row = $DB->FetchAll($result,'assoc');
+			// 	if(!$row){ return false; } // not found
+			// 	return $row;
+
 			break;case 'posts':
 				if(isset($args[1])){ $limit = $args[1]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
-				$DB->Query($sql);
-				if(!$result = $DB->Execute()){ return false; } // error
-				$row = $DB->FetchAll($result,'assoc');
-				if(!$row){ return false; } // not found
-				return $row;
-
-			break;case 'posts_poster':
-				if(isset($args[1])){ $limit = $args[1]; }
-				else{ $limit = [0,5]; }
-				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity` FROM `post` INNER JOIN `account` ON (`post`.`poster`=`account`.`id`) WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity` FROM `post` JOIN `account` ON (`post`.`poster`=`account`.`id`) WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				$result = $DB->Execute();
 				if(!$result){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
-			
-			break;case 'reply':
+
+			break;case 'comment':
 				$postId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `id`,`reply`,`content`,`replier`,`datetime`,`post` FROM `reply` WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
 
-			break;case 'reply_replier':
-				$postId = $args[1];
+			break;case 'reply':
+				$commentId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `reply`.`id`, `reply`.`reply`, `reply`.`content`, `reply`.`replier`, `reply`.`datetime`, `reply`.`post`, `account`.`username`as`replier_username`, `account`.`identity`as`replier_identity` FROM `reply` INNER JOIN `account` ON (`reply`.`replier`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
-				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
+				if(!$result = $DB->Execute([':commentId'=>$commentId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;

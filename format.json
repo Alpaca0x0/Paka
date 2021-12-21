@@ -1,0 +1,32 @@
+[//comments
+	{
+		"id": 1,
+		"reply": null,
+		"content": "hello",
+		"commenter": {
+			"id": 1,
+			"username": "alpaca0x0",
+			"identity": "admin"
+		},
+		"datetime": 1640008328,
+		"post": 5,
+
+		*"replying": "typing text",
+	}
+]
+
+
+[//posts
+	{//post
+		"title": "",
+		"content": "",
+		"datetime": 8787878,
+		"commenting": "typing text",
+		"replyTartget": false,
+		"isCommenting": false,
+		"isReplying": false,
+		"isRemoving": false,
+		"gettingComments": false,
+		"showComments": false,
+	}
+]

@@ -5,20 +5,8 @@ define('DB', [
 	'type'=>'mysql',
 	'host'=>'localhost',
 	'user'=>'root',
-	'pass'=>'a1pacapassw0rd',
+	'pass'=>'password',
 	'name'=>'AlpacaTech',
-	'tables'=>[
-		'account','post','post_event'
-	],
-	'columns'=>[
-		'account'=>[
-			'id',
-			'identity',
-			'username',
-			'password',
-			'email',
-		],
-	],
 ]);
 
 

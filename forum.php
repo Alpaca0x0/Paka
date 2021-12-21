@@ -21,17 +21,17 @@
 	<h4 class="ui horizontal divider header"><i class="tag icon"></i> 今天想說點什麼? </h4>
 
 	<!-- post -->
-	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': !isLoaded, }">
+	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': isLoading, 'loading':post.isRemoving }">
 		<!-- post title -->
 		<div class="ui container">
 			<!-- edit, remove -->
-			<div class="ui small basic icon right floated buttons" v-if="post.poster=='<?php echo $User->Get('id','-'); ?>'">
+			<div class="ui small basic icon right floated buttons" v-if="post.poster.id=='<?php echo $User->Get('id','-'); ?>'">
 				<button class="ui button"><i class="edit blue icon"></i></button>
 				<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
 			</div>
 
 			<div class="center aligned author">
-				<img class="ui avatar image" src="https://semantic-ui.com/images/avatar/small/jenny.jpg"> {{ post.poster_username }} ({{ timeToStatus(post.datetime) }})
+				<img class="ui avatar image" src="https://semantic-ui.com/images/avatar/small/jenny.jpg"> {{ post.poster.username }} ({{ timeToStatus(post.datetime) }})
 			</div>
 			
 			<h2 class="ui left aligned header"> {{ post.title }}</h2>
@@ -40,38 +40,51 @@
 		<p>{{ post.content }}</p>
 		<div class="ui right aligned container"><h5 class="ui grey header">(#{{ post.id }}) {{ timeToString(post.datetime) }}</h5></div>
 		<!-- post comment -->
-		<button class="fluid ui button" @click="getReply(post.id)"><i class="dropdown icon"></i> 看看大家都說了些什麼 </button>
+		<button class="fluid ui button" @click="getComments(post.id)" :class="{loading : post.gettingComments}" :disabled="post.gettingComments"><i class="eye icon" :class="{ slash : post.showComments }"></i> {{ post.showComments ? "隱藏留言區" : "看看大家說了什麼" }} </button>
 		<div class="ui container">
 			<div class="content">
 				<!-- comments -->
-				<div class="ui comments" :class="{ collapsed: !post.showReply }">
-					<!-- reply form -->
-					<form class="ui reply form" @submit="reply('post',post.id);" onsubmit="return false;">
-						<div class="two fields">
-							<div class="field"><input type="text" v-model="post.reply"></div>
-							<div class="field"><div class="ui blue labeled submit icon button" @click="reply('post',post.id);"><i class="icon edit"></i> Add Reply</div></div>
+				<div class="ui comments" :class="{ collapsed: !post.showComments }">
+					<!-- comment form -->
+					<form class="ui reply form" @submit="comment(post.id);" onsubmit="return false;">
+						<div class="ui action input">
+							<input type="text" placeholder="Comment..." v-model="post.commenting" :disabled="post.isCommenting">
+							<button class="ui icon blue button" :disabled="post.isCommenting"><i class="icon" :class="post.isCommenting?'spinner loading':'edit'"></i>&nbsp;{{post.isCommenting?"Wait...":"Comment"}}</button>
 						</div>
-					</form><!-- end reply form -->
+					</form><!-- end comment form -->
 					<!-- comment -->
-					<template v-if="post.replies" v-for="reply in post.replies">
-						<div class="comment" v-if="isReplyToPost(post.replies,reply.id)">
+					
+					<template v-if="post.gettingComments">
+						<br><a class="ui label black"><i class="spinner loading icon"></i>&nbsp;Loading...</a>
+					</template>
+					<a v-if="(post.comments) && !(post.comments).length" class="ui teal pointing large label">Be a first one!</a>
+					<template v-if="post.comments" v-for="comment in post.comments">
+						<div class="comment" v-if="isReplyToPost(post.comments,comment.id)">
 							<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
 							<div class="content">
-								<a class="author">{{ reply.replier_username }}</a>
-								<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
-								<div class="text">{{ reply.content }} </div>
-								<div class="actions"><a class="reply">Reply</a></div>
+								<a class="author">{{ comment.commenter.username }}</a>
+								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
+								<div class="text">{{ comment.content }} </div>
+								<div class="actions"><a class="reply" @click="post.replyTartget=comment.id">Reply</a></div>
+								<!-- reply form -->
+								<form class="ui reply form" @submit="reply('post',post.id);" onsubmit="return false;" :class="{ loading : post.isReplying }" v-if="post.replyTartget==comment.id">
+									<div class="ui mini action icon input">
+										<input type="text" placeholder="Reply..." v-model="comment.replying">
+										<button class="ui icon button"><i class="edit icon"></i>Reply</button>
+									</div>
+								</form>
+								<!-- end reply form -->
 							</div>
 							<!-- replies -->
 							<div class="comments">
 								<!-- reply of replies -->
-								<div class="comment" v-for="secondReply in getAllSecondReply(post.replies, reply.id)">
+								<div class="comment" v-for="reply in filterReplies(post.comments, comment.id)">
 									<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
 									<div class="content">
-										<a class="author">{{ secondReply.replier_username }}</a>
-										<div class="metadata"><span class="date">{{ timeToStatus(secondReply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
-										<div class="text">{{ secondReply.content }}</div>
-										<div class="actions"><a class="reply">Reply</a></div>
+										<a class="author">{{ reply.commenter.username }}</a>
+										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
+										<div class="text">{{ reply.content }}</div>
+										<!-- <div class="actions"><a class="reply">Reply</a></div> -->
 									</div>
 								</div><!-- end reply of replies -->
 							</div><!-- end replies -->
@@ -91,16 +104,7 @@
 	const Posts = createApp({
 		data(){return{
 			posts:[],
-			// [{
-			// 	id: '',
-			// 	title: '',
-			// 	content: '',
-			// 	poster: '',
-			// 	datetime: '',
-			//  showReply: false,
-			//  replies: []
-			// }],
-			isLoaded: false,
+			isLoading: true,
 			skip: 0,
 			limit: 16,
 		}},
@@ -157,6 +161,8 @@
 					focusDeny: true,
 				}).then((result)=>{
 					if(result.isConfirmed){
+						let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+						Posts.posts[postKey].isRemoving = true;
 						$.ajax({
 							type: "POST",
 							url: '<?php echo Page('post/remove'); ?>',
@@ -164,12 +170,11 @@
 							dataType: 'json',
 							success: (resp)=>{
 								Loger.Log('info','Remove Post',resp);
-								let postKey = Posts.posts.findIndex(((post) => post.id === postId));
 								let table = {
 									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 									'is_logout': 'Oh no, you are not login.',
 									'no_access': 'Sorry, you cannot do it',
-									'removed_post': `You removed the post! ${postId}`,
+									'removed_post': `You removed the post! (#${postId})`,
 									'failed_remove_post': 'Un... seems has some errors, sorry.',
 								}
 								Loger.Swal(resp,table);
@@ -181,38 +186,40 @@
 							error: (resp)=>{
 								Loger.Log('error','Error Remove Post',resp);
 							}
-						});
+						}).then(()=>{ Posts.posts[postKey].isRemoving = false; });
 					}
 				});
 			},
-			getReply: (postId) => {
+			getComments: (postId) => {
 				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
 				// done run again
-				if(Posts.posts[postKey].showReply){ Posts.posts[postKey].showReply = false; return false; }
-				else{ Posts.posts[postKey].showReply = true; }
-				if(Posts.posts[postKey].replies){ return false; }
-				// get replies
+				if(Posts.posts[postKey].showComments){ Posts.posts[postKey].showComments = false; return false; }
+				else{ Posts.posts[postKey].showComments = true; }
+				if(Posts.posts[postKey].comments){ return false; }
+				// get comments
+				Posts.posts[postKey].gettingComments = true;
 				$.ajax({
 					type: "GET",
-					url: '<?php echo API('post/reply'); ?>',
+					url: '<?php echo API('post/comment'); ?>',
 					data: { postId: postId,  },
 					dataType: 'json',
 					success: (resp) => {
-						Loger.Log('info','Reply API',resp);
-						Posts.posts[postKey].replies = resp;
+						Loger.Log('info','Comment API',resp);
+						Posts.posts[postKey].comments = resp;
 					},
 				}).then(()=>{
-					// this.isLoaded = true;
-					// console.log
+					Posts.posts[postKey].gettingComments = false;
 				});
 			},
-			reply: (type, postId)=>{
+			comment: (postId)=>{
 				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
-				let content = Posts.posts[postKey].reply===undefined?'':Posts.posts[postKey].reply;
+				let content = Posts.posts[postKey].commenting===undefined?'':Posts.posts[postKey].commenting;
 				if(content === undefined || content.length < 2){ Swal.fire({icon:'warning',title:'Wait',html:'You need more content.'});return false; }
+				// start to comment
+				Posts.posts[postKey].isCommenting = true;
 				$.ajax({
 					type: "POST",
-					url: '<?php echo Page('post/reply'); ?>',
+					url: '<?php echo Page('post/comment'); ?>',
 					data: { postId: postId, content: content, reply: ''},
 					dataType: 'json',
 					success: (resp)=>{
@@ -226,21 +233,49 @@
 							'failed_reply': 'Sorry, seems we got the errors.',
 							'replied': 'Done, you successfuly replied.',
 						}
-						Loger.Swal(resp,table);
 						if(Loger.Check(resp,'success')){
-							Posts.posts[postKey].reply = '';
-							Posts.posts[postKey].replies.unshift(resp.find(r => r[0]==='success')[2]);
-						}
+							Posts.posts[postKey].commenting = '';
+							Posts.posts[postKey].comments.unshift(resp.find(r => r[0]==='success')[2]);
+						}else{ Loger.Swal(resp,table); }
 					},
-				});
+				}).then(()=>{ Posts.posts[postKey].isCommenting = false; });
 				return false;
 			},
-			isReplyToPost: (replies, replyId)=>{
-				let replyKey = replies.findIndex(((reply) => reply.id === replyId));
-				return replies[replyKey].reply === null;
+			// reply: (type, postId)=>{
+			// 	let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+			// 	let content = Posts.posts[postKey].commenting===undefined?'':Posts.posts[postKey].commenting;
+			// 	if(content === undefined || content.length < 2){ Swal.fire({icon:'warning',title:'Wait',html:'You need more content.'});return false; }
+			// 	Posts.posts[postKey].isCommenting = true;
+			// 	$.ajax({
+			// 		type: "POST",
+			// 		url: '<?php echo Page('post/reply'); ?>',
+					// data: { postId: postId, content: content, reply: ''},
+			// 		dataType: 'json',
+			// 		success: (resp)=>{
+			// 			Loger.Log('info','Reply',resp);
+			// 			let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+			// 			let table = {
+			// 				'is_logout': 'Oh no, you are not login.',
+			// 				'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+			// 				'content_too_short': `Your need to type more contnet!`,
+			// 				'type_incorrect': 'Un... seems has some errors, sorry.',
+			// 				'failed_reply': 'Sorry, seems we got the errors.',
+			// 				'replied': 'Done, you successfuly replied.',
+			// 			}
+			// 			if(Loger.Check(resp,'success')){
+			// 				Posts.posts[postKey].commenting = '';
+			// 				Posts.posts[postKey].comments.unshift(resp.find(r => r[0]==='success')[2]);
+			// 			}else{ Loger.Swal(resp,table); }
+			// 		},
+			// 	}).then(()=>{ Posts.posts[postKey].isCommenting = false; });
+			// 	return false;
+			// },
+			isReplyToPost: (comments, commentId)=>{
+				let commentKey = comments.findIndex((comment) => comment.id === commentId);
+				return comments[commentKey].reply === null;
 			},
-			getAllSecondReply: (replies, replyId)=>{
-				let ret = replies.filter(reply => { if(reply.reply===replyId){ return reply; } });
+			filterReplies: (comments, commentId)=>{
+				let ret = comments.filter(comment => { if(comment.reply===commentId){ return comment; } });
 				return ret;
 			},
 		},
@@ -257,7 +292,7 @@
 					Loger.Log('info','Post API',resp);
 				},
 			}).then(()=>{
-				this.isLoaded = true;
+				this.isLoading = false;
 				// console.log
 			});
 					
@@ -287,8 +322,6 @@
 			if(event){ // fix: in promise, event is undefined
 				event.preventDefault();
 
-				this.classList.add('loading');
-
 				Swal.fire({
 					icon: 'info',
 					title: 'Sure?',
@@ -299,6 +332,7 @@
 					focusDeny: true,
 				}).then((result)=>{
 					if(result.isConfirmed){
+						this.classList.add('loading');
 						$.ajax({
 							type: "POST",
 							url: '<?php echo Page('post/create'); ?>',
@@ -324,8 +358,6 @@
 						}).then(()=>{
 							this.classList.remove('loading');
 						});
-					}else{
-						this.classList.remove('loading');
 					}
 				}); // end swal
 			}
