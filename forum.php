@@ -65,11 +65,11 @@
 								<a class="author">{{ comment.commenter.username }}</a>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
 								<div class="text">{{ comment.content }} </div>
-								<div class="actions"><a class="reply" @click="post.replyTartget=comment.id">Reply</a></div>
+								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
 								<!-- reply form -->
 								<form class="ui reply form" @submit="createComment(post.id,comment.id);" onsubmit="return false;" :class="{ loading : comment.isReplying }" v-if="post.replyTartget==comment.id">
 									<div class="ui mini action icon input">
-										<input type="text" placeholder="Reply..." v-model="comment.replying" :disabled="comment.isReplying" autofocus>
+										<input type="text" placeholder="Reply..." v-model="comment.replying" :disabled="comment.isReplying" v-focus>
 										<button class="ui icon button" :disabled="comment.isReplying"><i class="icon" :class="comment.isReplying?'spinner loading':'edit'"></i>Reply</button>
 									</div>
 								</form>
@@ -260,35 +260,6 @@
 				});
 				return false;
 			},
-			// reply: (type, postId)=>{
-			// 	let postKey = Posts.posts.findIndex(((post) => post.id === postId));
-			// 	let content = Posts.posts[postKey].commenting===undefined?'':Posts.posts[postKey].commenting;
-			// 	if(content === undefined || content.length < 2){ Swal.fire({icon:'warning',title:'Wait',html:'You need more content.'});return false; }
-			// 	Posts.posts[postKey].isCommenting = true;
-			// 	$.ajax({
-			// 		type: "POST",
-			// 		url: '<?php echo Page('post/reply'); ?>',
-					// data: { postId: postId, content: content, reply: ''},
-			// 		dataType: 'json',
-			// 		success: (resp)=>{
-			// 			Loger.Log('info','Reply',resp);
-			// 			let postKey = Posts.posts.findIndex(((post) => post.id === postId));
-			// 			let table = {
-			// 				'is_logout': 'Oh no, you are not login.',
-			// 				'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
-			// 				'content_too_short': `Your need to type more contnet!`,
-			// 				'type_incorrect': 'Un... seems has some errors, sorry.',
-			// 				'failed_reply': 'Sorry, seems we got the errors.',
-			// 				'replied': 'Done, you successfully replied.',
-			// 			}
-			// 			if(Loger.Check(resp,'success')){
-			// 				Posts.posts[postKey].commenting = '';
-			// 				Posts.posts[postKey].comments.unshift(resp.find(r => r[0]==='success')[2]);
-			// 			}else{ Loger.Swal(resp,table); }
-			// 		},
-			// 	}).then(()=>{ Posts.posts[postKey].isCommenting = false; });
-			// 	return false;
-			// },
 			isReplyToPost: (comments, commentId)=>{
 				let commentKey = comments.findIndex((comment) => comment.id === commentId);
 				return comments[commentKey].reply === null;
@@ -316,6 +287,8 @@
 			});
 					
 		},
+	}).directive('focus', {
+		mounted(el) { el.focus(); }
 	}).mount('div#Comments');
 
 	let form = new Array();
