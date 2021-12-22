@@ -33,10 +33,12 @@ class Post{
 			'id' => $DB->Connect->lastInsertId(),
 			'title' => $title,
 			'content' => $content,
-			'poster' => $poster,
+			'poster' => [
+				"id" => $poster,
+				"username" => $poster_username,
+				"identity" => $poster_identity,
+			],
 			'datetime' => $datetime,
-			'poster_username' => $poster_username,
-			'poster_identity' => $poster_identity,
 		];
 	}
 
@@ -56,14 +58,16 @@ class Post{
 		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
 		if(!$result){ return "$postId, $content, $reply, $commenter, $datetime"; } // error
 		return [
-			'id' => $DB->Connect->lastInsertId(),
+			'id' => (int)$DB->Connect->lastInsertId(),
 			'post' => $postId,
 			'content' => $content,
 			'reply' => $reply,
-			'commenter' => $commenter,
+			'commenter' => [
+				"id" => $commenter,
+				"username" => $commenter_username,
+				"identity" => $commenter_identity,
+			],
 			'datetime' => $datetime,
-			'commenter_username' => $commenter_username,
-			'commenter_identity' => $commenter_identity,
 		];
 	}
 

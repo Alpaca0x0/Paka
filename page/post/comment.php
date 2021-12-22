@@ -20,7 +20,7 @@ foreach ($needed_datas as $data){
 @include_once(Func('post'));
 $postId = (int)(@$_POST['postId']);
 $content = trim(@$_POST['content']);
-$reply = trim(@$_POST['reply']);
+$reply = (isset($_POST['reply']) && (int)(@$_POST['reply'])>0) ? (int)(@$_POST['reply']) : null;
 
 // filter
 // make some special chars be space " "
@@ -33,7 +33,7 @@ if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // start to reply
-$result = $Post->Comment($postId,$content);
+$result = $Post->Comment($postId,$content,$reply);
 $resps = ['logout', 'no_replier', 'error',];
 if(in_array($result, $resps)){ $Loger->Push('warning','failed_reply',$result); }
 else if(is_array($result)){ $Loger->Push('success','replied',$result); }
