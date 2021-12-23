@@ -157,7 +157,7 @@ class Post{
 			// break;case 'posts':
 			// 	if(isset($args[1])){ $limit = $args[1]; }
 			// 	else{ $limit = [0,5]; }
-			// 	$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+			// 	$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 			// 	$DB->Query($sql);
 			// 	if(!$result = $DB->Execute()){ return false; } // error
 			// 	$row = $DB->FetchAll($result,'assoc');
@@ -179,7 +179,7 @@ class Post{
 				$postId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
@@ -190,7 +190,7 @@ class Post{
 				$commentId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute([':commentId'=>$commentId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');

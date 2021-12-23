@@ -59,21 +59,13 @@
 					</template>
 					<a v-if="(post.comments) && !(post.comments).length" class="ui teal pointing large label">Be a first one!</a>
 					<template v-if="post.comments" v-for="comment in post.comments">
-						<div class="comment" v-if="isReplyToPost(post.comments,comment.id)">
+						<div class="comment" v-if="isNotReply(post.comments,comment.id)">
 							<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
 							<div class="content">
 								<a class="author">{{ comment.commenter.username }}</a>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
 								<div class="text">{{ comment.content }} </div>
 								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
-								<!-- reply form -->
-								<form class="ui reply form" @submit="createComment(post.id,comment.id);" onsubmit="return false;" :class="{ loading : comment.isReplying }" v-if="post.replyTartget==comment.id">
-									<div class="ui mini action icon fluid input">
-										<input type="text" placeholder="Reply..." v-model="comment.replying" :disabled="comment.isReplying" v-focus>
-										<button class="ui icon button" :disabled="comment.isReplying"><i class="icon" :class="comment.isReplying?'spinner loading':'edit'"></i>Reply</button>
-									</div>
-								</form>
-								<!-- end reply form -->
 							</div>
 							<!-- replies -->
 							<div class="comments">
@@ -87,6 +79,14 @@
 										<!-- <div class="actions"><a class="reply">Reply</a></div> -->
 									</div>
 								</div><!-- end reply of replies -->
+								<!-- reply form -->
+								<form class="ui reply form" @submit="createComment(post.id,comment.id);" onsubmit="return false;" :class="{ loading : comment.isReplying }" v-if="post.replyTartget==comment.id">
+									<div class="ui mini action icon fluid input">
+										<input type="text" placeholder="Reply..." v-model="comment.replying" :disabled="comment.isReplying" v-focus>
+										<button class="ui icon button" :disabled="comment.isReplying"><i class="icon" :class="comment.isReplying?'spinner loading':'edit'"></i>Reply</button>
+									</div>
+								</form>
+								<!-- end reply form -->
 							</div><!-- end replies -->
 						</div><!-- end comment -->
 					</template>
@@ -117,6 +117,11 @@
 				let hours = t.getHours();
 				let minutes = t.getMinutes();
 				let seconds = t.getSeconds();
+				if (months<10) { months = "0"+months; }
+				if (days<10) { days = "0"+days; }
+				if (hours<10) { hours = "0"+hours; }
+				if (minutes<10) { minutes = "0"+minutes; }
+				if (seconds<10) { seconds = "0"+seconds; }
 				return `${years}/${months}/${days} ${hours}:${minutes}:${seconds}`;
 			},
 			timeToStatus: (datetime)=>{
@@ -242,7 +247,7 @@
 						if(Loger.Check(resp,'success')){
 							if(replyTarget){ comment.replying = ''; }
 							else{ post.commenting = ''; }
-							post.comments.unshift(resp.find(r => r[0]==='success')[2]);
+							post.comments.push(resp.find(r => r[0]==='success')[2]); //unshift
 						}else{
 							Loger.Swal(resp,{
 								'is_logout': 'Oh no, you are not login.',
@@ -260,7 +265,7 @@
 				});
 				return false;
 			},
-			isReplyToPost: (comments, commentId)=>{
+			isNotReply: (comments, commentId)=>{
 				let commentKey = comments.findIndex((comment) => comment.id === commentId);
 				return comments[commentKey].reply === null;
 			},
