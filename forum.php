@@ -47,7 +47,7 @@
 				<div class="ui comments" :class="{ collapsed: !post.showComments }">
 					<!-- comment form -->
 					<form class="ui reply form" @submit="createComment(post.id);" onsubmit="return false;">
-						<div class="ui action input">
+						<div class="ui action fluid input">
 							<input type="text" placeholder="Comment..." v-model="post.commenting" :disabled="post.isCommenting">
 							<button class="ui icon blue button" :disabled="post.isCommenting"><i class="icon" :class="post.isCommenting?'spinner loading':'edit'"></i>&nbsp;{{post.isCommenting?"Wait...":"Comment"}}</button>
 						</div>
@@ -68,7 +68,7 @@
 								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
 								<!-- reply form -->
 								<form class="ui reply form" @submit="createComment(post.id,comment.id);" onsubmit="return false;" :class="{ loading : comment.isReplying }" v-if="post.replyTartget==comment.id">
-									<div class="ui mini action icon input">
+									<div class="ui mini action icon fluid input">
 										<input type="text" placeholder="Reply..." v-model="comment.replying" :disabled="comment.isReplying" v-focus>
 										<button class="ui icon button" :disabled="comment.isReplying"><i class="icon" :class="comment.isReplying?'spinner loading':'edit'"></i>Reply</button>
 									</div>
