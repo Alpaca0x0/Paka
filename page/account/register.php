@@ -29,6 +29,7 @@ $regex = @include_once(Conf('account/regex')); // Setting Rules
 if(!preg_match($regex['email'], $email)){ $Loger->Push('warning','email_format_not_match'); }
 if(!preg_match($regex['username'], $username)){ $Loger->Push('warning','username_format_not_match'); }
 if(!preg_match($regex['password'], $password)){ $Loger->Push('warning','password_format_not_match'); }
+if (!in_array($gender,['male','female','secret'])) { }
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
 
 # Transform
@@ -51,6 +52,14 @@ if($Loger->Check()){ $Loger->Resp(); } // exist
 $DB->Query("INSERT INTO `account`(`username`,`password`,`email`) VALUES(:username,:password,:email);");
 $result = $DB->Execute([':username'=>$username, ':password'=>$password, ':email'=>$email]);
 if(!$result){ $Loger->Push('error','db_cannot_insert'); }
-else{ $Loger->Push('success','db_insert_successfully'); }
+if($Loger->Check()){ $Loger->Resp(); }
+
+// Write Profile
+$DB->Query("INSERT INTO `profile`(`id`,`gender`) VALUES(:id, :gender);");
+$result = $DB->Execute([':id'=>((int)$DB->lastInsertId()), ':password'=>$password, ':email'=>$email]);
+if(!$result){ $Loger->Push('error','db_cannot_insert'); }
+if($Loger->Check()){ $Loger->Resp(); }
+
+$Loger->Push('success','db_insert_successfully');
 $Loger->Resp(); 
 

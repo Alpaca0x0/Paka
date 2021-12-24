@@ -29,6 +29,6 @@ function T($lable, $category='', $replace=' - ') {
 
 /****************************************************************/
 
-$Lang = new Lang('zh-tw');
+$Lang = new Lang('en-us');
 $Lang->Init();
 

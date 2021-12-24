@@ -170,7 +170,7 @@
                 // change the account item to be login style
                 if(this.account.isLogin){
                     $('#Menu .ui.dropdown#account').dropdown();
-                    this.account.name = "<?php echo htmlentities($User->Get('username',"Error")); ?>";
+                    this.account.name = '<?php echo htmlentities($User->Get('nickname',$User->Get('username',"Error"))); ?>';
                 }
                 // active
                 let id = '<?php echo ID('page'); ?>'; // current page id

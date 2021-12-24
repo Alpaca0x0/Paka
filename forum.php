@@ -31,7 +31,7 @@
 			</div>
 
 			<div class="center aligned author">
-				<img class="ui avatar image" src="https://semantic-ui.com/images/avatar/small/jenny.jpg"> {{ post.poster.username }} ({{ timeToStatus(post.datetime) }})
+				<img class="ui avatar image" :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"> {{ post.poster.username }} ({{ timeToStatus(post.datetime) }})
 			</div>
 			
 			<h2 class="ui left aligned header"> {{ post.title }}</h2>
@@ -41,26 +41,21 @@
 		<div class="ui right aligned container"><h5 class="ui grey header">(#{{ post.id }}) {{ timeToString(post.datetime) }}</h5></div>
 		<!-- post comment -->
 		<button class="fluid ui button" @click="getComments(post.id)" :class="{loading : post.gettingComments}" :disabled="post.gettingComments"><i class="eye icon" :class="{ slash : post.showComments }"></i> {{ post.showComments ? "隱藏留言區" : "看看大家說了什麼" }} </button>
+
+		<br>
+
 		<div class="ui container">
 			<div class="content">
 				<!-- comments -->
 				<div class="ui comments" :class="{ collapsed: !post.showComments }">
-					<!-- comment form -->
-					<form class="ui reply form" @submit="createComment(post.id);" onsubmit="return false;">
-						<div class="ui action fluid input">
-							<input type="text" placeholder="Comment..." v-model="post.commenting" :disabled="post.isCommenting">
-							<button class="ui icon blue button" :disabled="post.isCommenting"><i class="icon" :class="post.isCommenting?'spinner loading':'edit'"></i>&nbsp;{{post.isCommenting?"Wait...":"Comment"}}</button>
-						</div>
-					</form><!-- end comment form -->
-					<!-- comment -->
 					
 					<template v-if="post.gettingComments">
 						<br><a class="ui label black"><i class="spinner loading icon"></i>&nbsp;Loading...</a>
 					</template>
-					<a v-if="(post.comments) && !(post.comments).length" class="ui teal pointing large label">Be a first one!</a>
+					
 					<template v-if="post.comments" v-for="comment in post.comments">
 						<div class="comment" v-if="isNotReply(post.comments,comment.id)">
-							<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/christian.jpg"></a>
+							<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"></a>
 							<div class="content">
 								<a class="author">{{ comment.commenter.username }}</a>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
@@ -71,7 +66,7 @@
 							<div class="comments">
 								<!-- reply of replies -->
 								<div class="comment" v-for="reply in filterReplies(post.comments, comment.id)">
-									<a class="avatar"><img src="https://semantic-ui.com/images/avatar/small/elliot.jpg"></a>
+									<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"></a>
 									<div class="content">
 										<a class="author">{{ reply.commenter.username }}</a>
 										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
@@ -90,6 +85,17 @@
 							</div><!-- end replies -->
 						</div><!-- end comment -->
 					</template>
+
+					<!-- comment form -->
+					<form class="ui reply form" @submit="createComment(post.id);" onsubmit="return false;">
+						<div class="ui action fluid input">
+							<input type="text" placeholder="Comment..." v-model="post.commenting" :disabled="post.isCommenting">
+							<button class="ui icon blue button" :disabled="post.isCommenting"><i class="icon" :class="post.isCommenting?'spinner loading':'edit'"></i>&nbsp;{{post.isCommenting?"Wait...":"Comment"}}</button>
+						</div>
+					</form><!-- end comment form -->
+					<a v-if="(post.comments) && !(post.comments).length" class="ui teal pointing large label">Be a first one!</a>
+
+					<!-- comment -->
 				</div><!-- end comments -->
 			</div><!-- end content -->
 		</div><!-- end post comment -->

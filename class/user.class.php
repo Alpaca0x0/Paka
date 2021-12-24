@@ -8,6 +8,8 @@
 class User{
 	private $isUpdated = false;
 	private $timeout = 0;
+	
+	private $Info = [];
 
 	function __construct(){
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
@@ -29,7 +31,7 @@ class User{
 				}else{ return "login"; }
 				return "error";
 
-			break;case 'info':
+			break;case 'session':
 				return (isset($_SESSION['account'])?$_SESSION['account']:$replace);
 
 			break;case 'id': case 'identity':
@@ -47,11 +49,23 @@ class User{
 			break;case 'life':
 				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
 			
-			break;case 'users':
-				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
+			// break;case 'users':
+			// 	return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
+
+			break;case 'email':
+				return (isset($this->Info['email'])?($this->Info['email']):$replace);
+
+			break;case 'nickname':
+				return (isset($this->Info['nickname']) && !is_null($this->Info['nickname'])?($this->Info['nickname']):$replace);
+
+			break;case 'gender':
+				return (isset($this->Info['gender'])?($this->Info['gender']):$replace);
+
+			break;case 'birthday':
+				return (isset($this->Info['birthday'])?($this->Info['birthday']):$replace);
 			
 			break;default:
-				return 'error';
+				return 'error:user.class';
 			break;
 		}
 	}
@@ -87,15 +101,44 @@ class User{
 		if(!$this->isUpdated || $force){
 			$id = $this->Get('id','');
 			$username = $this->Get('username','');
-			$DB->Query("SELECT * FROM `account` WHERE `id`=:id AND `username`=:username;");
+
+			// account
+			$DB->Query("SELECT `id`,`username`,`email`,`identity` FROM `account` WHERE `id`=:id AND `username`=:username;");
 			$result = $DB->Execute([':id' => $id, ':username' => $username]);
 			if(!$result){ $this->Logout(); return false; }
-			$row = $DB->Fetch($result,'assoc');
-			if(!$row){ $this->Logout(); return 'notfound'; }
+			$ac_row = $DB->Fetch($result,'assoc');
+			if(!$ac_row){ $this->Logout(); return 'notfound'; }
+
+			// profile
+			$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday` FROM `profile` WHERE `id`=:id;");
+			$result = $DB->Execute([':id' => $id]);
+			if(!$result){ $this->Logout(); return false; }
+			$pf_row = $DB->Fetch($result,'assoc');
+			if(!$pf_row){
+				$DB->Query("INSERT INTO `profile`(`id`) VALUES(:id);");
+				$result = $DB->Execute([':id' => $id]);
+				if(!$result){ $this->Logout(); return false; }
+				// query again
+				$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday` FROM `profile` WHERE `id`=:id;");
+				$result = $DB->Execute([':id' => $id]);
+				if(!$result){ $this->Logout(); return false; }
+				$pf_row = $DB->Fetch($result,'assoc');
+				if(!$pf_row){ $this->Logout(); return 'cannot_create'; }
+			}
+			//
+			$this->Info = [
+				'id' => $ac_row['id'],
+				'email' => $ac_row['email'],
+				'username' => $ac_row['username'],
+				'identity' => $ac_row['identity'],
+				'nickname' => $pf_row['nickname'],
+				'gender' => $pf_row['gender'],
+				'birthday' => $pf_row['birthday'],
+			];
 			$_SESSION['account'] = [
-			    'id' => $row['id'],
-			    'username' => $row['username'],
-			    'identity' => $row['identity'],
+			    'id' => $ac_row['id'],
+			    'username' => $ac_row['username'],
+			    'identity' => $ac_row['identity'],
 			];
 			$_SESSION['spawntime'] = time();
 			$this->isUpdated = true;
