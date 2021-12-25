@@ -24,8 +24,8 @@ $reply = trim(@$_POST['reply']);
 
 // filter
 // make some special chars be space " "
-$content = preg_replace('/[\n\r\t]/', ' ', $content);
-// remove multiple spaces
+$content = preg_replace('/[\n]/', "\n", $content);
+$content = preg_replace('/[\r\t]/', ' ', $content);
 $content = preg_replace('/\s(?=\s)/', '', $content);
 
 // format

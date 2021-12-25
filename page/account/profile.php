@@ -87,7 +87,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				</div>
 				<div class="field">
 					<label>Birthday</label>
-					<input type="date" class="ui fluid button">
+					<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
 				</div>
 			</div>
 		</div>
@@ -119,8 +119,6 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 <script type="module">
 	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
-
-	let form = new Array();
 
 	const Profile = createApp({
 		data(){return{
@@ -166,9 +164,23 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		}
 	}).mount('div#Profile');
 
-	form['Profile'] = $('form#Profile').first();
 
-	form['Profile'].find('#gender.selection').first().dropdown('set selected', Profile.user.gender);
+	let form = new Array();
+	form['profile'] = $('form#Profile').first();
+	form['profile'].find('#gender.selection').first().dropdown('set selected', Profile.user.gender);
+
+	let tables = new Array();
+	tables['profile'] = {
+		"update_successfully": 			"Update successfully",
+		"is_logout": 					"Sorry, you must login before doing this operation!",
+		"data_missing": 				"Data missing",
+		"birthday_format_not_match": 	"Birthday format not match",
+		"nickname_format_not_match": 	"Nickname format not match",
+		"gender_format_not_match": 		"Gender format not match",
+		"db_cannot_update": 			"Database has some problems",
+	};
+
+	
 
 	$('form#Profile').first().form({
 		on: 'change',
@@ -183,7 +195,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				$.ajax({
 					type: "POST",
-					url: '#',
+					url: '<?php echo Page('account/edit'); ?>',
 					data: fields,
 					dataType: 'json',
 					success: (resp)=>{
@@ -204,11 +216,11 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						// check if success
 						let isSuccess = Loger.Check(resp,'success');
 						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Login now!' } : {};
-						Loger.Swal(resp, tables['register'], swal_config).then((val)=>{
-							if(isSuccess){ window.location.replace('?login'); }
+						Loger.Swal(resp, tables['profile'], swal_config).then((val)=>{
+							if(isSuccess){ window.location.reload(); }
 							// update the UI status
 							// it will call back to the onSuccess()
-							form['login'].form('validate form'); // fix: in promise, event is undefined
+							form['profile'].form('validate form'); // fix: in promise, event is undefined
 						});
 					},
 				}).then(()=>{

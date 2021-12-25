@@ -6,7 +6,7 @@ define('DB', [
 	'host'=>'localhost',
 	'user'=>'root',
 	'pass'=>'password',
-	'name'=>'AlpacaTech',
+	'name'=>'alpacatech',
 ]);
 
 
