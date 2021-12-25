@@ -42,7 +42,7 @@ if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warnin
 
 # Transform
 if($nickname==''){ $nickname = null; }
-if(!$birthday['full']){ $birthday['full'] = null; } // does not set the birthday, set it null
+if(!$birthday['full']){ $birthday['origin'] = null; } // does not set the birthday, set it null
 
 # Start to using database
 @include_once(Func('db'));

@@ -34,7 +34,16 @@ foreach ($ret as $key => $val) {
 	$ret[$key]['commenter']['id'] = $tmep;
 	$ret[$key]['commenter']['username'] = $ret[$key]['commenter_username'];
 	$ret[$key]['commenter']['identity'] = $ret[$key]['commenter_identity'];
+	$ret[$key]['commenter']['nickname'] = $ret[$key]['profile_nickname'];
+	$ret[$key]['commenter']['gender'] = $ret[$key]['profile_gender'];
+	$ret[$key]['commenter']['birthday'] = $ret[$key]['profile_birthday'];
 
-	unset($ret[$key]['commenter_username'], $ret[$key]['commenter_identity']);
+	unset(
+		$ret[$key]['commenter_username'],
+		$ret[$key]['commenter_identity'],
+		$ret[$key]['profile_nickname'],
+		$ret[$key]['profile_gender'],
+		$ret[$key]['profile_birthday'],
+	);
 }
 echo json_encode($ret);

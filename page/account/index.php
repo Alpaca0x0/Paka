@@ -63,7 +63,11 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						<label>Email</label>
 						<input type="email" name="email" id="email" ref='register_email' placeholder="E-Mail">
 					</div>
-					<div class="field error">
+					<div class="field error disabled">
+						<label>Verify Code (未來功能)</label>
+						<input type="text" name="verify">
+					</div>
+					<!-- <div class="field error">
 						<label>Gender</label>
 						<div class="ui selection dropdown" id="gender" ref='register_gender'>
 							<input type="hidden" name="gender">
@@ -84,7 +88,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 								</div>
 							</div>
 						</div>
-					</div>
+					</div> -->
 				</div>
 
 				<div class="inline field error">
@@ -137,7 +141,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 	// Initialize
 	$('#Account.ui.accordion').accordion();
-	$('form#Register #gender.selection').dropdown();
+	// $('form#Register #gender.selection').dropdown();
 	$('.ui.checkbox').checkbox();
 
 	// defined form
@@ -303,7 +307,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 			if(!form['register'].form('validate field','username')){ app.$refs.register_username.focus(); }
 			else if(!form['register'].form('validate field','password')){ app.$refs.register_password.focus(); }
 			else if(!form['register'].form('validate field','email')){ app.$refs.register_email.focus(); }
-			else if(!form['register'].form('validate field','gender')){ app.$refs.register_gender.focus(); }
+			// else if(!form['register'].form('validate field','gender')){ app.$refs.register_gender.focus(); }
 			return false;
 		},
 		fields: {
@@ -344,15 +348,15 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 					}
 				]
 			},
-			gender: {
-				identifier: 'gender',
-				rules: [
-					{
-						type	 : 'empty',
-						prompt : 'Please select a gender'
-					},
-				]
-			},
+			// gender: {
+			// 	identifier: 'gender',
+			// 	rules: [
+			// 		{
+			// 			type	 : 'empty',
+			// 			prompt : 'Please select a gender'
+			// 		},
+			// 	]
+			// },
 			terms: {
 				identifier: 'terms',
 				rules: [

@@ -25,7 +25,16 @@ foreach ($ret as $key => $val) {
 	$ret[$key]['poster']['id'] = $temp;
 	$ret[$key]['poster']['username'] = $ret[$key]['poster_username'];
 	$ret[$key]['poster']['identity'] = $ret[$key]['poster_identity'];
+	$ret[$key]['poster']['nickname'] = $ret[$key]['profile_nickname'];
+	$ret[$key]['poster']['gender'] = $ret[$key]['profile_gender'];
+	$ret[$key]['poster']['birthday'] = $ret[$key]['profile_birthday'];
 
-	unset($ret[$key]['poster_username'], $ret[$key]['poster_identity']);
+	unset(
+		$ret[$key]['poster_username'],
+		$ret[$key]['poster_identity'],
+		$ret[$key]['profile_nickname'],
+		$ret[$key]['profile_gender'],
+		$ret[$key]['profile_birthday'],
+	);
 }
 echo json_encode($ret);

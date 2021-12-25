@@ -22,6 +22,9 @@ class Post{
 		$poster = $User->Get('id',false);
 		$poster_username = $User->Get('username',false);
 		$poster_identity = $User->Get('identity',false);
+		$poster_nickname = $User->Get('nickname',false);
+		$poster_gender = $User->Get('gender',false);
+		$poster_birthday = $User->Get('birthday',false);
 		$datetime = time();
 		
 		// start to create post
@@ -29,6 +32,7 @@ class Post{
 		$DB->Query($sql);
 		$result = $DB->Execute([':title' => $title, ':content' => $content, ':poster' => $poster, 't' => $datetime,]);
 		if(!$result){ return 'error_insert'; }
+
 		return [
 			'id' => $DB->Connect->lastInsertId(),
 			'title' => $title,
@@ -37,6 +41,9 @@ class Post{
 				"id" => $poster,
 				"username" => $poster_username,
 				"identity" => $poster_identity,
+				"nickname" => $poster_nickname,
+				"gender" => $poster_gender,
+				"birthday" => $poster_birthday,
 			],
 			'datetime' => $datetime,
 		];
@@ -48,6 +55,9 @@ class Post{
 		$commenter = $User->Get('id',false);
 		$commenter_username = $User->Get('username',false);
 		$commenter_identity = $User->Get('identity',false);
+		$commenter_nickname = $User->Get('nickname',false);
+		$commenter_gender = $User->Get('gender',false);
+		$commenter_birthday = $User->Get('birthday',false);
 		$datetime = time();
 		$reply = $reply;
 		//check
@@ -57,6 +67,7 @@ class Post{
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
 		if(!$result){ return "$postId, $content, $reply, $commenter, $datetime"; } // error
+
 		return [
 			'id' => (int)$DB->Connect->lastInsertId(),
 			'post' => $postId,
@@ -66,6 +77,9 @@ class Post{
 				"id" => $commenter,
 				"username" => $commenter_username,
 				"identity" => $commenter_identity,
+				"nickname" => $commenter_nickname,
+				"gender" => $commenter_gender,
+				"birthday" => $commenter_birthday,
 			],
 			'datetime' => $datetime,
 		];
@@ -167,7 +181,13 @@ class Post{
 			break;case 'posts':
 				if(isset($args[1])){ $limit = $args[1]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity` FROM `post` JOIN `account` ON (`post`.`poster`=`account`.`id`) WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
+				`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`
+				FROM `post` 
+				JOIN `account` ON (`post`.`poster`=`account`.`id`) 
+				JOIN `profile` ON (`post`.`poster`=`profile`.`id`)
+				WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];"; 
 				$DB->Query($sql);
 				$result = $DB->Execute();
 				if(!$result){ return false; } // error
@@ -179,7 +199,13 @@ class Post{
 				$postId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`,
+				`account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity`,
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday` 
+				FROM `comment` 
+				JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
+				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
+				WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
@@ -190,7 +216,13 @@ class Post{
 				$commentId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
-				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`, `account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity` FROM `comment` JOIN `account` ON (`comment`.`commenter`=`account`.`id`) WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
+				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`,
+				`account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity`,
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday` 
+				FROM `comment` 
+				JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
+				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
+				WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				if(!$result = $DB->Execute([':commentId'=>$commentId,])){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');

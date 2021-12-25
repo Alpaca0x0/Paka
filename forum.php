@@ -31,7 +31,7 @@
 			</div>
 
 			<div class="center aligned author">
-				<img class="ui avatar image" :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"> {{ post.poster.username }} ({{ timeToStatus(post.datetime) }})
+				<img class="ui avatar image" :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> ({{ timeToStatus(post.datetime) }})
 			</div>
 			
 			<h2 class="ui left aligned header"> {{ post.title }}</h2>
@@ -55,9 +55,14 @@
 					
 					<template v-if="post.comments" v-for="comment in post.comments">
 						<div class="comment" v-if="isNotReply(post.comments,comment.id)">
-							<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"></a>
+							<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"></a>
 							<div class="content">
-								<a class="author">{{ comment.commenter.username }}</a>
+								{{ comment.commenter.nickname }}
+								<a class="author">
+									{{ comment.commenter.nickname!=""?" (":"" }}
+									{{ comment.commenter.username }}
+									{{ comment.commenter.nickname!=""?")":"" }}
+								</a>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
 								<div class="text">{{ comment.content }} </div>
 								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
@@ -66,9 +71,14 @@
 							<div class="comments">
 								<!-- reply of replies -->
 								<div class="comment" v-for="reply in filterReplies(post.comments, comment.id)">
-									<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/'+Math.random()+'.svg'"></a>
+									<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"></a>
 									<div class="content">
-										<a class="author">{{ reply.commenter.username }}</a>
+										{{ reply.commenter.nickname }}
+										<a class="author">
+											{{ reply.commenter.nickname!=""?" (":"" }}
+											{{ reply.commenter.username }}
+											{{ reply.commenter.nickname!=""?")":"" }}
+										</a>
 										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
 										<div class="text">{{ reply.content }}</div>
 										<!-- <div class="actions"><a class="reply">Reply</a></div> -->

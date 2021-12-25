@@ -6,7 +6,7 @@
 
 <?php
 # If have post data
-$needed_datas = ['username','password','email','gender'];
+$needed_datas = ['username','password','email'];
 foreach ($needed_datas as $data){
     if( !isset($_POST[$data]) ){
         $Loger->Push('warning','data_missing',$data);
@@ -19,7 +19,7 @@ foreach ($needed_datas as $data){
 $username = @trim($_POST['username']);
 $password = @$_POST['password'];
 $email = @trim($_POST['email']);
-$gender = @trim($_POST['gender']);
+// $gender = @trim($_POST['gender']);
 // $username = 'alpaca';
 // $password = 'passw0rd';
 // $email = 'alpaca0x0@gmail.com';
@@ -29,7 +29,7 @@ $regex = @include_once(Conf('account/regex')); // Setting Rules
 if(!preg_match($regex['email'], $email)){ $Loger->Push('warning','email_format_not_match'); }
 if(!preg_match($regex['username'], $username)){ $Loger->Push('warning','username_format_not_match'); }
 if(!preg_match($regex['password'], $password)){ $Loger->Push('warning','password_format_not_match'); }
-if (!in_array($gender,['male','female','secret'])) { }
+// if (!in_array($gender,['male','female','secret'])) { }
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
 
 # Transform
@@ -55,10 +55,10 @@ if(!$result){ $Loger->Push('error','db_cannot_insert'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // Write Profile
-$DB->Query("INSERT INTO `profile`(`id`,`gender`) VALUES(:id, :gender);");
-$result = $DB->Execute([':id'=>((int)$DB->lastInsertId()), ':password'=>$password, ':email'=>$email]);
-if(!$result){ $Loger->Push('error','db_cannot_insert'); }
-if($Loger->Check()){ $Loger->Resp(); }
+// $DB->Query("INSERT INTO `profile`(`id`,`gender`) VALUES(:id, :gender);");
+// $result = $DB->Execute([':id'=>((int)$DB->Connect->lastInsertId()), ':password'=>$password, ':email'=>$email]);
+// if(!$result){ $Loger->Push('error','db_cannot_insert'); }
+// if($Loger->Check()){ $Loger->Resp(); }
 
 $Loger->Push('success','db_insert_successfully');
 $Loger->Resp(); 

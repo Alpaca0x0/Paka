@@ -35,7 +35,7 @@ if($Loger->Check()){ $Loger->Resp(); }
 // $content = "Here is a test content, it can type more text.";
 $result = $Post->Create($title, $content);
 
-$resps = ['logout', 'error_insert', ];
+$resps = ['logout', 'error_insert', 'error_select'];
 
 if(in_array($result, $resps)){ $Loger->Push('warning','failed_create_post',$result); }
 else if(is_array($result)){ $Loger->Push('success','created_post',$result); }
