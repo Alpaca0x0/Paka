@@ -6,6 +6,6 @@ define('DB', [
 	'host'=>'localhost',
 	'user'=>'root',
 	'pass'=>'password',
-	'name'=>'alpacatech',
+	'name'=>'database',
 ]);
 
