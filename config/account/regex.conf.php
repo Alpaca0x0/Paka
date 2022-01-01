@@ -7,6 +7,11 @@ $regex = [
     'password' => '/^(?=.*?[0-9])(?=.*?[a-z]).{8,32}$/', // 需有 數字、小寫英文, 長度 8~32
     'nickname' => '/^.{0,16}$/', // 任意字元，長度 0~16
     'gender' => ['male','female','transgender','secret'],
+    'avatar' => [
+        'width' => 320,
+        'height' => 320,
+        'formats' => ['image/jpeg', 'image/png'],
+    ],
 ];
 
 return $regex;

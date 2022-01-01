@@ -37,6 +37,8 @@ foreach ($ret as $key => $val) {
 	$ret[$key]['commenter']['nickname'] = $ret[$key]['profile_nickname'];
 	$ret[$key]['commenter']['gender'] = $ret[$key]['profile_gender'];
 	$ret[$key]['commenter']['birthday'] = $ret[$key]['profile_birthday'];
+	$ret[$key]['commenter']['avatar'] = $ret[$key]['profile_avatar'];
+	if(!is_null($ret[$key]['commenter']['avatar'])){ $ret[$key]['commenter']['avatar'] = base64_encode($ret[$key]['commenter']['avatar']); }
 
 	unset(
 		$ret[$key]['commenter_username'],
@@ -44,6 +46,7 @@ foreach ($ret as $key => $val) {
 		$ret[$key]['profile_nickname'],
 		$ret[$key]['profile_gender'],
 		$ret[$key]['profile_birthday'],
+		$ret[$key]['profile_avatar'],
 	);
 }
 echo json_encode($ret);

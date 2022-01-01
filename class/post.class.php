@@ -183,7 +183,7 @@ class Post{
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
 				`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
-				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`
 				FROM `post` 
 				JOIN `account` ON (`post`.`poster`=`account`.`id`) 
 				JOIN `profile` ON (`post`.`poster`=`profile`.`id`)
@@ -201,7 +201,7 @@ class Post{
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`,
 				`account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity`,
-				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday` 
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`
 				FROM `comment` 
 				JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
 				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
@@ -218,7 +218,7 @@ class Post{
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`,
 				`account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity`,
-				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday` 
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`
 				FROM `comment` 
 				JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
 				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 

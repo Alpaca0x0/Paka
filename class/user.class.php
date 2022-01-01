@@ -58,6 +58,9 @@ class User{
 			break;case 'nickname':
 				return (isset($this->Info['nickname']) && !is_null($this->Info['nickname'])?($this->Info['nickname']):$replace);
 
+			break;case 'avatar':
+				return (isset($this->Info['avatar']) && !is_null($this->Info['avatar'])?($this->Info['avatar']):$replace);
+
 			break;case 'gender':
 				return (isset($this->Info['gender'])?($this->Info['gender']):$replace);
 
@@ -110,7 +113,7 @@ class User{
 			if(!$ac_row){ $this->Logout(); return 'notfound'; }
 
 			// profile
-			$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday` FROM `profile` WHERE `id`=:id;");
+			$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
 			$result = $DB->Execute([':id' => $id]);
 			if(!$result){ $this->Logout(); return false; }
 			$pf_row = $DB->Fetch($result,'assoc');
@@ -120,7 +123,7 @@ class User{
 				$result = $DB->Execute([':id' => $id]);
 				if(!$result){ $this->Logout(); return false; }
 				// query again
-				$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday` FROM `profile` WHERE `id`=:id;");
+				$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
 				$result = $DB->Execute([':id' => $id]);
 				if(!$result){ $this->Logout(); return false; }
 				$pf_row = $DB->Fetch($result,'assoc');
@@ -135,6 +138,7 @@ class User{
 				'nickname' => $pf_row['nickname'],
 				'gender' => $pf_row['gender'],
 				'birthday' => $pf_row['birthday'],
+				'avatar' => $pf_row['avatar'],
 			];
 			$_SESSION['account'] = [
 			    'id' => $ac_row['id'],

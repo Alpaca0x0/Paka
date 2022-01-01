@@ -4,50 +4,40 @@
 @include_once(Func('user'));
 $User->Update();
 $User->Is('login') OR exit(header("Location: ".Root('index')));
-?>
-
-<?php
 @include_once(Func('lang')); # Using the function T($id) to return text in current language
 @include_once(Func('loger'));
 $ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
+$iniMaxFileSize = ini_get('upload_max_filesize');
+$maxFileSize = 1024*1024*5; // 5mb
 ?>
 
 <?php @include_once(Inc('header')); ?>
 <?php @include_once(Inc('menu/header')); ?>
 
-<div class="ui container" id="Profile">
-	<!-- <p ref="id">ID: {{ user.id }}</p>
-	<p ref="username">Username: {{ user.name }}</p>
-	<p ref="identity">Identity: {{ user.identity }}</p>
-	<p ref="token">Spawn Time: {{ user.spawntime }}</p>
-	<p ref="token">Token: {{ user.token }}</p>
-	<p ref="timeout">Session Life: {{ user.life.h }}:{{ user.life.i }}:{{ user.life.s }}</p> -->
+<script type="text/javascript" src="<?php echo JS('cropper.min'); ?>"></script>
+<link rel="stylesheet" type="text/css" href="<?php echo CSS('cropper.min'); ?>">
 
-	<form class="ui form" onsubmit="return false;" id="Profile">
+<div class="ui container" id="Profile">
+
+	<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
 		<h4 class="ui dividing header">Primary Info</h4>
 		<div class="field">
-			<div class="four fields">
-				<div class="field">
+			<div class="five fields">
+				<div class="field two wide">
 					<label>ID</label>
 					<input type="input" class="ui fluid button" :value="user.id" disabled>
 				</div>
-				<div class="field">
+				<div class="field two wide">
 					<label>Identity</label>
 					<input type="input" class="ui fluid button" :value="user.identity" disabled>
 				</div>
-				<div class="field">
+				<div class="field three wide">
 					<label>Username</label>
 					<input type="input" class="ui fluid button" :value="user.name" disabled>
 				</div>
-				<div class="field">
+				<div class="field six wide">
 					<label>E-Mail</label>
 					<input type="input" class="ui fluid button" :value="user.email" disabled>
-				</div>
-			</div>
-			<div class="two fields">
-				<div class="field">
-					<label>Token (Don't send to anyone you don't trust)</label>
-					<input type="button" class="ui fluid button" :value="user.token">
 				</div>
 				<div class="field">
 					<label>Session Dead-Time</label>
@@ -58,10 +48,37 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 		<h4 class="ui dividing header">Secondary Info</h4>
 		<div class="field">
-			<div class="three fields">
+			<div class="four fields">
+				<div class="field">
+					<label>Avatar</label>
+					<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
+					<label for='avatar'>
+						<a class="ui medium image" style="cursor:pointer;">
+							<div class="ui small circular rotate left reveal image">
+									<img id="avatarCurrent" :src="user.avatar" style="background-color: black;" class="visible content">
+									<img :src="'<?php echo IMG('default','png'); ?>'" class="hidden content">
+							</div>
+						</a>
+					</label>
+					<div id="avatarModal" class="ui modal">
+						<i class="close icon"></i>
+						<div class="header">Avatar</div>
+						<div class="image content">
+							<div class="ui medium image" style="width: 50%">
+								<img id="avatarView" class="ui fluid image">
+							</div>
+							<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+						</div>
+
+						<div class="actions">
+							<div class="ui black deny button">Cancel</div>
+							<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+						</div>
+					</div>
+				</div>
 				<div class="field">
 					<label>Nick Name</label>
-					<input :type="fields.editing=='nickname'?'input':'button'" @focus="fields.editing='nickname'" @blur="fields.editing=''" v-model="fields.nickname.value" name="nickname" class="ui fluid button" placeholder="Nick Name">
+					<input type="text"  v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
 				</div>
 				<div class="field">
 					<label>Gender</label>
@@ -110,7 +127,9 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		<div class="ui animated fade submit right floated green button " tabindex="0">
 			<div class="visible content"><i class="ui icon sync alternate"></i> Update</div>
 			<div class="hidden content"><i class="ui icon paper plane"></i> Submit</div>
-		</div>
+		</div><br>
+		
+		<div class="ui hidden divider"></div>
 	</form>
 </div>
 
@@ -141,6 +160,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				name: '<?php echo htmlentities($User->Get('name',' - ')); ?>',
 				email: '<?php echo htmlentities($User->Get('email',' - ')); ?>',
 				identity: '<?php echo htmlentities($User->Get('identity')); ?>',
+				avatar: '<?php $temp=$User->Get('avatar',false); echo $temp===false?IMG('default','png'):'data:image/jpeg;base64, '.base64_encode($temp); ?>',
 				// token: '<?php echo $User->Get('token',' - '); ?>',
 				spawntime: '<?php echo $User->Get('spawntime',' - '); ?>',
 				life: { h: "00", i: "00", s: "00", },
@@ -193,11 +213,17 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
+				let datas = new FormData(form['profile'][0]);
+
+				console.log(datas);
+
 				$.ajax({
 					type: "POST",
 					url: '<?php echo Page('account/edit'); ?>',
-					data: fields,
+					data: datas,
 					dataType: 'json',
+					processData: false,  // tell jQuery not to process the data
+					contentType: false,  // tell jQuery not to set contentType
 					success: (resp)=>{
 						Loger.Log('info','Response',resp);
 						// check if data is exist
@@ -297,6 +323,54 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 			// }
 		}
 	});
+
+
+
+	let avatar = document.querySelector('input#avatar');
+	let avatarView = document.querySelector('img#avatarView');
+	let cropper = new Cropper(avatarView);
+	let avatarNow; // blob
+	
+	$('input#avatar').on('change', function(){
+		cropper.destroy();
+		let image = avatar.files[0];
+		if(!image){ return; }
+		avatarView.src = URL.createObjectURL(image);
+		cropper = new Cropper(avatarView,{
+			viewMode: 2,
+			aspectRatio: 4/4,
+			preview: '#avatarPreview',
+		});
+		$('#avatarModal.ui.modal').modal({
+			// closable: false,
+			onDeny: ()=>{
+				let file = new File([avatarNow], "",{type:image.type, lastModified:new Date().getTime()});
+				let container = new DataTransfer();
+				container.items.add(file);
+				avatar.files = container.files;
+			},
+			onHide: ()=>{
+				let file = new File([avatarNow], "",{type:image.type, lastModified:new Date().getTime()});
+				let container = new DataTransfer();
+				container.items.add(file);
+				avatar.files = container.files;
+			},
+			onApprove: ()=>{
+				cropper.getCroppedCanvas({
+					width: 320,
+					height: 320,
+				}).toBlob(function(blob){
+					avatarNow = blob;
+					avatarCurrent.src = URL.createObjectURL(blob);
+					let file = new File([blob], image.name,{type:image.type, lastModified:new Date().getTime()});
+					let container = new DataTransfer();
+					container.items.add(file);
+					avatar.files = container.files;
+				},image.type,0.8);
+			}
+		}).modal('show');
+	});
+
 
 </script>
 

@@ -31,7 +31,7 @@
 			</div>
 
 			<div class="center aligned author">
-				<img class="ui avatar image" :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> ({{ timeToStatus(post.datetime) }})
+				<img class="ui avatar image" :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> ({{ timeToStatus(post.datetime) }})
 			</div>
 			
 			<h2 class="ui left aligned header"> {{ post.title }}</h2>
@@ -55,7 +55,7 @@
 					
 					<template v-if="post.comments" v-for="comment in post.comments">
 						<div class="comment" v-if="isNotReply(post.comments,comment.id)">
-							<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"></a>
+							<a class="avatar"><img :src="comment.commenter.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+comment.commenter.avatar"></a>
 							<div class="content">
 								{{ comment.commenter.nickname }}
 								<a class="author">
@@ -71,7 +71,7 @@
 							<div class="comments">
 								<!-- reply of replies -->
 								<div class="comment" v-for="reply in filterReplies(post.comments, comment.id)">
-									<a class="avatar"><img :src="'https://avatars.dicebear.com/api/avataaars/alpaca.svg'"></a>
+									<a class="avatar"><img :src="reply.commenter.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+reply.commenter.avatar"></a>
 									<div class="content">
 										{{ reply.commenter.nickname }}
 										<a class="author">
