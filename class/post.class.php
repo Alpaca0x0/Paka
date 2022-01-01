@@ -22,9 +22,10 @@ class Post{
 		$poster = $User->Get('id',false);
 		$poster_username = $User->Get('username',false);
 		$poster_identity = $User->Get('identity',false);
-		$poster_nickname = $User->Get('nickname',false);
+		$poster_nickname = $User->Get('nickname',null);
 		$poster_gender = $User->Get('gender',false);
-		$poster_birthday = $User->Get('birthday',false);
+		$poster_birthday = $User->Get('birthday',null);
+		$poster_avatar = $User->Get('avatar',null);
 		$datetime = time();
 		
 		// start to create post
@@ -44,6 +45,7 @@ class Post{
 				"nickname" => $poster_nickname,
 				"gender" => $poster_gender,
 				"birthday" => $poster_birthday,
+				"avatar" => is_null($poster_avatar)?null:base64_encode($poster_avatar),
 			],
 			'datetime' => $datetime,
 		];
@@ -55,9 +57,10 @@ class Post{
 		$commenter = $User->Get('id',false);
 		$commenter_username = $User->Get('username',false);
 		$commenter_identity = $User->Get('identity',false);
-		$commenter_nickname = $User->Get('nickname',false);
+		$commenter_nickname = $User->Get('nickname',null);
 		$commenter_gender = $User->Get('gender',false);
-		$commenter_birthday = $User->Get('birthday',false);
+		$commenter_birthday = $User->Get('birthday',null);
+		$commenter_avatar = $User->Get('avatar',null);
 		$datetime = time();
 		$reply = $reply;
 		//check
@@ -80,6 +83,7 @@ class Post{
 				"nickname" => $commenter_nickname,
 				"gender" => $commenter_gender,
 				"birthday" => $commenter_birthday,
+				"avatar" => is_null($commenter_avatar)?null:base64_encode($commenter_avatar),
 			],
 			'datetime' => $datetime,
 		];
@@ -92,6 +96,7 @@ class Post{
 		$commenter = $User->Get('id',false);
 		$commenter_username = $User->Get('username',false);
 		$commenter_identity = $User->Get('identity',false);
+		$commenter_avatar = $User->Get('avatar',null);
 		$datetime = time();
 		$reply = (int)($replyTarget);
 		//check
@@ -106,10 +111,11 @@ class Post{
 			'post' => $postId,
 			'content' => $content,
 			'reply' => $reply,
-			'commenter' => $commenter,
 			'datetime' => $datetime,
+			'commenter' => $commenter,
 			'commenter_username' => $commenter_username,
 			'commenter_identity' => $commenter_identity,
+			'commenter_avatar' => is_null($commenter_avatar)?null:base64_encode($commenter_avatar),
 		];
 	}
 
