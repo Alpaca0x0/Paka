@@ -23,37 +23,32 @@
 	<!-- post -->
 	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': isLoading, 'loading':post.isRemoving }">
 		<!-- post info & action -->
-		<div class="ui container">
-			<div class="ui feed">
-				<div class="event">
-					<div class="label">
-						<img :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar">
+		<div class="ui feed">
+			<div class="event">
+				<div class="label">
+					<img :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar">
+				</div>
+				<div class="content">
+					<div class="summary">
+						{{ post.poster.nickname }} <a class="user">{{ post.poster.username }}</a>
+						<!-- edit, remove -->
+						<div class="ui small basic icon right floated buttons" v-if="post.poster.id=='<?php echo $User->Get('id','-'); ?>'">
+							<button class="ui button label" @click="post.isEditing=true" :class="{ disabled: post.poster.id!='<?php echo $User->Get('id','-'); ?>'}">
+								<i class="edit blue icon"><template v-if="post.edited && post.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
+							</button>
+							<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
+						</div>
 					</div>
-					<div class="content">
-						<div class="summary">
-							{{ post.poster.nickname }} <a class="user">{{ post.poster.username }}</a>
-							<!-- edit, remove -->
-							<div class="ui small basic icon right floated buttons" v-if="post.poster.id=='<?php echo $User->Get('id','-'); ?>'">
-								<button class="ui button label" @click="post.isEditing=true">
-									<i class="edit blue icon"><template v-if="post.edited && post.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-								</button>
-								<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
-							</div>
+					<div class="meta">
+						<div class="date"> 
+							{{ timeToStatus(post.datetime) }}
+							<span class="ui" :data-tooltip="timeToStatus(post.edited.last_time)" data-variation="mini" data-position="bottom left" v-if="post.edited && post.edited.times>0">, Edited post</span>
 						</div>
-						<div class="meta">
-							<div class="date"> {{ timeToStatus(post.datetime) }} </div>
-							<!-- <a class="like"><i class="like icon"></i> 4 個讚 </a> -->
-						</div>
+						<!-- <a class="like"><i class="like icon"></i> 4 個讚 </a> -->
 					</div>
 				</div>
 			</div>
-
-
-<!-- 			<div class="center aligned author">
-				<img class="ui avatar image" :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> &nbsp;
-				<a class="ui grey circular basic label">{{ timeToStatus(post.datetime) }}</a>
-			</div>
- -->		</div>
+		</div>
 
 		<!-- post title & content -->
 		<template v-if="post.isEditing">
@@ -185,26 +180,38 @@
 				let result = (ct - t)/1000;
 				let ret = "-", unit='-';
 
-				let i = 60, h = i*60, d = h*24, w = d*7;
+				let i = 60, h = i*60, d = h*24, w = d*7, m = 30, y = 365;
 				if(result < i){
 					// just
-					ret = ''; unit='剛剛';
+					ret = ''; unit='Just';
 				}
 				else if(result < h){
 					// minutes
-					unit='分鐘前'; ret=result/i;
+					unit='Minutes age'; ret=result/i;
 				}
 				else if(result < d){
 					// hours
-					unit='小時前'; ret=result/h;
+					unit='Hours ago'; ret=result/h;
 				}
 				else if(result < w){
 					// days
-					unit='天前'; ret=result/d;
+					unit='Days ago'; ret=result/d;
+				}
+				else if(result < m){
+					// weeks
+					unit='Weeks ago'; ret=result/w;
+				}
+				else if(result < y/2){
+					// months
+					unit='Months ago'; ret=result/m;
+				}
+				else if(result < y){
+					// half year
+					unit='Half year ago'; ret='';
 				}
 				else{
-					// days
-					unit='周前'; ret=result/w;
+					// years
+					unit='Years ago'; ret=result/y;
 				}
 				ret = ret!=''?parseInt(ret, 10):'';
 				return (`${ret} ${unit}`).trim();
@@ -299,6 +306,7 @@
 												post.content = newInfo['content'];
 												post.edited = post.edited || {};
 												post.edited.times = post.edited.times+1 || 1;
+												post.edited.last_time = newInfo.last_time;
 												post.isEditing = false;
 											}else if(Loger.Have(resp,'chnaged_nothing')){
 												post.isEditing = false;

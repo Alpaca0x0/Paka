@@ -78,6 +78,7 @@ class Post{
 			'postId' => $postId,
 			'title' => $title,
 			'content' => $content,
+			'last_time' => $datetime,
 		];
 	}
 
@@ -220,7 +221,7 @@ class Post{
 				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
 				`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
 				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
-				COUNT(`post_edited`.`id`)as`post_edited_times`, `post_edited`.`datetime`as`post_edited_datetime` 
+				COUNT(`post_edited`.`id`)as`post_edited_times`, MAX(`post_edited`.`datetime`)as`post_edited_datetime` 
 				FROM `post` 
 				JOIN `account` ON (`post`.`poster`=`account`.`id`) 
 				JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
