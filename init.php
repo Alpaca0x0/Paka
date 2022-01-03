@@ -1,4 +1,7 @@
 <?php
+
+// die('The website is under maintenance. Please come back later.');
+
 /****************************************************************/
 # Read Me
 # Do NOT output any thing on this page

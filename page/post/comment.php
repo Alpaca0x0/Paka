@@ -18,8 +18,8 @@ foreach ($needed_datas as $data){
 
 // get data
 @include_once(Func('post'));
-$postId = (int)(@$_POST['postId']);
-$content = trim(@$_POST['content']);
+$postId = (int)($_POST['postId']);
+$content = trim($_POST['content']);
 $reply = (isset($_POST['reply']) && (int)(@$_POST['reply'])>0) ? (int)(@$_POST['reply']) : null;
 
 // filter
@@ -32,11 +32,21 @@ $content = preg_replace('/\s(?=\s)/', '', $content);
 if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
+// check if access is permission
+@include_once(Func('db'));
+$sql = "SELECT `id` FROM `post` WHERE `id`=:postId AND `status`='alive' LIMIT 1;";
+$DB->Query($sql);
+$result = $DB->Execute([':postId'=>$postId, ]);
+if(!$result){ return $Loger->Push('error','cannot_select'); }
+$row = $DB->Fetch($result,'assoc');
+if(!$row){ $Loger->Push('warning','access_denied'); }
+if($Loger->Check()){ $Loger->Resp(); }
+
 // start to reply
 $result = $Post->Comment($postId,$content,$reply);
 $resps = ['logout', 'no_replier', 'error',];
 if(in_array($result, $resps)){ $Loger->Push('warning','failed_reply',$result); }
-else if(is_array($result)){ $Loger->Push('success','replied',$result); }
-else{ $Loger->Push('error','Unexpected error', $result); }
+else if(is_array($result)){ $Loger->Push('success','commented',$result); }
+else{ $Loger->Push('error','unexpected_error', $result); }
 
 $Loger->Resp();

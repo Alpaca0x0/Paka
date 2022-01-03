@@ -14,7 +14,7 @@
 	<!-- write post form -->
 	<form class="ui form" id="CreatePost" ref='CreatePost'>
 		<div class="field"><input type="text" name="title" id="title" ref='title' placeholder="Title..."></div>
-		<div class="field"><textarea name="content" id="content" ref='content' placeholder="Content..."></textarea></div>
+		<div class="field"><textarea name="content" id="content" ref='content' placeholder="Content..." rows="2"></textarea></div>
 		<div class="ui blue labeled submit icon button right floated"><i class="icon edit"></i> Post it</div>
 	</form><!-- end write post form -->
 
@@ -22,23 +22,62 @@
 
 	<!-- post -->
 	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': isLoading, 'loading':post.isRemoving }">
-		<!-- post title -->
+		<!-- post info & action -->
 		<div class="ui container">
-			<!-- edit, remove -->
-			<div class="ui small basic icon right floated buttons" v-if="post.poster.id=='<?php echo $User->Get('id','-'); ?>'">
-				<button class="ui button"><i class="edit blue icon"></i></button>
-				<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
+			<div class="ui feed">
+				<div class="event">
+					<div class="label">
+						<img :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar">
+					</div>
+					<div class="content">
+						<div class="summary">
+							{{ post.poster.nickname }} <a class="user">{{ post.poster.username }}</a>
+							<!-- edit, remove -->
+							<div class="ui small basic icon right floated buttons" v-if="post.poster.id=='<?php echo $User->Get('id','-'); ?>'">
+								<button class="ui button label" @click="post.isEditing=true">
+									<i class="edit blue icon"><template v-if="post.edited && post.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
+								</button>
+								<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
+							</div>
+						</div>
+						<div class="meta">
+							<div class="date"> {{ timeToStatus(post.datetime) }} </div>
+							<!-- <a class="like"><i class="like icon"></i> 4 個讚 </a> -->
+						</div>
+					</div>
+				</div>
 			</div>
 
-			<div class="center aligned author">
-				<img class="ui avatar image" :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> ({{ timeToStatus(post.datetime) }})
+
+<!-- 			<div class="center aligned author">
+				<img class="ui avatar image" :src="post.poster.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+post.poster.avatar"> {{ post.poster.nickname }} <a>{{ post.poster.username }}</a> &nbsp;
+				<a class="ui grey circular basic label">{{ timeToStatus(post.datetime) }}</a>
 			</div>
-			
-			<h2 class="ui left aligned header"> {{ post.title }}</h2>
-		</div>
-		<!-- post content -->
-		<p>{{ post.content }}</p>
+ -->		</div>
+
+		<!-- post title & content -->
+		<template v-if="post.isEditing">
+			<form class="ui form" :id="'edit_'+post.id">
+				<div class="field">
+					<input type="text" id="title" name="title" :placeholder="post.title" :value="post.title">
+				</div>
+				<div class="field">
+					<textarea rows="2" :placeholder="post.content" id="content" name="content">{{ post.content }}</textarea>
+				</div>
+				<div class="ui right floated buttons">
+					<button class="ui button" @click="post.isEditing=false" type="button">Cancel</button>
+					<div class="or"></div>
+					<button class="ui positive button" @click="editPost(post.id)" type="submit">Save</button>
+				</div>
+			</form>
+			<h4 class="ui horizontal divider header"><i class="edit icon"></i>Editing...</h4>
+		</template>
+		<template v-else>
+			<h2 class="ui left aligned header">{{ post.title }}</h2>
+			<span style="white-space: pre-line"> {{ post.content }} </span>
+		</template>
 		<div class="ui right aligned container"><h5 class="ui grey header">(#{{ post.id }}) {{ timeToString(post.datetime) }}</h5></div>
+		
 		<!-- post comment -->
 		<button class="fluid ui button" @click="getComments(post.id)" :class="{loading : post.gettingComments}" :disabled="post.gettingComments"><i class="eye icon" :class="{ slash : post.showComments }"></i> {{ post.showComments ? "隱藏留言區" : "看看大家說了什麼" }} </button>
 
@@ -169,7 +208,6 @@
 				}
 				ret = ret!=''?parseInt(ret, 10):'';
 				return (`${ret} ${unit}`).trim();
-				
 			},
 			removePost: (postId) => {
 				Swal.fire({
@@ -212,6 +250,76 @@
 					}
 				});
 			},
+			editPost: (postId)=>{
+				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
+				let post = Posts.posts[postKey];
+				let form = $('.form#edit_'+postId);
+				let title = form.find('#title').val();
+				let content = form.find('#content').val();
+				form.form({
+					on: 'submit',
+					inline: true,
+					keyboardShortcuts: false,
+					// delay: 800,
+					onSuccess: function(event, fields){
+						if(event){ // fix: in promise, event is undefined
+							event.preventDefault();
+							fields.postId = postId;
+							Swal.fire({
+								icon: 'info',
+								title: 'Sure?',
+								html: `You sure wnat to save the changes?`,
+								showDenyButton: true,
+								confirmButtonText: 'Save the changes',
+								denyButtonText: `Wait`,
+								focusDeny: true,
+							}).then((result)=>{
+								if(result.isConfirmed){
+									this.classList.add('loading');
+									$.ajax({
+										type: "POST",
+										url: '<?php echo Page('post/edit'); ?>',
+										data: fields,
+										dataType: 'json',
+										success: function(resp){
+											Loger.Log('info','Edit Post',resp);
+											let table = {
+												'is_logout': 'Oh no, you are not login.',
+												'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+												'title_too_short': `Title is too short!`,
+												'content_too_short': 'Content is too short!',
+												'access_denied': 'Permission denied!',
+												'edited_post': 	'successfully edited!',
+											}
+											// update new post into page
+											if(Loger.Have(resp,'edited_post')){
+												form.form('reset');
+												let newInfo = resp.find(r => r[0]==='success')[2];
+												post.title = newInfo['title'];
+												post.content = newInfo['content'];
+												post.edited = post.edited || {};
+												post.edited.times = post.edited.times+1 || 1;
+												post.isEditing = false;
+											}else if(Loger.Have(resp,'chnaged_nothing')){
+												post.isEditing = false;
+											}else{ Loger.Swal(resp, table); }
+										},
+									}).then(()=>{
+										this.classList.remove('loading');
+									});
+								}
+							}); // end swal
+						}
+						return false;
+					},
+					onFailure: (formErrors, fields)=>{
+						if(!form.form('validate field','title')){ form.find('#title').focus(); }
+						else if(!form.form('validate field','content')){ form.find('#content').focus(); }
+						return false;
+					},
+					fields: postRule,
+				});
+			},
 			getComments: (postId) => {
 				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
 				let post = Posts.posts[postKey];
@@ -224,7 +332,7 @@
 				$.ajax({
 					type: "GET",
 					url: '<?php echo API('post/comment'); ?>',
-					data: { postId: postId,  },
+					data: { postId: postId,	},
 					dataType: 'json',
 					success: (resp) => {
 						Loger.Log('info','Comment API',resp);
@@ -271,7 +379,9 @@
 								'content_too_short': `Your need to type more contnet!`,
 								'type_incorrect': 'Un... seems has some errors, sorry.',
 								'failed_reply': 'Sorry, seems we got the errors.',
-								'replied': 'Done, you successfully replied.',
+								'commented': 'Done, you successfully commented.',
+								'access_denied': 'Access denied!',
+								'cannot_select': 'Something error when sql select...',
 							});
 						}
 					},
@@ -314,6 +424,27 @@
 
 	let form = new Array();
 	form['CreatePost'] = $('form#CreatePost');
+
+	let postRule = {
+		title: {
+			identifier: 'title',
+			rules: [
+				{
+					type	 : 'minLength[2]',
+					prompt : 'Title 必須至少 2 個字元長度(中文為1字元長度)'
+				}
+			]
+		},
+		content: {
+			identifier: 'content',
+			rules: [
+				{
+					type	 : 'minLength[4]',
+					prompt : 'Content 必須至少 4 個字元長度(中文為2字元長度)'
+				},
+			]
+		}
+	};
 
 	// create post board
 	const CreatePost = createApp({
@@ -381,26 +512,7 @@
 			else if(!form['CreatePost'].form('validate field','content')){ form['CreatePost'].find('#content').focus(); }
 			return false;
 		},
-		fields: {
-			title: {
-				identifier: 'title',
-				rules: [
-					{
-						type	 : 'minLength[2]',
-						prompt : 'Title 必須至少 4 個字元長度(中文為2字元長度)'
-					}
-				]
-			},
-			content: {
-				identifier: 'content',
-				rules: [
-					{
-						type	 : 'minLength[4]',
-						prompt : 'Content 必須至少 4 個字元長度(中文為2字元長度)'
-					},
-				]
-			}
-		}
+		fields: postRule,
 	});
 
 	

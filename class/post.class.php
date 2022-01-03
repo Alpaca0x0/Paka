@@ -8,13 +8,9 @@
 <?php
 class Post{
 
-	function __construct(){
-		//
-	}
+	function __construct(){ }
 
-	function Init($config=false){
-		//
-	}
+	function Init($config=false){ }
 
 	function Create($title, $content){
 		global $DB, $User;
@@ -51,6 +47,40 @@ class Post{
 		];
 	}
 
+	function EditPost($postId, $title, $content){
+		global $DB, $User;
+		if($User->Is('logout')){ return 'is_logout'; }
+		$editor = $User->Get('id',false);
+		$postId = (int)$postId;
+		$datetime = time();
+		if($postId<1){ return false; }
+		// check access and get the old data
+		$sql = "SELECT `title`,`content` FROM `post` WHERE `id`=:postId AND `poster`=:editor AND `status`='alive' LIMIT 1;";
+		$DB->Query($sql);
+		$result = $DB->Execute([':postId'=>$postId, ':editor'=>$editor, ]);
+		if(!$result){ return false; }
+		$row = $DB->Fetch($result,'assoc');
+		if(!$row){ return 'access_denied'; }
+		// if title and content is same as old
+		if($title===$row['title'] && $content===$row['content']){ return 'chnaged_nothing'; }
+		// log old post
+		$sql = "INSERT INTO `post_edited`(`editor`, `post`, `title`, `content`, `datetime`) VALUES (:editor, :postId, :title, :content, :t)";
+		$DB->Query($sql);
+		$result = $DB->Execute([':editor' => $editor, ':postId' => $postId, ':title' => $row['title'], ':content' => $row['content'], ':t' => $datetime,]);
+		if(!$result){ return false; }
+		// update post
+		$sql = "UPDATE `post` SET `title`=:title, `content`=:content WHERE `id`=:postId AND `poster`=:editor AND `status`='alive';";
+		$DB->Query($sql);
+		$result = $DB->Execute([':postId'=>$postId, ':editor'=>$editor, ':title'=>$title, ':content'=>$content, ]);
+		if(!$result){ return false; }
+		//
+		return [
+			'postId' => $postId,
+			'title' => $title,
+			'content' => $content,
+		];
+	}
+
 	function Comment($postId, $content, $reply=null){
 		global $DB, $User;
 		if($User->Is('logout')){ return 'logout'; }
@@ -69,7 +99,7 @@ class Post{
 		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
-		if(!$result){ return "$postId, $content, $reply, $commenter, $datetime"; } // error
+		if(!$result){ return false; } // error
 
 		return [
 			'id' => (int)$DB->Connect->lastInsertId(),
@@ -128,7 +158,7 @@ class Post{
 		$postId = (int)$postId;
 		if($postId<1){ return false; }
 		// check access
-		$sql = "SELECT `poster` FROM `post` WHERE `id`=:postId AND `status`='alive';";
+		$sql = "SELECT `poster` FROM `post` WHERE `id`=:postId AND `status`='alive' LIMIT 1;";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId,]);
 		if(!$result){ return false; }
@@ -174,26 +204,31 @@ class Post{
 				if(!$row){ return false; } // not found
 				return $row;
 
-			// break;case 'posts':
-			// 	if(isset($args[1])){ $limit = $args[1]; }
-			// 	else{ $limit = [0,5]; }
-			// 	$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
-			// 	$DB->Query($sql);
-			// 	if(!$result = $DB->Execute()){ return false; } // error
-			// 	$row = $DB->FetchAll($result,'assoc');
-			// 	if(!$row){ return false; } // not found
-			// 	return $row;
-
 			break;case 'posts':
+				if(isset($args[1])){ $limit = $args[1]; }
+				else{ $limit = [0,5]; }
+				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
+				$DB->Query($sql);
+				if(!$result = $DB->Execute()){ return false; } // error
+				$row = $DB->FetchAll($result,'assoc');
+				if(!$row){ return false; } // not found
+				return $row;
+
+			break;case 'posts+':
 				if(isset($args[1])){ $limit = $args[1]; }
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
 				`account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
-				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
+				COUNT(`post_edited`.`id`)as`post_edited_times`, `post_edited`.`datetime`as`post_edited_datetime` 
 				FROM `post` 
 				JOIN `account` ON (`post`.`poster`=`account`.`id`) 
-				JOIN `profile` ON (`post`.`poster`=`profile`.`id`)
-				WHERE `status`='alive' ORDER BY `post`.`datetime` DESC LIMIT $limit[0],$limit[1];"; 
+				JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
+				LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
+				WHERE `status`='alive' 
+				GROUP BY `post`.`id`
+				ORDER BY `post`.`datetime` DESC 
+				LIMIT $limit[0],$limit[1];"; 
 				$DB->Query($sql);
 				$result = $DB->Execute();
 				if(!$result){ return false; } // error
