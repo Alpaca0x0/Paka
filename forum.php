@@ -180,7 +180,7 @@
 				let result = (ct - t)/1000;
 				let ret = "-", unit='-';
 
-				let i = 60, h = i*60, d = h*24, w = d*7, m = 30, y = 365;
+				let i=60, h=i*60, d=h*24, w=d*7, m=30*d, y=365*d;
 				if(result < i){
 					// just
 					ret = ''; unit='Just';
