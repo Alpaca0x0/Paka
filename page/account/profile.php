@@ -18,118 +18,137 @@ $maxFileSize = 1024*1024*5; // 5mb
 <link rel="stylesheet" type="text/css" href="<?php echo CSS('cropper.min'); ?>">
 
 <div class="ui container" id="Profile">
-
 	<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
-		<h4 class="ui dividing header">Primary Info</h4>
-		<div class="field">
-			<div class="five fields">
-				<div class="field two wide">
-					<label>ID</label>
-					<input type="input" class="ui fluid button" :value="user.id" disabled>
-				</div>
-				<div class="field two wide">
-					<label>Identity</label>
-					<input type="input" class="ui fluid button" :value="user.identity" disabled>
-				</div>
-				<div class="field three wide">
-					<label>Username</label>
-					<input type="input" class="ui fluid button" :value="user.name" disabled>
-				</div>
-				<div class="field six wide">
-					<label>E-Mail</label>
-					<input type="input" class="ui fluid button" :value="user.email" disabled>
-				</div>
+		<!-- Accordion -->
+		<div class="ui styled fluid accordion" id="info">
+			<!-- Primary Info -->
+			<div class="title" :class="viewPrimaryInfo?'active':null"><i class="dropdown icon"></i> Primary Info </div>
+			<div class="content" :class="viewPrimaryInfo?'active':null">
+				<!-- <h2 class="content-title">Sign In</h2> -->
+				<!-- <h4 class="ui dividing header">Primary Info</h4> -->
 				<div class="field">
-					<label>Session Dead-Time</label>
-					<input type="input" class="ui fluid button" :value="user.life.h + ':' + user.life.i + ':' + user.life.s" disabled>
-				</div>
-			</div>
-		</div>
-
-		<h4 class="ui dividing header">Secondary Info</h4>
-		<div class="field">
-			<div class="four fields">
-				<div class="field">
-					<label>Avatar</label>
-					<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
-					<label for='avatar'>
-						<a class="ui medium image" style="cursor:pointer;">
-							<div class="ui small circular rotate left reveal image">
-									<img id="avatarCurrent" :src="user.avatar" style="background-color: black;" class="visible content">
-									<img :src="'<?php echo IMG('default','png'); ?>'" class="hidden content">
-							</div>
-						</a>
-					</label>
-					<div id="avatarModal" class="ui modal">
-						<i class="close icon"></i>
-						<div class="header">Avatar</div>
-						<div class="image content">
-							<div class="ui medium image" style="width: 50%">
-								<img id="avatarView" class="ui fluid image">
-							</div>
-							<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+					<div class="five fields">
+						<div class="field two wide">
+							<label>ID</label>
+							<input type="input" class="ui fluid button" :value="user.id" disabled>
 						</div>
-
-						<div class="actions">
-							<div class="ui black deny button">Cancel</div>
-							<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+						<div class="field two wide">
+							<label>Identity</label>
+							<input type="input" class="ui fluid button" :value="user.identity" disabled>
+						</div>
+						<div class="field three wide">
+							<label>Username</label>
+							<input type="input" class="ui fluid button" :value="user.name" disabled>
+						</div>
+						<div class="field six wide">
+							<label>E-Mail</label>
+							<input type="input" class="ui fluid button" :value="user.email" disabled>
+						</div>
+						<div class="field">
+							<label>Session Dead-Time</label>
+							<input type="input" class="ui fluid button" :value="user.life.h + ':' + user.life.i + ':' + user.life.s" disabled>
 						</div>
 					</div>
 				</div>
+			</div>
+
+			<!-- Secondary Info -->
+			<div class="title" :class="viewSecondaryInfo?'active':null"><i class="dropdown icon"></i> Secondary Info </div>
+			<div class="content" :class="viewSecondaryInfo?'active':null">
+				<!-- <h4 class="ui dividing header">Secondary Info</h4> -->
 				<div class="field">
-					<label>Nick Name</label>
-					<input type="text"  v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
-				</div>
+					<div class="four fields">
+						<div class="field">
+							<label>Avatar</label>
+							<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
+								<div class="ui container center aligned">
+									<label for='avatar'>
+										<a class="ui image" style="cursor:pointer;">
+											<div class="ui small circular rotate left reveal image">
+													<img id="avatarCurrent" :src="user.avatar" style="background-color: black;" class="visible content">
+													<img :src="'<?php echo IMG('default','png'); ?>'" class="hidden content">
+											</div>
+										</a>
+									</label>
+								</div>
+							<div id="avatarModal" class="ui modal">
+								<i class="close icon"></i>
+								<div class="header">Avatar</div>
+								<div class="image content">
+									<div class="ui medium image" style="width: 50%">
+										<img id="avatarView" class="ui fluid image">
+									</div>
+									<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+								</div>
+
+								<div class="actions">
+									<div class="ui black deny button">Cancel</div>
+									<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+								</div>
+							</div>
+						</div>
+						<div class="field">
+							<label>Nick Name</label>
+							<input type="text"  v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
+						</div>
+						<div class="field">
+							<label>Gender</label>
+							<div class="ui selection dropdown" id="gender">
+								<input type="hidden" name="gender">
+								<i class="dropdown icon"></i>
+								<div class="default text">Gender</div>
+								<div class="menu">
+									<div class="item" data-value="male" data-text="Male">
+										<i class="male icon"></i> {{ tables.gender.male }}
+									</div>
+									<div class="item" data-value="female" data-text="Female">
+										<i class="female icon"></i> {{ tables.gender.female }}
+									</div>
+									<div class="item" data-value="transgender" data-text="Transgender">
+										<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
+									</div>
+									<div class="item" data-value="secret" data-text="Secret">
+										<i class="ban icon"></i> {{ tables.gender.secret }}
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="field">
+							<label>Birthday</label>
+							<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
+						</div>
+					</div><!-- End four fields -->
+				</div><!-- End field -->
+			</div>
+
+			<!-- Operation -->
+			<div class="title" :class="viewOperation?'active':null"><i class="dropdown icon"></i> Operation </div>
+			<div class="content" :class="viewOperation?'active':null">
+				<!-- <h4 class="ui dividing header">Operation</h4> -->
 				<div class="field">
-					<label>Gender</label>
-					<div class="ui selection dropdown" id="gender">
-						<input type="hidden" name="gender">
-						<i class="dropdown icon"></i>
-						<div class="default text">Gender</div>
-						<div class="menu">
-							<div class="item" data-value="male" data-text="Male">
-								<i class="male icon"></i> {{ tables.gender.male }}
-							</div>
-							<div class="item" data-value="female" data-text="Female">
-								<i class="female icon"></i> {{ tables.gender.female }}
-							</div>
-							<div class="item" data-value="transgender" data-text="Transgender">
-								<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
-							</div>
-							<div class="item" data-value="secret" data-text="Secret">
-								<i class="ban icon"></i> {{ tables.gender.secret }}
-							</div>
+					<h5 class="ui pink header">Change Password</h5>
+					<div class="two fields">
+						<div class="field">
+							<label>Original</label>
+							<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="Original password">
+						</div>
+						<div class="field">
+							<label>New</label>
+							<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="New password">
 						</div>
 					</div>
 				</div>
-				<div class="field">
-					<label>Birthday</label>
-					<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
-				</div>
 			</div>
 		</div>
 
-		<h4 class="ui dividing header">Operation</h4>
-		<div class="field">
-			<h5 class="ui pink header">Change Password</h5>
-			<div class="two fields">
-				<div class="field">
-					<label>Original</label>
-					<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="Original password">
-				</div>
-				<div class="field">
-					<label>New</label>
-					<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="New password">
-				</div>
-			</div>
-		</div>
-
+		<br>
 		<div class="ui animated fade submit right floated green button " tabindex="0">
 			<div class="visible content"><i class="ui icon sync alternate"></i> Update</div>
 			<div class="hidden content"><i class="ui icon paper plane"></i> Submit</div>
-		</div><br>
-		
+		</div>
+		<br>
 		<div class="ui hidden divider"></div>
+		<br>
 	</form>
 </div>
 
@@ -141,6 +160,9 @@ $maxFileSize = 1024*1024*5; // 5mb
 
 	const Profile = createApp({
 		data(){return{
+			viewPrimaryInfo: false,
+			viewSecondaryInfo: false,
+			viewOperation: false,
 			tables:{
 				gender:{
 					male: 'Male',
@@ -180,10 +202,25 @@ $maxFileSize = 1024*1024*5; // 5mb
 				this.user.life.s = parseInt(t % 60);
 			},1000);
 
+			<?php
+			$viewPrimaryInfo = 'false';
+			$viewSecondaryInfo = 'false';
+			$viewOperation = 'false';
+
+			if(isset($_GET['primary'])){ $viewPrimaryInfo = 'true'; }
+			else if(isset($_GET['secondary'])){ $viewSecondaryInfo = 'true'; }
+			else if(isset($_GET['operation'])){ $viewOperation = 'true'; }
+			else{ $viewSecondaryInfo = 'true'; }
+			?>
+
+			this.viewPrimaryInfo = <?php echo $viewPrimaryInfo; ?>;
+			this.viewSecondaryInfo = <?php echo $viewSecondaryInfo; ?>;
+			this.viewOperation = <?php echo $viewOperation; ?>;
 			this.fields.nickname.value = this.user.nickname;
 		}
 	}).mount('div#Profile');
 
+	$('#Profile .ui.accordion#info').accordion();
 
 	let form = new Array();
 	form['profile'] = $('form#Profile').first();

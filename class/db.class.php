@@ -41,10 +41,10 @@ class DB{
 		if(!$this->Connection()){ return false; }
 		$db = $this->Connect;
 		try{
-		    if($this->Query->execute($values)){ // e.g. [':example'=>'value']
-		    	return $this->Query;
-			}else{ return false; }
-		}catch (Exception $e) { return false; }
+		    if($this->Query->execute($values) === false){ // e.g. [':example'=>'value']
+		    	return false; //$this->Query->debugDumpParams()
+			}else{ return $this->Query; }
+		}catch (Exception $e) { return $e; }
 	}
 
 	 function Sentence(){

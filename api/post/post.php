@@ -19,7 +19,8 @@ if($limit<1 || $limit>99){ $limit = 8; }
 
 $ret = $Post->Get('posts+',[$skip,$limit]);
 
-if(!is_array($ret)){ $ret = [$ret]; }
+if(!$ret){ $ret = []; }
+else if(!is_array($ret)){ $ret = [$ret]; }
 
 foreach ($ret as $key => $val) {
 	$temp = $ret[$key]['poster'];

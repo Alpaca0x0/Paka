@@ -34,7 +34,7 @@ if(strlen($content)<4){ $Loger->Push('warning','content_too_short'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 
-$result = $Post->EditPost($postId, $title, $content);
+$result = $Post->Edit($postId, $title, $content);
 $resps = ['is_logout', 'access_denied', ];
 
 if(in_array($result, $resps)){ $Loger->Push('warning',$result); }

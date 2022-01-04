@@ -28,7 +28,7 @@ class Post{
 		$sql = "INSERT INTO `post`(`title`, `content`, `poster`, `datetime`) VALUES (:title, :content, :poster, :t)";
 		$DB->Query($sql);
 		$result = $DB->Execute([':title' => $title, ':content' => $content, ':poster' => $poster, 't' => $datetime,]);
-		if(!$result){ return 'error_insert'; }
+		if($result===false){ return 'error_insert'; }
 
 		return [
 			'id' => $DB->Connect->lastInsertId(),
@@ -47,7 +47,7 @@ class Post{
 		];
 	}
 
-	function EditPost($postId, $title, $content){
+	function Edit($postId, $title, $content){
 		global $DB, $User;
 		if($User->Is('logout')){ return 'is_logout'; }
 		$editor = $User->Get('id',false);
@@ -58,7 +58,7 @@ class Post{
 		$sql = "SELECT `title`,`content` FROM `post` WHERE `id`=:postId AND `poster`=:editor AND `status`='alive' LIMIT 1;";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId'=>$postId, ':editor'=>$editor, ]);
-		if(!$result){ return false; }
+		if($result===false){ return false; }
 		$row = $DB->Fetch($result,'assoc');
 		if(!$row){ return 'access_denied'; }
 		// if title and content is same as old
@@ -67,12 +67,12 @@ class Post{
 		$sql = "INSERT INTO `post_edited`(`editor`, `post`, `title`, `content`, `datetime`) VALUES (:editor, :postId, :title, :content, :t)";
 		$DB->Query($sql);
 		$result = $DB->Execute([':editor' => $editor, ':postId' => $postId, ':title' => $row['title'], ':content' => $row['content'], ':t' => $datetime,]);
-		if(!$result){ return false; }
+		if($result===false){ return false; }
 		// update post
 		$sql = "UPDATE `post` SET `title`=:title, `content`=:content WHERE `id`=:postId AND `poster`=:editor AND `status`='alive';";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId'=>$postId, ':editor'=>$editor, ':title'=>$title, ':content'=>$content, ]);
-		if(!$result){ return false; }
+		if($result===false){ return false; }
 		//
 		return [
 			'postId' => $postId,
@@ -100,7 +100,7 @@ class Post{
 		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
-		if(!$result){ return false; } // error
+		if($result===false){ return false; } // error
 
 		return [
 			'id' => (int)$DB->Connect->lastInsertId(),
@@ -136,7 +136,7 @@ class Post{
 		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
-		if(!$result){ return 'unexpected'; } // error
+		if($result===false){ return 'unexpected'; } // error
 		return [
 			'id' => $DB->Connect->lastInsertId(),
 			'post' => $postId,
@@ -151,33 +151,32 @@ class Post{
 	}
 
 	function Remove($postId){
-		global $DB, $User;
-		$poster = $User->Get('id',false);
-		if($User->Is('logout') || !$poster){ return false; }
-		// filter
-		// make some special chars be space " "
+		global $DB;
 		$postId = (int)$postId;
-		if($postId<1){ return false; }
-		// check access
-		$sql = "SELECT `poster` FROM `post` WHERE `id`=:postId AND `status`='alive' LIMIT 1;";
+		if($postId<1){ return 'post_id_format_incorrect'; }
+		// remove post
+		$sql = "UPDATE `post` SET `status`='removed' WHERE `id`=:postId;";
 		$DB->Query($sql);
 		$result = $DB->Execute([':postId' => $postId,]);
-		if(!$result){ return false; }
-		$row = $DB->Fetch($result,'assoc');
-		if(!$row){ return false; }
-		// start to remove post
-		// $sql = "DELETE FROM `post` WHERE `post`.`id`=:postId";
-		$sql = "UPDATE `post` SET `status` = 'removed' WHERE `id`=:postId;";
-		$DB->Query($sql);
-		$result = $DB->Execute([':postId' => $postId,]);
-		if(!$result){ return false; }
+		if($result===false){ return false; }
 		// remove comment
-		$sql = "UPDATE `comment` SET `status` = 'removed' WHERE `post`=:postId;";
+		$sql = "UPDATE `comment` SET `status`='removed' WHERE `post`=:postId;";
 		$DB->Query($sql);
-		$result = $DB->Execute([':postId' => $postId,]);
-		if(!$result){ return false; }
+		$result = $DB->Execute([':postId'=>$postId,]);
+		if($result===false){ return false; }
+		return 'success';
+	}
 
-		return true;
+	function RemoveComment($commentId){
+		global $DB;
+		$commentId = (int)$commentId;
+		if($commentId<1){ return 'comment_id_format_incorrect'; }
+		// remove comment
+		$sql = "UPDATE `comment` SET `status`='removed' WHERE `id`=:commentId OR `reply`=:commentId2;";
+		$DB->Query($sql);
+		$result = $DB->Execute([':commentId'=>$commentId, ':commentId2'=>$commentId]);
+		if($result===false){ return false; }
+		return 'success';
 	}
 
 	function Get($what){
@@ -190,7 +189,7 @@ class Post{
 				$sql = "SELECT * FROM `post` WHERE `id`=:postId";
 				$DB->Query($sql);
 				$result = $DB->Execute([':postId' => $postId]);
-				if(!$result){ return false; } // error
+				if($result===false){ return false; } // error
 				$row = $DB->Fetch($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
@@ -200,7 +199,7 @@ class Post{
 				$sql = "SELECT `id`,`username`,`identity`,`email` FROM `account` WHERE `id`=(SELECT `poster` FROM `post` WHERE `id`=:postId AND `status`='alive' LIMIT 1)";
 				$DB->Query($sql);
 				$result = $DB->Execute([':postId' => $postId]);
-				if(!$result){ return false; } // error
+				if($result===false){ return false; } // error
 				$row = $DB->Fetch($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
@@ -210,7 +209,8 @@ class Post{
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `id`,`title`,`content`,`poster`,`datetime` FROM `post` WHERE `status`='alive' ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
-				if(!$result = $DB->Execute()){ return false; } // error
+				$result = $DB->Execute();
+				if($result===false){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
@@ -232,7 +232,7 @@ class Post{
 				LIMIT $limit[0],$limit[1];"; 
 				$DB->Query($sql);
 				$result = $DB->Execute();
-				if(!$result){ return false; } // error
+				if($result===false){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
@@ -249,7 +249,8 @@ class Post{
 				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
 				WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
-				if(!$result = $DB->Execute([':postId'=>$postId,])){ return false; } // error
+				$result = $DB->Execute([':postId'=>$postId,]);
+				if($result===false){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
@@ -266,7 +267,8 @@ class Post{
 				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
 				WHERE `status`='alive' AND `reply`=:commentId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
-				if(!$result = $DB->Execute([':commentId'=>$commentId,])){ return false; } // error
+				$result = $DB->Execute([':commentId'=>$commentId,]);
+				if($result===false){ return false; } // error
 				$row = $DB->FetchAll($result,'assoc');
 				if(!$row){ return false; } // not found
 				return $row;
