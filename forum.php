@@ -88,7 +88,7 @@
 					</template>
 					
 					<template v-if="post.comments" v-for="comment in post.comments">
-						<div class="comment" v-if="isNotReply(post.comments,comment.id)">
+						<div class="comment" v-if="!isReply(post.comments,comment.id)">
 							<a class="avatar"><img :src="comment.commenter.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+comment.commenter.avatar"></a>
 							<div class="content">
 								{{ comment.commenter.nickname }}
@@ -119,22 +119,6 @@
 										</div>
 									</form>
 								</template>
-<!-- <template v-if="post.isEditing">
-			<form class="ui form" :id="'editPost_'+post.id">
-				<div class="field">
-					<input type="text" id="title" name="title" :placeholder="post.title" :value="post.title">
-				</div>
-				<div class="field">
-					<textarea rows="2" :placeholder="post.content" id="content" name="content">{{ post.content }}</textarea>
-				</div>
-				<div class="ui right floated buttons">
-					<button class="ui button" @click="post.isEditing=false" type="button">Cancel</button>
-					<div class="or"></div>
-					<button class="ui positive button" @click="editPost(post.id)" type="submit">Save</button>
-				</div>
-			</form>
-			<h4 class="ui horizontal divider header"><i class="edit icon"></i>Editing...</h4>
-		</template> -->
 								<template v-else><div class="text"> {{ comment.content }} </div></template>
 								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
 
@@ -151,6 +135,12 @@
 											{{ reply.commenter.username }}
 											{{ reply.commenter.nickname!=""?")":"" }}
 										</a>
+										<div class="ui small basic icon right floated buttons" v-if="reply.commenter.id==user.id">
+											<!-- <button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
+												<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
+											</button> -->
+											<button class="ui button" @click="removeComment(reply.id)"><i class="trash alternate red icon"></i></button>
+										</div>
 										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
 										<div class="text">{{ reply.content }}</div>
 										<!-- <div class="actions"><a class="reply">Reply</a></div> -->
@@ -328,13 +318,14 @@
 									// remove comment
 									comments.splice(commentKey,1);
 									// remove reply
-									let preDelReplies = comments.filter((comment)=> comment.reply===commentId );
-									let preDelReplyKey;
-									preDelReplies.forEach((preDelReply)=>{
-										preDelReplyKey = comments.findIndex((comment) => comment.id === preDelReply.id );
-										comments.splice(preDelReplyKey,1);
-									});
-
+									if (!isReply(comments,commentId)){
+										let preDelReplies = comments.filter((comment)=> comment.reply===commentId );
+										let preDelReplyKey;
+										preDelReplies.forEach((preDelReply)=>{
+											preDelReplyKey = comments.findIndex((comment) => comment.id === preDelReply.id );
+											comments.splice(preDelReplyKey,1);
+										});
+									}
 									config.timer = 1600;
 								}
 								Loger.Swal(resp,table, config);
@@ -564,9 +555,9 @@
 				});
 				return false;
 			},
-			isNotReply: (comments, commentId)=>{
+			isReply: (comments, commentId)=>{
 				let commentKey = comments.findIndex((comment) => comment.id === commentId);
-				return comments[commentKey].reply === null;
+				return comments[commentKey].reply !== null;
 			},
 			filterReplies: (comments, commentId)=>{
 				let ret = comments.filter(comment => { if(comment.reply===commentId){ return comment; } });
