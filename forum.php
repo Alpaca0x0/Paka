@@ -299,9 +299,9 @@
 					if(result.isConfirmed){
 						let postKey, commentKey;
 						postKey = Posts.posts.findIndex((post) => {
-							commentKey = post.comments.findIndex((comment) => comment.id === commentId );
+							if(!post.comments){ return false; }
+							commentKey = (post.comments).findIndex((comment) => comment.id === commentId );
 							if(commentKey>-1){ return true }
-							else{ return false; }
 						});
 						let post = Posts.posts[postKey];
 						let comments = post.comments;
