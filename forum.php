@@ -99,15 +99,15 @@
 								</a>
 								<!-- comment edit, remove -->
 								<div class="ui small basic icon right floated buttons" v-if="comment.commenter.id==user.id">
-									<!-- <button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
+									<button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
 										<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-									</button> -->
+									</button>
 									<button class="ui button" @click="removeComment(comment.id)"><i class="trash alternate red icon"></i></button>
 								</div>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
 
 								<template v-if="comment.isEditing">
-									<form class="ui form" :id="'editComment_'+comment.id" onsubmit="return false;">
+									<form class="ui form" :id="'editComment_'+comment.id" onsubmit="return false;" :class="{ loading : comment.isRemoving }">
 										<div class="ui mini action icon fluid input field">
 											<input type="text" placeholder="Reply..." :value="comment.content" id="content" name="content" v-focus>
 											&nbsp;
@@ -119,7 +119,7 @@
 										</div>
 									</form>
 								</template>
-								<template v-else><div class="text"> {{ comment.content }} </div></template>
+								<template v-else><div class="text" :class="{ loading : comment.isRemoving }"> {{ comment.content }} </div></template>
 								<div class="actions"><a class="reply" @click="(post.replyTartget=comment.id)">Reply</a></div>
 
 							</div>
@@ -136,13 +136,26 @@
 											{{ reply.commenter.nickname!=""?")":"" }}
 										</a>
 										<div class="ui small basic icon right floated buttons" v-if="reply.commenter.id==user.id">
-											<!-- <button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
-												<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-											</button> -->
+											<button class="ui button label" @click="reply.isEditing=true" :class="{ disabled: reply.commenter.id!=user.id}">
+												<i class="edit blue icon"><template v-if="reply.edited && reply.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
+											</button>
 											<button class="ui button" @click="removeComment(reply.id)"><i class="trash alternate red icon"></i></button>
 										</div>
 										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
-										<div class="text">{{ reply.content }}</div>
+										<template v-if="reply.isEditing">
+											<form class="ui form" :id="'editComment_'+reply.id" onsubmit="return false;">
+												<div class="ui mini action icon fluid input field">
+													<input type="text" placeholder="Reply..." :value="reply.content" id="content" name="content" v-focus>
+													&nbsp;
+													<div class="ui right floated buttons">
+														<button class="ui button" @click="reply.isEditing=false" type="button">Cancel</button>
+														<div class="or"></div>
+														<button class="ui positive button" @click="editComment(reply.id)" type="submit">Save</button>
+													</div>
+												</div>
+											</form>
+										</template>
+										<template v-else><div class="text">{{ reply.content }}</div></template>
 										<!-- <div class="actions"><a class="reply">Reply</a></div> -->
 									</div>
 								</div><!-- end reply of replies -->
@@ -318,7 +331,7 @@
 									// remove comment
 									comments.splice(commentKey,1);
 									// remove reply
-									if (!isReply(comments,commentId)){
+									if (!Posts.isReply(comments,commentId)){
 										let preDelReplies = comments.filter((comment)=> comment.reply===commentId );
 										let preDelReplyKey;
 										preDelReplies.forEach((preDelReply)=>{
@@ -333,7 +346,7 @@
 							error: (resp)=>{
 								Loger.Log('error','Error Remove Comment',resp);
 							}
-						}).then(()=>{ post.isRemoving = false; });
+						}).then(()=>{ comment.isRemoving = false; });
 					}
 				});
 			},
@@ -557,7 +570,9 @@
 			},
 			isReply: (comments, commentId)=>{
 				let commentKey = comments.findIndex((comment) => comment.id === commentId);
-				return comments[commentKey].reply !== null;
+				if(commentKey<0){ return false; }
+				if(comments[commentKey]['reply'] === null){ return false; }
+				else { return true; }
 			},
 			filterReplies: (comments, commentId)=>{
 				let ret = comments.filter(comment => { if(comment.reply===commentId){ return comment; } });
