@@ -5,7 +5,7 @@
 @include_once(Func('loger'));
 @include_once(Func('user'));
 $User->Update();
-if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
+if($User->Is('logout')){ $Loger->Resp('warning','is_logout'); }
 @include_once(Func('image'));
 ?>
 
@@ -15,14 +15,12 @@ if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
 $needed_datas = ['nickname','gender','birthday'];
 foreach ($needed_datas as $data){
     if( !isset($_POST[$data]) ){
-        $Loger->Push('warning','data_missing',$data);
-        $Loger->Resp();
+        $Loger->Resp('warning','data_missing',$data);
         break;
     }
 }
 if(!isset($_FILES['avatar'])){ 
-    $Loger->Push('warning','data_missing','avatar');
-    $Loger->Resp();
+    $Loger->Resp('warning','data_missing','avatar');
 }
 
 

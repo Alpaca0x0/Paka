@@ -14,7 +14,7 @@ class Post{
 
 	function Create($title, $content){
 		global $DB, $User;
-		if($User->Is('logout')){ return 'logout'; }
+		if($User->Is('logout')){ return 'is_logout'; }
 		$poster = $User->Get('id',false);
 		$poster_username = $User->Get('username',false);
 		$poster_identity = $User->Get('identity',false);
@@ -60,7 +60,7 @@ class Post{
 		$result = $DB->Execute([':postId'=>$postId, ':editor'=>$editor, ]);
 		if($result===false){ return false; }
 		$row = $DB->Fetch($result,'assoc');
-		if(!$row){ return 'access_denied'; }
+		if(!$row){ return 'permission_denied'; }
 		// if title and content is same as old
 		if($title===$row['title'] && $content===$row['content']){ return 'chnaged_nothing'; }
 		// log old post
@@ -93,7 +93,6 @@ class Post{
 		$commenter_birthday = $User->Get('birthday',null);
 		$commenter_avatar = $User->Get('avatar',null);
 		$datetime = time();
-		$reply = $reply;
 		//check
 		if(!$commenter) { return 'no_commenter'; }
 		// start to reply
@@ -117,36 +116,6 @@ class Post{
 				"avatar" => is_null($commenter_avatar)?null:base64_encode($commenter_avatar),
 			],
 			'datetime' => $datetime,
-		];
-	}
-
-	function Reply($postId, $replyTarget, $content){
-		// remove the $postId, it should be auto search
-		global $DB, $User;
-		if($User->Is('logout')){ return 'logout'; }
-		$commenter = $User->Get('id',false);
-		$commenter_username = $User->Get('username',false);
-		$commenter_identity = $User->Get('identity',false);
-		$commenter_avatar = $User->Get('avatar',null);
-		$datetime = time();
-		$reply = (int)($replyTarget);
-		//check
-		if(!$commenter) { return 'no_commenter'; }
-		// start to reply
-		$sql = "INSERT INTO `comment`(`post`, `content`, `reply`, `commenter`, `datetime`) VALUES (:postId, :content, :reply, :commenter, :t)";
-		$DB->Query($sql);
-		$result = $DB->Execute([':postId' => $postId, ':content' => $content, ':reply' => $reply, ':commenter' => $commenter, ':t' => $datetime,]);
-		if($result===false){ return 'unexpected'; } // error
-		return [
-			'id' => $DB->Connect->lastInsertId(),
-			'post' => $postId,
-			'content' => $content,
-			'reply' => $reply,
-			'datetime' => $datetime,
-			'commenter' => $commenter,
-			'commenter_username' => $commenter_username,
-			'commenter_identity' => $commenter_identity,
-			'commenter_avatar' => is_null($commenter_avatar)?null:base64_encode($commenter_avatar),
 		];
 	}
 
@@ -237,7 +206,7 @@ class Post{
 				if(!$row){ return false; } // not found
 				return $row;
 
-			break;case 'comment':
+			break;case 'comment+':
 				$postId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
@@ -255,7 +224,7 @@ class Post{
 				if(!$row){ return false; } // not found
 				return $row;
 
-			break;case 'reply':
+			break;case 'reply+':
 				$commentId = $args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }

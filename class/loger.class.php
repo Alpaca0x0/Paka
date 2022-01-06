@@ -68,6 +68,9 @@ class Loger{
 	}
 
 	// response logs
-	function Resp(){ die($this->Get('json')); }
+	function Resp($type=false, $content=false, $arg=false){
+		if($type){ $this->Push($type,$content,$arg); }
+		die($this->Get('json'));
+	}
 
 }

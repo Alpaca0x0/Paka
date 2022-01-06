@@ -25,7 +25,7 @@ if($commentId < 1){ $Loger->Push('warning','post_id_incorrect',$commentId); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // query
-$ret = $Post->Get('reply',$commentId,[0,99]);
+$ret = $Post->Get('reply+',$commentId,[0,99]);
 if(!$ret){ $ret = []; }
 else if(!is_array($ret)){ $ret = [$ret]; }
 foreach ($ret as $key => $val) {

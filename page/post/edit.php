@@ -35,9 +35,9 @@ if($Loger->Check()){ $Loger->Resp(); }
 
 
 $result = $Post->Edit($postId, $title, $content);
-$resps = ['is_logout', 'access_denied', ];
+$warnResps = ['is_logout', 'permission_denied', ];
 
-if(in_array($result, $resps)){ $Loger->Push('warning',$result); }
+if(in_array($result, $warnResps)){ $Loger->Push('warning',$result); }
 else if($result==='chnaged_nothing'){ $Loger->Push('success',$result); }
 else if(is_array($result)){ $Loger->Push('success','edited_post',$result); }
 else{ $Loger->Push('error','error',$result); }

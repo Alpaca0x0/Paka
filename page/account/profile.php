@@ -57,39 +57,42 @@ $maxFileSize = 1024*1024*5; // 5mb
 			<div class="content" :class="viewSecondaryInfo?'active':null">
 				<!-- <h4 class="ui dividing header">Secondary Info</h4> -->
 				<div class="field">
-					<div class="four fields">
-						<div class="field">
-							<label>Avatar</label>
-							<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
-								<div class="ui container center aligned">
-									<label for='avatar'>
-										<a class="ui image" style="cursor:pointer;">
-											<div class="ui small circular rotate left reveal image">
-													<img id="avatarCurrent" :src="user.avatar" style="background-color: black;" class="visible content">
-													<img :src="'<?php echo IMG('default','png'); ?>'" class="hidden content">
-											</div>
-										</a>
-									</label>
-								</div>
-							<div id="avatarModal" class="ui modal">
-								<i class="close icon"></i>
-								<div class="header">Avatar</div>
-								<div class="image content">
-									<div class="ui medium image" style="width: 50%">
-										<img id="avatarView" class="ui fluid image">
+					<div class="field">
+						<label>Avatar</label>
+						<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
+						<div class="ui container center aligned">
+							<label for='avatar' style="cursor:pointer;">
+								<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
+									<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
+									<div class="ui center aligned dimmer">
+										<div class="content">
+											<h2 class="ui inverted header">Change</h2>
+										</div>
 									</div>
-									<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
 								</div>
+							</label>
+						</div>
 
-								<div class="actions">
-									<div class="ui black deny button">Cancel</div>
-									<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+						<div id="avatarModal" class="ui modal">
+							<i class="close icon"></i>
+							<div class="header">Avatar</div>
+							<div class="image content">
+								<div class="ui medium image" style="width: 50%">
+									<img id="avatarView" class="ui fluid image">
 								</div>
+								<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+							</div>
+							<div class="actions">
+								<div class="ui black deny button">Cancel</div>
+								<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
 							</div>
 						</div>
+					</div>
+
+					<div class="three fields">
 						<div class="field">
 							<label>Nick Name</label>
-							<input type="text"  v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
+							<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
 						</div>
 						<div class="field">
 							<label>Gender</label>
@@ -151,6 +154,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 		<br>
 	</form>
 </div>
+
 
 <script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
 <script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
@@ -259,8 +263,8 @@ $maxFileSize = 1024*1024*5; // 5mb
 					url: '<?php echo Page('account/edit'); ?>',
 					data: datas,
 					dataType: 'json',
-					processData: false,  // tell jQuery not to process the data
-					contentType: false,  // tell jQuery not to set contentType
+					processData: false,	// tell jQuery not to process the data
+					contentType: false,	// tell jQuery not to set contentType
 					success: (resp)=>{
 						Loger.Log('info','Response',resp);
 						// check if data is exist
@@ -268,17 +272,17 @@ $maxFileSize = 1024*1024*5; // 5mb
 							// log exist datas
 							Loger.Log('warning','Exist Datas',exist);
 							// if username is exist
-		    				if(Loger.Have(resp,'username_exist') && !exist['username'].includes(fields['username'])){
+								if(Loger.Have(resp,'username_exist') && !exist['username'].includes(fields['username'])){
 								exist['username'].push(fields['username']);
-		    				}
-		    				// if email is exist
-		    				if(Loger.Have(resp,'email_exist') && !exist['email'].includes(fields['email'])){
+								}
+								// if email is exist
+								if(Loger.Have(resp,'email_exist') && !exist['email'].includes(fields['email'])){
 								exist['email'].push(fields['email']);
-		    				};
+								};
 						}
 						// check if success
 						let isSuccess = Loger.Check(resp,'success');
-						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Login now!' } : {};
+						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Great' } : {};
 						Loger.Swal(resp, tables['profile'], swal_config).then((val)=>{
 							if(isSuccess){ window.location.reload(); }
 							// update the UI status

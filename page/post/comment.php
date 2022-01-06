@@ -37,13 +37,23 @@ if($Loger->Check()){ $Loger->Resp(); }
 $sql = "SELECT `id` FROM `post` WHERE `id`=:postId AND `status`='alive' LIMIT 1;";
 $DB->Query($sql);
 $result = $DB->Execute([':postId'=>$postId, ]);
-if(!$result){ return $Loger->Push('error','cannot_select'); }
+if($result===false){ $Loger->Resp('error','cannot_select'); }
 $row = $DB->Fetch($result,'assoc');
-if(!$row){ $Loger->Push('warning','access_denied'); }
-if($Loger->Check()){ $Loger->Resp(); }
+if(!$row){ $Loger->Resp('warning','permission_denied'); } 
+
+// check access if it is reply
+if(!is_null($reply)){
+	$sql = "SELECT `id` FROM `comment` WHERE `id`=:reply AND `post`=:postId AND `status`='alive' LIMIT 1;";
+	$DB->Query($sql);
+	$result = $DB->Execute([':reply'=> $reply,':postId'=>$postId ]);
+	if($result===false){ $Loger->Resp('error','cannot_select'); }
+	$row = $DB->Fetch($result,'assoc');
+	if(!$row){ $Loger->Resp('warning','permission_denied'); } 
+}
 
 // start to reply
 $result = $Post->Comment($postId,$content,$reply);
+
 $resps = ['logout', 'no_replier', 'error',];
 if(in_array($result, $resps)){ $Loger->Push('warning','failed_reply',$result); }
 else if(is_array($result)){ $Loger->Push('success','commented',$result); }

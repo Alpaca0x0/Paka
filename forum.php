@@ -99,9 +99,9 @@
 								</a>
 								<!-- comment edit, remove -->
 								<div class="ui small basic icon right floated buttons" v-if="comment.commenter.id==user.id">
-									<button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
+									<!-- <button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
 										<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-									</button>
+									</button> -->
 									<button class="ui button" @click="removeComment(comment.id)"><i class="trash alternate red icon"></i></button>
 								</div>
 								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
@@ -136,9 +136,9 @@
 											{{ reply.commenter.nickname!=""?")":"" }}
 										</a>
 										<div class="ui small basic icon right floated buttons" v-if="reply.commenter.id==user.id">
-											<button class="ui button label" @click="reply.isEditing=true" :class="{ disabled: reply.commenter.id!=user.id}">
+											<!-- <button class="ui button label" @click="reply.isEditing=true" :class="{ disabled: reply.commenter.id!=user.id}">
 												<i class="edit blue icon"><template v-if="reply.edited && reply.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-											</button>
+											</button> -->
 											<button class="ui button" @click="removeComment(reply.id)"><i class="trash alternate red icon"></i></button>
 										</div>
 										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
@@ -158,6 +158,9 @@
 										<template v-else><div class="text">{{ reply.content }}</div></template>
 										<!-- <div class="actions"><a class="reply">Reply</a></div> -->
 									</div>
+									<template v-if="reply.isRemoving">
+										<div class="ui active inverted dimmer"><div class="ui small text loader">Removing</div></div>
+									</template>
 								</div><!-- end reply of replies -->
 								<!-- reply form -->
 								<form class="ui reply form" @submit="createComment(post.id,comment.id);" onsubmit="return false;" :class="{ loading : comment.isReplying }" v-if="post.replyTartget==comment.id">
@@ -168,6 +171,9 @@
 								</form>
 								<!-- end reply form -->
 							</div><!-- end replies -->
+							<template v-if="comment.isRemoving">
+								<div class="ui active inverted dimmer"><div class="ui small text loader">Removing</div></div>
+							</template>
 						</div><!-- end comment -->
 					</template>
 
@@ -266,13 +272,13 @@
 							success: (resp)=>{
 								Loger.Log('info','Remove Post',resp);
 								let table = {
-									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 									'is_logout': 'Oh no, you are not login.',
+									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 									'post_id_format_incorrect': 'Send the wrong data request.',
 									'cannot_select': 'We got the error when sql query...',
-									'access_denied': 'Sorry, you cannot do it',
+									'permission_denied': 'Sorry, you cannot do it',
 									'removed_post': `You removed the post! (#${postId})`,
-									'unexpected': 'Un... seems has some errors, sorry.',
+									'error': 'Un... seems has some errors, sorry.',
 								}
 								let config = [];
 								if(Loger.Check(resp,'success')){
@@ -318,16 +324,16 @@
 							success: (resp)=>{
 								Loger.Log('info','Remove Comment',resp);
 								let table = {
-									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 									'is_logout': 'Oh no, you are not login.',
-									'comment_id_format_incorrect': 'Send the wrong data request.',
+									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+									'comment_id_format_incorrect': 'Send the wrong data when requesting.',
 									'cannot_select': 'We got the error when sql query...',
-									'access_denied': 'Sorry, you cannot do it',
+									'permission_denied': 'Sorry, you cannot do it',
 									'removed_comment': `You removed the comment! (#${commentId})`,
-									'unexpected': 'Un... seems has some errors, sorry.',
+									'error': 'Un... seems has some errors, sorry.',
 								}
 								let config = [];
-								if(Loger.Check(resp,'success')){
+								if(Loger.Have(resp,'removed_comment')){
 									// remove comment
 									comments.splice(commentKey,1);
 									// remove reply
@@ -388,7 +394,7 @@
 												'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 												'title_too_short': `Title is too short!`,
 												'content_too_short': 'Content is too short!',
-												'access_denied': 'Permission denied!',
+												'permission_denied': 'Permission denied!',
 												'edited_post': 	'successfully edited!',
 											}
 											// update new post into page
@@ -465,7 +471,7 @@
 				// 								'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 				// 								'title_too_short': `Title is too short!`,
 				// 								'content_too_short': 'Content is too short!',
-				// 								'access_denied': 'Permission denied!',
+				// 								'permission_denied': 'Permission denied!',
 				// 								'edited_post': 	'successfully edited!',
 				// 							}
 				// 							// update new post into page
@@ -545,7 +551,7 @@
 					dataType: 'json',
 					success: (resp)=>{
 						Loger.Log('info',(replyTarget)?'Reply':'Comment',resp);
-						if(Loger.Check(resp,'success')){
+						if(Loger.Have(resp,'commented')){
 							if(replyTarget){ comment.replying = ''; }
 							else{ post.commenting = ''; }
 							post.comments.push(resp.find(r => r[0]==='success')[2]); //unshift
@@ -553,12 +559,11 @@
 							Loger.Swal(resp,{
 								'is_logout': 'Oh no, you are not login.',
 								'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
-								'content_too_short': `Your need to type more contnet!`,
-								'type_incorrect': 'Un... seems has some errors, sorry.',
-								'failed_reply': 'Sorry, seems we got the errors.',
-								'commented': 'Done, you successfully commented.',
-								'access_denied': 'Access denied!',
-								'cannot_select': 'Something error when sql select...',
+								'title_too_short': 'Need to type more text in title!',
+								'content_too_short': `Need to type more text in contnet!`,
+								'error_insert': 'Un... seems has some errors when writing your data, sorry.',
+								'permission_denied': 'Access denied!',
+								'error': 'Sorry, we got the error...',
 							});
 						}
 					},
