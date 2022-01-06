@@ -13,11 +13,8 @@
 
 <div class="ui container">
 	<h2 class="content-title">Index</h2>
-	<p>Welcome to the <?php T('AlpacaTech'); ?>.</p>
+	<p>Welcome to the <?php echo L('AlpacaTech'); ?>.</p>
 </div>
-
-
-
 
 <?php @include_once(Inc('menu/footer')); ?>
 <?php @include_once(Inc('footer')); ?>

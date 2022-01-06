@@ -14,7 +14,7 @@ class Lang{
 	function __construct($lang='en-us'){
 		$lang = strtolower(trim($lang));
 		$this->Lang = in_array($lang, array_keys(Langs))?$lang:Langs[0];
-		return true;
+		return $this->Lang;
 	}
 	
 	function __destruct(){ }
@@ -26,7 +26,7 @@ class Lang{
 			$this->Map = parse_ini_file(Conf("languages/{$this->Lang}",'ini'),true);
 		}catch(Exception $e){
 			return false;
-		} return true;
+		} return $this->Lang;
 	}
 }
 

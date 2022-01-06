@@ -10,10 +10,10 @@
 	<meta charset="utf-8">
 	<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 	<meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no" />
-	<title><?php echo T('AlpacaTech'); ?></title>
+	<title><?php echo L('AlpacaTech'); ?></title>
 
 	<!-- A, custom js on this website -->
-	<!-- <script type="text/javascript" src="<?php echo JS('init'); ?>"></script> -->
+	<script type="text/javascript" src="<?php echo JS('init'); ?>"></script>
 
 	<!-- jquery -->
 	<script type="text/javascript" src="<?php echo Frame('jquery/jquery@3.6.0.min','js'); ?>"></script>

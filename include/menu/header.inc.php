@@ -1,6 +1,7 @@
 <?php defined('INIT') or die('NO INIT'); ?>
 
 <?php 
+    @include_once(Func('lang'));
     @include_once(Func('user'));
     $User->Update();
 ?>
@@ -80,38 +81,38 @@
 
             index: {
                 id: '<?php echo ID('page',Root('index')); ?>',
-                name: "Home",
+                name: '<?php echo L('Index','Navbar', 'Home') ?>',
                 isActive: false,
                 link: `<?php echo Root('index'); ?>`,
             },
             forum: {
                 id: '<?php echo ID('page',Root('forum')); ?>',
-                name: "Forum",
+                name: '<?php echo L('Forum','Navbar', 'Forum') ?>',
                 isActive: false,
                 link: `<?php echo Root('forum'); ?>`,
             },
             about: {
                 id: '<?php echo ID('page',Root('about')); ?>',
-                name: "About",
+                name: '<?php echo L('About','Navbar', 'About') ?>',
                 isActive: false,
                 link: `<?php echo Root('about'); ?>`,
             },
             announcement: {
                 id: '<?php echo ID('page',Root('announcement')); ?>',
-                name: "Announcement",
+                name: '<?php echo L('Announcement','Navbar', 'Announcement') ?>',
                 isActive: false,
                 link: `<?php echo Root('announcement'); ?>`,
             },
             account: {
                 id: '<?php echo ID('page',Page('account/index')); ?>',
-                name: "Account",
+                name: '<?php echo L('Account','Navbar', 'Account') ?>',
                 isActive: false,
                 link: `<?php echo Page('account/index'); ?>`,
                 isLogin: <?php echo $User->Is('Login')?"true":"false"; ?>,
             },
             profile: {
                 id: '<?php echo ID('page', Page('account/profile')); ?>',
-                name: 'Profile',
+                name: '<?php echo L('Profile','Navbar', 'Profile') ?>',
                 isActive: false,
                 link: '<?php echo Page('account/profile'); ?>',
             }

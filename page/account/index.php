@@ -1,7 +1,7 @@
 <?php @include_once('../../init.php'); ?>
 
 <?php
-@include_once(Func('lang')); # Using the function T($id) to return text in current language
+@include_once(Func('lang')); # Using the function L($label) to return text in current language
 $ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
 ?>
 
@@ -13,9 +13,9 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 	<!-- Accordion -->
 	<div class="ui styled fluid accordion" id="Account">
 		<!-- Sign In -->
-		<div class="title" :class="isLogin?'active':null"><i class="dropdown icon"></i> I'm already a member </div>
+		<div class="title" :class="isLogin?'active':null"><i class="dropdown icon"></i> <?php echo L('Signin_accordion','Page/Account'); ?> </div>
 		<div class="content" :class="isLogin?'active':null">
-			<h2 class="content-title">Sign In</h2>
+			<h2 class="content-title"><?php echo L('Signin','Page/Account'); ?></h2>
 			<form class="ui form" id="Login" ref="login" method="POST">
 				<div class="two fields">
 					<div class="field error">
@@ -42,9 +42,9 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 
 		<!-- Sign Up -->
-		<div class="title" :class="isRegister?'active':null"><i class="dropdown icon"></i> I have no account, join now </div>
+		<div class="title" :class="isRegister?'active':null"><i class="dropdown icon"></i> <?php echo L('Signup_accordion','Page/Account'); ?> </div>
 		<div class="content" :class="isRegister?'active':null">
-			<h2 class="content-title">Sign Up</h2>
+			<h2 class="content-title"><?php echo L('Signup','Page/Account'); ?></h2>
 			<form class="ui form" id="Register" ref="register" method="POST" autocomplete="off">
 
 				<div class="two fields">

@@ -1,4 +1,5 @@
 <?php defined('INIT') or die('NO INIT'); ?>
+
 <?php @include_once(Clas('lang')); ?>
 
 <?php
@@ -18,17 +19,25 @@
 // $Lang = new Lang();
 // $Lang->Init();
 
-function T($lable, $category='', $replace=' - ') {
+function L($lable, $category='', $replace=false) {
 	global $Lang;
-	$args = func_get_args();
 	if(isset($Lang->Map[$category][$lable])) { return $Lang->Map[$category][$lable]; }
-	else if(isset($args[2])) { return $replace; }
+	else if($replace) { return $replace; }
 	else if(isset($Lang->BasicMap[$category][$lable])){ return $Lang->BasicMap[$category][$lable]; }
 	else{ return "!LangError!"; }
 }
 
 /****************************************************************/
 
-$Lang = new Lang('en-us');
+$lang = strtolower($_COOKIE['lang']);
+if(!in_array($lang, array_keys(Langs))){
+	$lang = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'])[0];
+	$lang = explode(';', $lang)[0];
+	$lang = strtolower($lang);
+}
+setcookie("lang", $lang, time()+60*60*24*30*2, ROOT);
+
+$Lang = new Lang($lang);
 $Lang->Init();
+
 
