@@ -8,6 +8,5 @@
 $DB = new DB();
 if(!$DB->Connect()){
 	@include_once(Func('loger'));
-	$Loger->Push('error','database_cannot_connect');
-	$Loger->Resp();
+	$Loger->Resp('error','database_cannot_connect'); 
 };

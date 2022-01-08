@@ -13,8 +13,14 @@ class Lang{
 
 	function __construct($lang='en-us'){
 		$lang = strtolower(trim($lang));
-		$this->Lang = in_array($lang, array_keys(Langs))?$lang:Langs[0];
-		return $this->Lang;
+		if(in_array($lang, array_keys(Langs))){
+			$lang = $lang;
+		}else if(in_array(explode('-', $lang)[0], array_keys(Langs))){ 
+			$lang = explode('-', $lang)[0];
+		}else{
+			$lang = false;
+		}
+		$this->Lang = $lang!==false?$lang:array_keys(Langs)[0];
 	}
 	
 	function __destruct(){ }

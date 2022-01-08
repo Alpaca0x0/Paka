@@ -18,7 +18,6 @@ $maxFileSize = 1024*1024*5; // 5mb
 <link rel="stylesheet" type="text/css" href="<?php echo CSS('cropper.min'); ?>">
 
 <div class="ui container" id="Profile">
-	<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
 		<!-- Accordion -->
 		<div class="ui styled fluid accordion" id="info">
 			<!-- Primary Info -->
@@ -56,103 +55,104 @@ $maxFileSize = 1024*1024*5; // 5mb
 			<div class="title" :class="viewSecondaryInfo?'active':null"><i class="dropdown icon"></i> Secondary Info </div>
 			<div class="content" :class="viewSecondaryInfo?'active':null">
 				<!-- <h4 class="ui dividing header">Secondary Info</h4> -->
-				<div class="field">
+				<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
 					<div class="field">
-						<label>Avatar</label>
-						<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
-						<div class="ui container center aligned">
-							<label for='avatar' style="cursor:pointer;">
-								<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
-									<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
-									<div class="ui center aligned dimmer">
-										<div class="content">
-											<h2 class="ui inverted header">Change</h2>
+						<div class="field">
+							<label>Avatar</label>
+							<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
+							<div class="ui container center aligned">
+								<label for='avatar' style="cursor:pointer;">
+									<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
+										<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
+										<div class="ui center aligned dimmer">
+											<div class="content">
+												<h2 class="ui inverted header">Change</h2>
+											</div>
+										</div>
+									</div>
+								</label>
+							</div>
+
+							<div id="avatarModal" class="ui modal">
+								<i class="close icon"></i>
+								<div class="header">Avatar</div>
+								<div class="image content">
+									<div class="ui medium image" style="width: 50%">
+										<img id="avatarView" class="ui fluid image">
+									</div>
+									<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+								</div>
+								<div class="actions">
+									<div class="ui black deny button">Cancel</div>
+									<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="three fields">
+							<div class="field">
+								<label>Nick Name</label>
+								<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
+							</div>
+							<div class="field">
+								<label>Gender</label>
+								<div class="ui selection dropdown" id="gender">
+									<input type="hidden" name="gender">
+									<i class="dropdown icon"></i>
+									<div class="default text">Gender</div>
+									<div class="menu">
+										<div class="item" data-value="male" data-text="Male">
+											<i class="male icon"></i> {{ tables.gender.male }}
+										</div>
+										<div class="item" data-value="female" data-text="Female">
+											<i class="female icon"></i> {{ tables.gender.female }}
+										</div>
+										<div class="item" data-value="transgender" data-text="Transgender">
+											<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
+										</div>
+										<div class="item" data-value="secret" data-text="Secret">
+											<i class="ban icon"></i> {{ tables.gender.secret }}
 										</div>
 									</div>
 								</div>
-							</label>
-						</div>
-
-						<div id="avatarModal" class="ui modal">
-							<i class="close icon"></i>
-							<div class="header">Avatar</div>
-							<div class="image content">
-								<div class="ui medium image" style="width: 50%">
-									<img id="avatarView" class="ui fluid image">
-								</div>
-								<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
 							</div>
-							<div class="actions">
-								<div class="ui black deny button">Cancel</div>
-								<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+							<div class="field">
+								<label>Birthday</label>
+								<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
 							</div>
-						</div>
-					</div>
-
-					<div class="three fields">
-						<div class="field">
-							<label>Nick Name</label>
-							<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
-						</div>
-						<div class="field">
-							<label>Gender</label>
-							<div class="ui selection dropdown" id="gender">
-								<input type="hidden" name="gender">
-								<i class="dropdown icon"></i>
-								<div class="default text">Gender</div>
-								<div class="menu">
-									<div class="item" data-value="male" data-text="Male">
-										<i class="male icon"></i> {{ tables.gender.male }}
-									</div>
-									<div class="item" data-value="female" data-text="Female">
-										<i class="female icon"></i> {{ tables.gender.female }}
-									</div>
-									<div class="item" data-value="transgender" data-text="Transgender">
-										<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
-									</div>
-									<div class="item" data-value="secret" data-text="Secret">
-										<i class="ban icon"></i> {{ tables.gender.secret }}
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="field">
-							<label>Birthday</label>
-							<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
-						</div>
-					</div><!-- End four fields -->
-				</div><!-- End field -->
+						</div><!-- End fields -->
+					</div><!-- End field -->
+					<button class="ui right floated green button"><i class="ui icon sync alternate"></i> Update Profile</button>
+					<div class="ui hidden divider"></div><br>
+				</form>
 			</div>
 
 			<!-- Operation -->
 			<div class="title" :class="viewOperation?'active':null"><i class="dropdown icon"></i> Operation </div>
 			<div class="content" :class="viewOperation?'active':null">
 				<!-- <h4 class="ui dividing header">Operation</h4> -->
-				<div class="field">
-					<h5 class="ui pink header">Change Password</h5>
-					<div class="two fields">
-						<div class="field">
-							<label>Original</label>
-							<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="Original password">
-						</div>
-						<div class="field">
-							<label>New</label>
-							<input type="password" @focus="fields.editing='password'" @blur="fields.editing=''" class="ui fluid button" placeholder="New password">
+				<form class="ui form" onsubmit="return false;" id="Operation">
+					<div class="field">
+						<h5 class="ui pink header">Change Password</h5>
+						<div class="two fields">
+							<div class="field">
+								<label>Original</label>
+								<input type="password" name="old_password" class="ui fluid button" placeholder="Original password">
+							</div>
+							<div class="field">
+								<label>New</label>
+								<input type="password" name="new_password" class="ui fluid button" placeholder="New password">
+							</div>
 						</div>
 					</div>
-				</div>
+					<button class="ui right floated green button"><i class="ui icon sync alternate"></i> Update</button>
+					<div class="ui hidden divider"></div><br>
+				</form>
 			</div>
-		</div>
-
-		<br>
-		<div class="ui animated fade submit right floated green button " tabindex="0">
-			<div class="visible content"><i class="ui icon sync alternate"></i> Update</div>
-			<div class="hidden content"><i class="ui icon paper plane"></i> Submit</div>
 		</div>
 		<br>
 		<div class="ui hidden divider"></div>
 		<br>
-	</form>
 </div>
 
 
@@ -228,6 +228,8 @@ $maxFileSize = 1024*1024*5; // 5mb
 
 	let form = new Array();
 	form['profile'] = $('form#Profile').first();
+	form['operation'] = $('form#Operation').first();
+
 	form['profile'].find('#gender.selection').first().dropdown('set selected', Profile.user.gender);
 
 	let tables = new Array();
@@ -240,10 +242,18 @@ $maxFileSize = 1024*1024*5; // 5mb
 		"gender_format_not_match": 		"Gender format not match",
 		"db_cannot_update": 			"Database has some problems",
 	};
+	tables['operation'] = {
+		"is_logout": 					"Sorry, you must login before doing this operation!",
+		"data_missing": 				"Data missing",
+		"password_format_not_match": 	"Password format not match",
+		"update_successfully": 			"Update successfully",
+		"nothing_changed": 				"Nothing changed, maybe original password incorrect or the new password is same as older",
+		"db_cannot_update": 			"Database has some problems",
+	};
 
 	
 
-	$('form#Profile').first().form({
+	form['profile'].form({
 		on: 'change',
 		inline: true,
 		keyboardShortcuts: false,
@@ -255,8 +265,6 @@ $maxFileSize = 1024*1024*5; // 5mb
 				this.classList.add('loading');
 
 				let datas = new FormData(form['profile'][0]);
-
-				console.log(datas);
 
 				$.ajax({
 					type: "POST",
@@ -297,11 +305,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 			return false;
 		},
 		onFailure: function(formErrors, fields){
-			if(!form['register'].form('validate field','username')){ app.$refs.register_username.focus(); }
-			else if(!form['register'].form('validate field','password')){ app.$refs.register_password.focus(); }
-			else if(!form['register'].form('validate field','email')){ app.$refs.register_email.focus(); }
-			else if(!form['register'].form('validate field','gender')){ app.$refs.register_gender.focus(); }
-			return false;
+			console.error(formErrors);
 		},
 		fields: {
 			username: {
@@ -362,6 +366,64 @@ $maxFileSize = 1024*1024*5; // 5mb
 			// 		},
 			// 	]
 			// }
+		}
+	});
+
+
+
+
+	form['operation'].form({
+		on: 'change',
+		inline: true,
+		keyboardShortcuts: false,
+		// delay: 800,
+		onSuccess: function(event, fields){
+			if(event){ // fix: in promise, event is undefined
+				event.preventDefault();
+
+				this.classList.add('loading');
+
+				let datas = new FormData(form['operation'][0]);
+
+				$.ajax({
+					type: "POST",
+					url: '<?php echo Page('account/repassword'); ?>',
+					data: datas,
+					dataType: 'json',
+					processData: false,	// tell jQuery not to process the data
+					contentType: false,	// tell jQuery not to set contentType
+					success: (resp)=>{
+						Loger.Log('info','Response',resp);
+						// check if success
+						let isSuccess = Loger.Have(resp,'update_successfully');
+						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Great' } : {};
+						Loger.Swal(resp, tables['operation'], swal_config).then((val)=>{
+							if(isSuccess){ window.location.reload(); }
+							// update the UI status
+							// it will call back to the onSuccess()
+							form['operation'].form('validate form'); // fix: in promise, event is undefined
+						});
+					},
+				}).then(()=>{
+					this.classList.remove('loading');
+				});
+			}
+			return false;
+		},
+		onFailure: function(formErrors, fields){
+			console.error(formErrors);
+		},
+		fields: {
+			new_password: {
+				identifier: 'new_password',
+				optional: true,
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
+						prompt : 'Your password must be at format {ruleValue}'
+					},
+				]
+			}
 		}
 	});
 

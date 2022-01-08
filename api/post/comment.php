@@ -38,6 +38,9 @@ foreach ($ret as $key => $val) {
 	$ret[$key]['commenter']['gender'] = $ret[$key]['profile_gender'];
 	$ret[$key]['commenter']['birthday'] = $ret[$key]['profile_birthday'];
 	$ret[$key]['commenter']['avatar'] = $ret[$key]['profile_avatar'];
+	$ret[$key]['edited'] = Array();
+	$ret[$key]['edited']['times'] = $ret[$key]['comment_edited_times'];
+	$ret[$key]['edited']['last_time'] = $ret[$key]['comment_edited_datetime'];
 	if(!is_null($ret[$key]['commenter']['avatar'])){ $ret[$key]['commenter']['avatar'] = base64_encode($ret[$key]['commenter']['avatar']); }
 
 	unset(
@@ -47,6 +50,8 @@ foreach ($ret as $key => $val) {
 		$ret[$key]['profile_gender'],
 		$ret[$key]['profile_birthday'],
 		$ret[$key]['profile_avatar'],
+		$ret[$key]['comment_edited_times'],
+		$ret[$key]['comment_edited_datetime']
 	);
 }
 echo json_encode($ret);

@@ -53,7 +53,7 @@ class Post{
 		$editor = $User->Get('id',false);
 		$postId = (int)$postId;
 		$datetime = time();
-		if($postId<1){ return false; }
+		if($postId<1){ return 'permission_denied'; }
 		// check access and get the old data
 		$sql = "SELECT `title`,`content` FROM `post` WHERE `id`=:postId AND `poster`=:editor AND `status`='alive' LIMIT 1;";
 		$DB->Query($sql);
@@ -116,6 +116,42 @@ class Post{
 				"avatar" => is_null($commenter_avatar)?null:base64_encode($commenter_avatar),
 			],
 			'datetime' => $datetime,
+		];
+	}
+
+	function EditComment($postId, $commentId, $content){
+		global $DB, $User;
+		if($User->Is('logout')){ return 'is_logout'; }
+		$editor = $User->Get('id',false);
+		$postId = (int)$postId;
+		$commentId = (int)$commentId;
+		$datetime = time();
+		if($postId<1 || $commentId<1){ return 'permission_denied'; }
+		// check access and get the old data
+		$sql = "SELECT `content` FROM `comment` WHERE `id`=:commentId AND `post`=:postId AND `commenter`=:editor AND `status`='alive' LIMIT 1;";
+		$DB->Query($sql);
+		$result = $DB->Execute([':commentId'=>$commentId, ':postId'=>$postId, ':editor'=>$editor, ]);
+		if($result===false){ return false; }
+		$row = $DB->Fetch($result,'assoc');
+		if(!$row){ return 'permission_denied'; }
+		// if title and content is same as old
+		if($content===$row['content']){ return 'chnaged_nothing'; }
+		// log old post
+		$sql = "INSERT INTO `comment_edited`(`editor`, `post`, `comment`, `content`, `datetime`) VALUES (:editor, :postId, :commentId, :content, :t)";
+		$DB->Query($sql);
+		$result = $DB->Execute([':editor' => $editor, ':postId' => $postId, ':commentId' => $commentId, ':content' => $row['content'], ':t' => $datetime,]);
+		if($result===false){ return false; }
+		// update post
+		$sql = "UPDATE `comment` SET `content`=:content WHERE `id`=:commentId AND `post`=:postId AND `commenter`=:editor AND `status`='alive';";
+		$DB->Query($sql);
+		$result = $DB->Execute([':content'=>$content, ':commentId'=>$commentId, ':postId'=>$postId, ':editor'=>$editor,   ]);
+		if($result===false){ return false; }
+		//
+		return [
+			'postId' => $postId,
+			'commentId' => $commentId,
+			'content' => $content,
+			'last_time' => $datetime,
 		];
 	}
 
@@ -195,7 +231,7 @@ class Post{
 				JOIN `account` ON (`post`.`poster`=`account`.`id`) 
 				JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
 				LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
-				WHERE `status`='alive' 
+				WHERE `post`.`status`='alive' 
 				GROUP BY `post`.`id`
 				ORDER BY `post`.`datetime` DESC 
 				LIMIT $limit[0],$limit[1];"; 
@@ -207,16 +243,21 @@ class Post{
 				return $row;
 
 			break;case 'comment+':
-				$postId = $args[1];
+				$postId = (int)$args[1];
 				if(isset($args[2])){ $limit = $args[2]; }
 				else{ $limit = [0,5]; }
 				$sql = "SELECT `comment`.`id`, `comment`.`reply`, `comment`.`content`, `comment`.`commenter`, `comment`.`datetime`, `comment`.`post`,
 				`account`.`username`as`commenter_username`, `account`.`identity`as`commenter_identity`,
-				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`
+				`profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`birthday`as`profile_birthday`, `profile`.`avatar`as`profile_avatar`,
+				COUNT(`comment_edited`.`id`)as`comment_edited_times`, MAX(`comment_edited`.`datetime`)as`comment_edited_datetime` 
 				FROM `comment` 
 				JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
 				JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
-				WHERE `status`='alive' AND `post`=:postId ORDER BY `datetime` ASC LIMIT $limit[0],$limit[1];";
+				LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`)
+				WHERE `comment`.`status`='alive' AND `comment`.`post`=:postId 
+				GROUP BY `comment`.`id`
+				ORDER BY `comment`.`datetime` ASC 
+				LIMIT $limit[0],$limit[1];";
 				$DB->Query($sql);
 				$result = $DB->Execute([':postId'=>$postId,]);
 				if($result===false){ return false; } // error

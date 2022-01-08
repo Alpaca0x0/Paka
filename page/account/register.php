@@ -41,7 +41,7 @@ $password = hash('sha256',$password);
 # Check if the user is not exist
 $DB->Query("SELECT `username`,`email` FROM `account` WHERE `username`=:username OR `email`=:email;");
 $result = $DB->Execute([':username'=>$username, ':email'=>$email]);
-if(!$result){ $Loger->Push('error','db_cannot_query'); $Loger->Resp(); }
+if($result===false){ $Loger->Push('error','db_cannot_query'); $Loger->Resp(); }
 # DB query successfully
 $row = $DB->FetchAll($result,'assoc');
 if(in_array($username, array_column($row,'username'))){ $Loger->Push('warning','username_exist'); }
@@ -51,7 +51,7 @@ if($Loger->Check()){ $Loger->Resp(); } // exist
 # Write into Database
 $DB->Query("INSERT INTO `account`(`username`,`password`,`email`) VALUES(:username,:password,:email);");
 $result = $DB->Execute([':username'=>$username, ':password'=>$password, ':email'=>$email]);
-if(!$result){ $Loger->Push('error','db_cannot_insert'); }
+if($result===false){ $Loger->Push('error','db_cannot_insert'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // Write Profile

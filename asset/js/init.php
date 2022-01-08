@@ -1,3 +1,5 @@
+<?php @include_once('../../init.php'); ?>
+
 function setCookie(name,value,minutes=60*7){
     var expires = "";
     if(minutes){
@@ -5,7 +7,7 @@ function setCookie(name,value,minutes=60*7){
         date.setTime(date.getTime() + minutes*60*1000);
         expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    document.cookie = name + "=" + (value || "")  + expires + "; path=<?php echo ROOT; ?>";
 }
 
 function getCookie(name) {
@@ -20,5 +22,5 @@ function getCookie(name) {
 }
 
 function delCookie(name) {   
-    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = name +'=; Path=<?php echo ROOT; ?>; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }

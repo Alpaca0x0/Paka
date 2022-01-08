@@ -9,7 +9,7 @@
 
 <!-- comments container -->
 <div class="ui container" id="Forum">
-	<h2 class="content-title">Forum</h2>
+	<h2 class="content-title"><?php L('Forum','Forum'); ?></h2>
 
 	<!-- write post form -->
 	<form class="ui form" id="CreatePost" ref='CreatePost'>
@@ -42,7 +42,7 @@
 					<div class="meta">
 						<div class="date"> 
 							{{ timeToStatus(post.datetime) }}
-							<span class="ui" :data-tooltip="timeToStatus(post.edited.last_time)" data-variation="mini" data-position="bottom left" v-if="post.edited && post.edited.times>0">, Edited post</span>
+							<span class="ui" :data-tooltip="timeToStatus(post.edited.last_time)" data-variation="mini" data-position="bottom left" v-if="post.edited && post.edited.times>0">, Edited</span>
 						</div>
 						<!-- <a class="like"><i class="like icon"></i> 4 個讚 </a> -->
 					</div>
@@ -99,12 +99,17 @@
 								</a>
 								<!-- comment edit, remove -->
 								<div class="ui small basic icon right floated buttons" v-if="comment.commenter.id==user.id">
-									<!-- <button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
-										<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-									</button> -->
+									<button class="ui button label" @click="comment.isEditing=true" :class="{ disabled: comment.commenter.id!=user.id}">
+										<i class="edit blue icon"><template v-if="comment.edited && comment.edited.times>0">&nbsp;{{ comment.edited.times }}</template></i>
+									</button>
 									<button class="ui button" @click="removeComment(comment.id)"><i class="trash alternate red icon"></i></button>
 								</div>
-								<div class="metadata"><span class="date">{{ timeToStatus(comment.datetime) }} ({{timeToString(comment.datetime)}})</span></div>
+								<div class="metadata">
+									<span class="date">
+										<span class="ui" :data-tooltip="timeToString(comment.datetime)" data-variation="mini" data-position="bottom left">{{ timeToStatus(comment.datetime) }}</span>
+										<span class="ui" :data-tooltip="timeToStatus(comment.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="comment.edited && comment.edited.times>0">, Edited</span>
+									</span>
+								</div>
 
 								<template v-if="comment.isEditing">
 									<form class="ui form" :id="'editComment_'+comment.id" onsubmit="return false;" :class="{ loading : comment.isRemoving }">
@@ -131,17 +136,23 @@
 									<div class="content">
 										{{ reply.commenter.nickname }}
 										<a class="author">
-											{{ reply.commenter.nickname!=""?" (":"" }}
+											{{ reply.commenter.nickname!=null?" (":"" }}
 											{{ reply.commenter.username }}
-											{{ reply.commenter.nickname!=""?")":"" }}
+											{{ reply.commenter.nickname!=null?")":"" }}
 										</a>
 										<div class="ui small basic icon right floated buttons" v-if="reply.commenter.id==user.id">
-											<!-- <button class="ui button label" @click="reply.isEditing=true" :class="{ disabled: reply.commenter.id!=user.id}">
-												<i class="edit blue icon"><template v-if="reply.edited && reply.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
-											</button> -->
+											<button class="ui button label" @click="reply.isEditing=true" :class="{ disabled: reply.commenter.id!=user.id}">
+												<i class="edit blue icon"><template v-if="reply.edited && reply.edited.times>0">&nbsp;{{ reply.edited.times }}</template></i>
+											</button>
 											<button class="ui button" @click="removeComment(reply.id)"><i class="trash alternate red icon"></i></button>
 										</div>
-										<div class="metadata"><span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span></div>
+										<div class="metadata">
+											<span class="date">
+												<span class="ui" :data-tooltip="timeToString(reply.datetime)" data-variation="mini" data-position="bottom left">{{ timeToStatus(reply.datetime) }}</span>
+												<span class="ui" :data-tooltip="timeToStatus(reply.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="reply.edited && reply.edited.times>0">, Edited</span>
+											</span>
+											<!-- <span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span> -->
+										</div>
 										<template v-if="reply.isEditing">
 											<form class="ui form" :id="'editComment_'+reply.id" onsubmit="return false;">
 												<div class="ui mini action icon fluid input field">
@@ -438,70 +449,69 @@
 				let comment = post.comments[commentKey];
 				let form = $('form.form#editComment_'+commentId);
 				let content = form.find('#content').val();
-				return false;
-				// form.form({
-				// 	on: 'submit',
-				// 	inline: true,
-				// 	keyboardShortcuts: false,
-				// 	// delay: 800,
-				// 	onSuccess: function(event, fields){
-				// 		if(event){ // fix: in promise, event is undefined
-				// 			event.preventDefault();
-				// 			fields.postId = postId;
-				// 			Swal.fire({
-				// 				icon: 'info',
-				// 				title: 'Sure?',
-				// 				html: `You sure wnat to save the changes?`,
-				// 				showDenyButton: true,
-				// 				confirmButtonText: 'Save the changes',
-				// 				denyButtonText: `Wait`,
-				// 				focusDeny: true,
-				// 			}).then((result)=>{
-				// 				if(result.isConfirmed){
-				// 					this.classList.add('loading');
-				// 					$.ajax({
-				// 						type: "POST",
-				// 						url: '<?php echo Page('post/edit'); ?>',
-				// 						data: fields,
-				// 						dataType: 'json',
-				// 						success: function(resp){
-				// 							Loger.Log('info','Edit Post',resp);
-				// 							let table = {
-				// 								'is_logout': 'Oh no, you are not login.',
-				// 								'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
-				// 								'title_too_short': `Title is too short!`,
-				// 								'content_too_short': 'Content is too short!',
-				// 								'permission_denied': 'Permission denied!',
-				// 								'edited_post': 	'successfully edited!',
-				// 							}
-				// 							// update new post into page
-				// 							if(Loger.Have(resp,'edited_post')){
-				// 								form.form('reset');
-				// 								let newInfo = resp.find(r => r[0]==='success')[2];
-				// 								post.title = newInfo['title'];
-				// 								post.content = newInfo['content'];
-				// 								post.edited = post.edited || {};
-				// 								post.edited.times = post.edited.times+1 || 1;
-				// 								post.edited.last_time = newInfo.last_time;
-				// 								post.isEditing = false;
-				// 							}else if(Loger.Have(resp,'chnaged_nothing')){
-				// 								post.isEditing = false;
-				// 							}else{ Loger.Swal(resp, table); }
-				// 						},
-				// 					}).then(()=>{
-				// 						this.classList.remove('loading');
-				// 					});
-				// 				}
-				// 			}); // end swal
-				// 		}
-				// 		return false;
-				// 	},
-				// 	onFailure: (formErrors, fields)=>{
-				// 		if(!form.form('validate field','content')){ form.find('#content').focus(); }
-				// 		return false;
-				// 	},
-				// 	fields: commentRule,
-				// });
+				form.form({
+					on: 'submit',
+					inline: true,
+					keyboardShortcuts: false,
+					// delay: 800,
+					onSuccess: function(event, fields){
+						if(event){ // fix: in promise, event is undefined
+							event.preventDefault();
+							fields.postId = post.id;
+							fields.commentId = commentId;
+							Swal.fire({
+								icon: 'info',
+								title: 'Sure?',
+								html: `You sure wnat to save the changes?`,
+								showDenyButton: true,
+								confirmButtonText: 'Save the changes',
+								denyButtonText: `Wait`,
+								focusDeny: true,
+							}).then((result)=>{
+								if(result.isConfirmed){
+									this.classList.add('loading');
+									$.ajax({
+										type: "POST",
+										url: '<?php echo Page('post/edit'); ?>',
+										data: fields,
+										dataType: 'json',
+										success: function(resp){
+											Loger.Log('info','Edit Comment',resp);
+											let table = {
+												'is_logout': 'Oh no, you are not login.',
+												'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
+												'title_too_short': `Title is too short!`,
+												'content_too_short': 'Content is too short!',
+												'permission_denied': 'Permission denied!',
+												'edited_comment': 	'successfully edited!',
+											}
+											// update new comment into page
+											if(Loger.Have(resp,'edited_comment')){
+												form.form('reset');
+												let newInfo = resp.find(r => r[0]==='success')[2];
+												comment.content = newInfo['content'];
+												comment.edited = comment.edited || {};
+												comment.edited.times = comment.edited.times+1 || 1;
+												comment.edited.last_time = newInfo.last_time;
+												comment.isEditing = false;
+											}else if(Loger.Have(resp,'chnaged_nothing')){
+												comment.isEditing = false;
+											}else{ Loger.Swal(resp, table); }
+										},
+									}).then(()=>{
+										this.classList.remove('loading');
+									});
+								}
+							}); // end swal
+						}
+						return false;
+					},
+					onFailure: (formErrors, fields)=>{
+						if(!form.form('validate field','content')){ form.find('#content').focus(); }
+						return false;
+					},
+					fields: commentRule,
+				});
 			},
 			getComments: (postId) => {
 				let postKey = Posts.posts.findIndex(((post) => post.id === postId));
@@ -626,8 +636,8 @@
 			identifier: 'content',
 			rules: [
 				{
-					type	 : 'minLength[4]',
-					prompt : 'Content 必須至少 4 個字元長度(中文為2字元長度)'
+					type	 : 'minLength[2]',
+					prompt : 'Content 必須至少 2 個字元長度(中文為1字元長度)'
 				},
 			]
 		}
@@ -638,8 +648,8 @@
 			identifier: 'content',
 			rules: [
 				{
-					type	 : 'minLength[4]',
-					prompt : 'Content 必須至少 4 個字元長度(中文為2字元長度)'
+					type	 : 'minLength[2]',
+					prompt : 'Content 必須至少 2 個字元長度(中文為1字元長度)'
 				},
 			]
 		}

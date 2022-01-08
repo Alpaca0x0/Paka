@@ -13,7 +13,7 @@
 
 <div class="ui container">
 	<h2 class="content-title">Announcement</h2>
-	<p>Welcome to AlpacaTech.</p>
+	<p>Welcome to <?php L('AlpacaTech'); ?>.</p>
 </div>
 
 

@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.1
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
--- 主機： localhost
--- 產生時間： 
--- 伺服器版本： 8.0.17
--- PHP 版本： 7.3.10
+-- 主機： 127.0.0.1
+-- 產生時間： 2022-01-07 06:50:48
+-- 伺服器版本： 10.4.21-MariaDB
+-- PHP 版本： 8.0.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -19,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `alpacatech`
+-- 資料庫: `alpacatech`
 --
 
 -- --------------------------------------------------------
@@ -53,11 +52,26 @@ INSERT INTO `account` (`id`, `username`, `password`, `identity`, `email`) VALUES
 CREATE TABLE `comment` (
   `id` int(11) NOT NULL,
   `reply` int(11) DEFAULT NULL COMMENT 'reply id or null for post',
-  `content` varchar(320) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `content` varchar(320) COLLATE utf8mb4_bin NOT NULL,
   `commenter` int(11) NOT NULL COMMENT 'id who commented',
   `datetime` int(11) NOT NULL,
   `post` int(11) NOT NULL COMMENT 'in which post',
-  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+  `status` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `comment_edited`
+--
+
+CREATE TABLE `comment_edited` (
+  `id` int(11) NOT NULL,
+  `editor` int(11) NOT NULL,
+  `post` int(11) NOT NULL,
+  `comment` int(11) NOT NULL,
+  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
+  `datetime` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
@@ -69,10 +83,10 @@ CREATE TABLE `comment` (
 CREATE TABLE `post` (
   `id` int(11) NOT NULL,
   `poster` int(11) NOT NULL,
-  `title` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `title` varchar(24) COLLATE utf8mb4_bin NOT NULL,
+  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
   `datetime` int(11) NOT NULL,
-  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+  `status` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
@@ -85,8 +99,8 @@ CREATE TABLE `post_edited` (
   `id` int(11) NOT NULL,
   `editor` int(11) NOT NULL,
   `post` int(11) NOT NULL,
-  `title` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `title` varchar(24) COLLATE utf8mb4_bin NOT NULL,
+  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
   `datetime` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
@@ -99,7 +113,7 @@ CREATE TABLE `post_edited` (
 CREATE TABLE `post_event` (
   `id` int(11) NOT NULL,
   `committer` int(11) NOT NULL,
-  `action` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'good,suck',
+  `action` varchar(16) COLLATE utf8_bin NOT NULL COMMENT 'good,suck',
   `post` int(11) NOT NULL,
   `datetime` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
@@ -112,10 +126,10 @@ CREATE TABLE `post_event` (
 
 CREATE TABLE `profile` (
   `id` int(11) NOT NULL COMMENT 'account id',
-  `nickname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `gender` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'secret',
+  `nickname` varchar(16) COLLATE utf8mb4_bin DEFAULT NULL,
+  `gender` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'secret',
   `birthday` int(16) DEFAULT NULL,
-  `avatar` mediumblob COMMENT 'avatar, max 16mb'
+  `avatar` mediumblob DEFAULT NULL COMMENT 'avatar, max 16mb'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
@@ -132,6 +146,12 @@ ALTER TABLE `account`
 -- 資料表索引 `comment`
 --
 ALTER TABLE `comment`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- 資料表索引 `comment_edited`
+--
+ALTER TABLE `comment_edited`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -172,6 +192,12 @@ ALTER TABLE `account`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `comment`
 --
 ALTER TABLE `comment`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `comment_edited`
+--
+ALTER TABLE `comment_edited`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

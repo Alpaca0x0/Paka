@@ -77,4 +77,6 @@ class DB{
 		if($type=='class'){ return $result->fetchAll(PDO::FETCH_CLASS); }
 		return false;
 	}
+
+	function rowCount(){ return $this->Query->rowCount(); }
 }
