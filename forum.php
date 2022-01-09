@@ -204,7 +204,6 @@
 	</div><!-- enc post -->
 </div><!-- end container -->
 
-<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 <script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
 
 <script type="module">
