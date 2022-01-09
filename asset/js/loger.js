@@ -38,7 +38,6 @@ Loger.Swal = function(logs, tables=[],custom={}){
 		icon: 'info',
 		title: 'info',
 		html: false,
-		icon: false,
 		timer: false,
 		timerProgressBar: true,
 		// confirmButtonText: 'Got it',

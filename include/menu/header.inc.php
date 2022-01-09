@@ -131,7 +131,7 @@
 							link: `<?php echo Root('announcement'); ?>`,
 						},
 						account: {
-							id: '<?php echo ID('page',Page('account/index')); ?>',
+							id: ['<?php echo ID('page',Page('account/index')); ?>', '<?php echo ID('page',Page('account/verify')); ?>'],
 							name: '<?php L('Account','Navbar', 'Account') ?>',
 							isActive: false,
 							link: `<?php echo Page('account/index'); ?>`,
@@ -150,46 +150,47 @@
 				}},
 				methods:{
 					resize: function(){
-				this.clientWidth = document.body.clientWidth;
-								this.clientHeight = document.body.clientHeight;
-								// console.log(`${Menu.clientWidth}x${Menu.clientHeight}`);
-								if(this.clientWidth < 600){ this.navbar.display = false; }
-								else{ this.navbar.display = true; }
-								this.sidebar.display = !this.navbar.display;
+						this.clientWidth = document.body.clientWidth;
+						this.clientHeight = document.body.clientHeight;
+						// console.log(`${Menu.clientWidth}x${Menu.clientHeight}`);
+						if(this.clientWidth < 600){ this.navbar.display = false; }
+						else{ this.navbar.display = true; }
+						this.sidebar.display = !this.navbar.display;
 					},
-						logout: function(){
-								Swal.fire({
-										title: 'Do you want to logout?',
-										icon: 'warning',
-										showDenyButton: true,
-										confirmButtonText: 'Logout now',
-										denyButtonText: 'Wait, no!',
-								}).then((result) => {
-										if (result.isConfirmed) {
-												User.Logout('<?php echo Page('account/logout'); ?>', '<?php echo $User->Get('token','no token'); ?>', {
-														success: (resp) => {
-																Loger.Log('info','Logout Response', resp);
-																let table = {
-																		"token_not_match": "Token is not match",
-																		"data_missing": "Looks like some datas are missing...",
-																		"logout_successfully": "Bye bye, Expect you come back soon QQ",
-																}
-																let isSuccess = Loger.Check(resp,'success');
-																let swal_config = isSuccess ? { timer:4000, } : {};
-																Loger.Swal(resp, table, swal_config).then((val)=>{
-																		if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
-																});
-														},
-														error: (resp) => {
-																Loger.Log('error','Logout Unexpected Errors', resp);
-																Swal.fire('Sorry, we got the some expected errors...', 'Error', 'error');
-														},
-												});
-										} else if (result.isDenied) {
-												Swal.fire('Thank you for keep :)', '', 'info');
-										}
-								}) // end swal()
-						} // end logout()
+					logout: function(){
+						Swal.fire({
+							title: 'Do you want to logout?',
+							icon: 'warning',
+							showDenyButton: true,
+							confirmButtonText: 'Logout now',
+							denyButtonText: 'Wait, no!',
+							focusDeny: true,
+						}).then((result) => {
+							if (result.isConfirmed) {
+								User.Logout('<?php echo Page('account/logout'); ?>', '<?php echo $User->Get('token','no token'); ?>', {
+									success: (resp) => {
+											Loger.Log('info','Logout Response', resp);
+											let table = {
+													"token_not_match": "Token is not match",
+													"data_missing": "Looks like some datas are missing...",
+													"logout_successfully": "Bye bye, Expect you come back soon QQ",
+											}
+											let isSuccess = Loger.Check(resp,'success');
+											let swal_config = isSuccess ? { timer:4000, } : {};
+											Loger.Swal(resp, table, swal_config).then((val)=>{
+													if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
+											});
+									},
+									error: (resp) => {
+											Loger.Log('error','Logout Unexpected Errors', resp);
+											Swal.fire('Sorry, we got the some expected errors...', 'Error', 'error');
+									},
+								});
+							} else if (result.isDenied) {
+									Swal.fire('Thank you for keep :)', '', 'info');
+							}
+						}) // end swal()
+					} // end logout()
 				},
 				mounted(){
 					// auto run

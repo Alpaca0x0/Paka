@@ -46,7 +46,6 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		<div class="content" :class="isRegister?'active':null">
 			<h2 class="content-title"><?php L('Signup','Page/Account'); ?></h2>
 			<form class="ui form" id="Register" ref="register" method="POST" autocomplete="off">
-
 				<div class="two fields">
 					<div class="field error">
 						<label>Username</label>
@@ -113,9 +112,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 	<!-- End Accordion -->
 </div>
 
-
 <script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
-<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 <script type="module">
 	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
 
@@ -164,6 +161,9 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		"password_format_not_match": 	"Password format not match",
 		"db_cannot_query": 				"Database has some problems",
 		"cannot_verify_your_identity": 	"Sorry, can not verify your identity! <br>Maybe you typed the incorrect info, try again!",
+		'is_unverified': 				"Sorry, the account is unverified, please verify the email",
+		'is_review': 					"Sorry, because of certain reasons, we are reviewing your account, you cannot login before we done the process",
+		'account_not_alive': 			"Sorry, because of certain reasons, the account cannot be login now"
 	};
 
 	form['login'].form({
@@ -243,6 +243,8 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		'email_exist': 					'Email is exist',
 		'database_cannot_connect': 		'Database has some problems when connecting',
 		'db_cannot_insert': 			'Database has some problems when inserting your data',
+		'cannot_send_email': 			'Something error when sending email',
+		'error_send_email': 			'We got the error when sending email',
 	};
 
 	// the username or email is exist
@@ -267,6 +269,18 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
+				Swal.fire({
+					title: 'Waiting...',
+					html: 'Waiting the request done...',
+					timerProgressBar: true,
+					showCancelButton: false,
+					showConfirmButton: false,
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
+
 				$.ajax({
 					type: "POST",
 					url: 'register.php',
@@ -289,9 +303,43 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						}
 						// check if success
 						let isSuccess = Loger.Check(resp,'success');
-						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Login now!' } : {};
+						let swal_config = isSuccess ? { timer: 2600, confirmButtonText: 'Great' } : {};
 						Loger.Swal(resp, tables['register'], swal_config).then((val)=>{
-							if(isSuccess){ window.location.replace('?login'); }
+							if(isSuccess){
+								<?php $timeout = include(Conf('account/regex')); $timeout = $timeout['verify']['timeout']; ?>
+								let timerInterval;
+								Swal.fire({
+									title: 'Go to check the email',
+									html: 'The token will be timeout after <b></b> seconds.<br>(P.s. You can close this page, it\'s okay)',
+									timer: <?php echo $timeout*1000; ?>,
+									timerProgressBar: true,
+									showCancelButton: false,
+									showConfirmButton: false,
+									allowOutsideClick: false,
+									didOpen: () => {
+										Swal.showLoading();
+										const b = Swal.getHtmlContainer().querySelector('b');
+										b.textContent = parseInt(Swal.getTimerLeft()/1000, 10);
+										timerInterval = setInterval(() => {
+											b.textContent = parseInt(Swal.getTimerLeft()/1000, 10);
+										}, 1000);
+									},
+									willClose: () => {
+										clearInterval(timerInterval);
+									}
+								}).then((result) => {
+									// if (result.dismiss === Swal.DismissReason.timer) {
+									// 	console.log('I was closed by the timer')
+									// }
+									Swal.fire({
+										title: 'Timeout',
+										html: 'If you have not verified the email...<br>Please go to register again',
+										confirmButtonText: 'Register now',
+									}).then(()=>{
+										window.location.replace('?register');
+									});
+								});
+							}
 							// update the UI status
 							// it will call back to the onSuccess()
 							form['login'].form('validate form'); // fix: in promise, event is undefined

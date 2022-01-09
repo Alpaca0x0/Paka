@@ -1,3 +1,4 @@
 config/db.conf.php
 config/imgur.conf.php
+config/email.conf.php
 test/

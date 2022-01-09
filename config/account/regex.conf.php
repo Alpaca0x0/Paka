@@ -12,6 +12,9 @@ $regex = [
         'height' => 320,
         'formats' => ['image/jpeg', 'image/png'],
     ],
+    'verify' => [
+        'timeout' => 60*15, // 15 mins
+    ],
 ];
 
 return $regex;

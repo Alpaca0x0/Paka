@@ -11,8 +11,7 @@
 $needed_datas = ['username','password'];
 foreach ($needed_datas as $data){
     if( !isset($_POST[$data]) ){
-        $Loger->Push('warning','data_missing',$data);
-        $Loger->Resp();
+        $Loger->Resp('warning','data_missing',$data);
         break;
     }
 }
@@ -37,13 +36,18 @@ $password = hash('sha256',$password);
 @include_once(Func('db'));
 
 # Check if the user is not exist
-$DB->Query("SELECT `id`,`username`,`identity` FROM `account` WHERE `username`=:username AND `password`=:password;");
-$result = $DB->Execute([':username'=>$username, ':password'=>$password]);
-if(!$result){ $Loger->Push('error','db_cannot_query'); $Loger->Resp(); }
+$DB->Query("SELECT `id`,`username`,`identity`,`status` FROM `account` WHERE `username`=:username AND `password`=:password AND `status`!=:status;");
+$result = $DB->Execute([':username'=>$username, ':password'=>$password, ':status'=>'removed']);
+if(!$result){ $Loger->Resp('error','db_cannot_query'); }
 # DB query successfully
 $row = $DB->Fetch($result,'assoc');
 // can not login
-if(!$row){ $Loger->Push('warning','cannot_verify_your_identity'); $Loger->Resp(); }
+if(!$row){ $Loger->Resp('warning','cannot_verify_your_identity'); }
+// not alive
+if($row['status']==='alive'){ } // nothing
+else if($row['status']==='unverified'){ $Loger->Resp('warning','is_unverified'); }
+else if($row['status']==='review'){ $Loger->Resp('warning','is_review'); }
+else{ $Loger->Resp('warning','account_not_alive'); }
 
 // login successfully
 $_SESSION['account'] = [
@@ -55,6 +59,5 @@ $_SESSION['spawntime'] = time();
 $_SESSION['token'] = trim(hash('sha256',bin2hex(random_bytes(16))));
 
 # response
-$Loger->Push('success','login_successfully',$_SESSION['account']['username']);
-$Loger->Resp(); 
+$Loger->Resp('success','login_successfully',$row['username']);
 
