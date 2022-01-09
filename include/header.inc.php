@@ -36,6 +36,17 @@
 			timerProgressBar: true,
 			// confirmButtonText: 'Got it',
 		});
+		Swal.loading = function(title='Waiting...', html='Please waiting for response...'){
+			Swal.fire({
+				title: title,
+				html: html,
+				timerProgressBar: true,
+				showCancelButton: false,
+				showConfirmButton: false,
+				allowOutsideClick: false,
+				didOpen: () => { Swal.showLoading(); },
+			});
+		}
 	</script>
 </head>
 <body>

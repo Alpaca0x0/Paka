@@ -9,7 +9,7 @@
 /****************************************************************/
 # Initialize
 ini_set('display_errors','1'); error_reporting(E_ALL);
-if(!isset($_SESSION)){ session_start(); }
+if(!isset($_SESSION)){ @session_start(); }
 date_default_timezone_set('Asia/Taipei');
 define('INIT', true); // defined('INIT') or die('NO INIT');
 /****************************************************************/
@@ -33,13 +33,16 @@ define('INIT', true); // defined('INIT') or die('NO INIT');
 	define('Clas', LOCAL.'class/');
 	define('Inc', LOCAL.'include/');
 	# Public
-	define('Asset', ROOT.'asset/');
-	define('Frame', Asset.'frame/');
-	define('JS', Asset.'js/');
-	define('CSS', Asset.'css/');
-	define('IMG', Asset.'image/');
+	define('Asset', 'asset/');
+	define('Frame', ROOT.Asset.'frame/');
+	define('JS', ROOT.Asset.'js/');
+	define('CSS', ROOT.Asset.'css/');
+	define('IMG', ROOT.Asset.'image/');
 	define('Page', ROOT.'page/');
 	define('API', ROOT.'api/');
+	// Both
+	define('Mod', Asset.'module/');
+	
 }
 /****************************************************************/
 # Get-Path functions
@@ -49,14 +52,16 @@ define('INIT', true); // defined('INIT') or die('NO INIT');
 	function Conf($name,$exname='conf.php'){ return rtrim(Conf."$name.$exname",' .'); }
 	function Clas($name,$exname='class.php'){ return rtrim(Clas."$name.$exname",' .'); }
 	function Inc($name,$exname='inc.php'){ return rtrim(Inc."$name.$exname",' .'); }
+	function Mod($name,$exname='.php'){ return rtrim(LOCAL.Mod."$name.$exname",' .'); }
 	# Public
 	function Root($name,$exname='php'){ return rtrim(ROOT."$name.$exname",' .'); }
 	function Frame($name,$exname=''){ return rtrim(Frame."$name.$exname",' .'); }
 	function JS($name,$exname='js'){ return rtrim(JS."$name.$exname",' .'); }
 	function CSS($name,$exname='css'){ return rtrim(CSS."$name.$exname",' .'); }
-	function IMG($name,$exname='png'){ return rtrim(IMG."$name.$exname",' .'); }
+	function IMG($name,$exname=''){ return rtrim(IMG."$name.$exname",' .'); }
 	function Page($name,$exname='php'){ return rtrim(Page."$name.$exname",' .'); }
 	function API($name,$exname='php'){ return rtrim(API."$name.$exname",' .'); }
+	function Plug($name,$exname='.php'){ return rtrim(ROOT.Mod."$name.$exname",' .'); }
 }
 # Function
 {

@@ -6,7 +6,6 @@
 	$User->Update();
 ?>
 <script type="text/javascript" src="<?php echo JS('user'); ?>"></script>
-<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 <script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
 
 
@@ -167,6 +166,7 @@
 							focusDeny: true,
 						}).then((result) => {
 							if (result.isConfirmed) {
+								Swal.loading();
 								User.Logout('<?php echo Page('account/logout'); ?>', '<?php echo $User->Get('token','no token'); ?>', {
 									success: (resp) => {
 											Loger.Log('info','Logout Response', resp);
@@ -187,7 +187,7 @@
 									},
 								});
 							} else if (result.isDenied) {
-									Swal.fire('Thank you for keep :)', '', 'info');
+								Swal.fire('Thank you for keep :)', '', 'info');
 							}
 						}) // end swal()
 					} // end logout()

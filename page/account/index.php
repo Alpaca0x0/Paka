@@ -2,6 +2,7 @@
 
 <?php
 @include_once(Func('lang')); # Using the function L($label) to return text in current language
+@include_once(Func('captcha'));
 $ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
 ?>
 
@@ -47,24 +48,27 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 			<h2 class="content-title"><?php L('Signup','Page/Account'); ?></h2>
 			<form class="ui form" id="Register" ref="register" method="POST" autocomplete="off">
 				<div class="two fields">
-					<div class="field error">
+					<div class="field error four wide">
 						<label>Username</label>
 						<input type="text" name="username" id="username" ref='register_username' placeholder="Username">
 					</div>
-					<div class="field error">
+					<div class="field error twelve wide">
 						<label>Password</label>
 						<input type="password" name="password" id="password" ref='register_password' placeholder="Password">
 					</div>
 				</div>
 
-				<div class="two fields">
-					<div class="field error">
+				<div class="three fields">
+					<div class="field error eight wide">
 						<label>Email</label>
 						<input type="email" name="email" id="email" ref='register_email' placeholder="E-Mail">
 					</div>
-					<div class="field error disabled">
-						<label>Verify Code (未來功能)</label>
-						<input type="text" name="verify">
+					<div class="field error three wide">
+						<label>Captcha</label>
+						<input type="text" name="captcha" minlength="6" maxlength="6">
+					</div>
+					<div class="field">
+						<img src="<?php echo $Captcha->Show(); ?>" onclick="this.src = '<?php echo $Captcha->Show(); ?>?' + Math.random();" title="Change" style="cursor:pointer;">
 					</div>
 					<!-- <div class="field error">
 						<label>Gender</label>
@@ -177,6 +181,8 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
+				Swal.loading();
+
 				$.ajax({
 					type: "POST",
 					url: 'login.php',
@@ -239,12 +245,13 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		"email_format_not_match": 		"Email format not match",
 		"password_format_not_match": 	"Password format not match",
 		"db_cannot_query": 				"Database has some problems",
-		"username_exist": 				'Username is exist',
-		'email_exist': 					'Email is exist',
+		"username_exist": 				'Username already is exist',
+		'email_exist': 					'Email is already exist',
 		'database_cannot_connect': 		'Database has some problems when connecting',
 		'db_cannot_insert': 			'Database has some problems when inserting your data',
 		'cannot_send_email': 			'Something error when sending email',
 		'error_send_email': 			'We got the error when sending email',
+		'captcha_incorrect': 			'The captcha code incorrect',
 	};
 
 	// the username or email is exist
@@ -269,17 +276,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
-				Swal.fire({
-					title: 'Waiting...',
-					html: 'Waiting the request done...',
-					timerProgressBar: true,
-					showCancelButton: false,
-					showConfirmButton: false,
-					allowOutsideClick: false,
-					didOpen: () => {
-						Swal.showLoading();
-					}
-				});
+				Swal.loading();
 
 				$.ajax({
 					type: "POST",
@@ -392,8 +389,17 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 					{
 						type: 	'exist',
 						value: 	'email',
-						prompt: 	'This email is exist'
+						prompt: 'This email is exist'
 					}
+				]
+			},
+			captcha: {
+				identifier: 'captcha',
+				rules: [
+					{
+						type	 : 'regExp[<?php echo $ac_regex["captcha"]; ?>]',
+						prompt : 'Your captcha must be at format {ruleValue}'
+					},
 				]
 			},
 			// gender: {

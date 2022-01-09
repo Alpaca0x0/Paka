@@ -2,11 +2,12 @@
 
 <?php
 @include_once(Func('loger'));
+@include_once(Func('captcha'));
 ?>
 
 <?php
 # If have post data
-$needed_datas = ['username','password','email'];
+$needed_datas = ['username','password','email','captcha'];
 foreach ($needed_datas as $data){
     if( !isset($_POST[$data]) ){
         $Loger->Resp('warning','data_missing',$data);
@@ -15,9 +16,10 @@ foreach ($needed_datas as $data){
 }
 
 # Catch Datas
-$username = @trim($_POST['username']);
-$password = @$_POST['password'];
-$email = @trim($_POST['email']);
+$username = trim($_POST['username']);
+$password = $_POST['password'];
+$email = trim($_POST['email']);
+$captcha = trim($_POST['captcha']);
 $datetime = time();
 $ip = trim($_SERVER["REMOTE_ADDR"]);
 $token = trim(hash('sha256',bin2hex(random_bytes(16))));
@@ -27,6 +29,7 @@ $token = trim(hash('sha256',bin2hex(random_bytes(16))));
 // $email = 'alpaca0x0@gmail.com';
 
 # Check
+if(!$Captcha->Check($captcha)){ $Loger->Resp('warning','captcha_incorrect'); }
 $regex = include(Conf('account/regex')); // Setting Rules
 if(!preg_match($regex['email'], $email)){ $Loger->Push('warning','email_format_not_match'); }
 if(!preg_match($regex['username'], $username)){ $Loger->Push('warning','username_format_not_match'); }
@@ -49,8 +52,6 @@ $row = $DB->FetchAll($result,'assoc');
 if(in_array($username, array_column($row,'username'))){ $Loger->Push('warning','username_exist'); }
 if(in_array($email, array_column($row,'email'))){ $Loger->Push('warning','email_exist'); }
 if($Loger->Check()){ $Loger->Resp(); } // exist
-
-$Loger->Resp();
 
 # Write into Database
 $DB->Query("INSERT INTO `account`(`username`,`password`,`email`,`status`) VALUES(:username,:password,:email,:status);");

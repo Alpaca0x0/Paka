@@ -57,71 +57,68 @@ $maxFileSize = 1024*1024*5; // 5mb
 				<!-- <h4 class="ui dividing header">Secondary Info</h4> -->
 				<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
 					<div class="field">
-						<div class="field">
-							<label>Avatar</label>
-							<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
-							<div class="ui container center aligned">
-								<label for='avatar' style="cursor:pointer;">
-									<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
-										<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
-										<div class="ui center aligned dimmer">
-											<div class="content">
-												<h2 class="ui inverted header">Change</h2>
-											</div>
+						<label>Avatar</label>
+						<input id="avatar" type="file" name="avatar" accept="image/png, image/jpeg" style="display: none;">
+						<div class="ui container center aligned">
+							<label for='avatar' style="cursor:pointer;">
+								<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
+									<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
+									<div class="ui center aligned dimmer">
+										<div class="content">
+											<h2 class="ui inverted header">Change</h2>
 										</div>
 									</div>
-								</label>
-							</div>
-
-							<div id="avatarModal" class="ui modal">
-								<i class="close icon"></i>
-								<div class="header">Avatar</div>
-								<div class="image content">
-									<div class="ui medium image" style="width: 50%">
-										<img id="avatarView" class="ui fluid image">
-									</div>
-									<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
 								</div>
-								<div class="actions">
-									<div class="ui black deny button">Cancel</div>
-									<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+							</label>
+						</div>
+						<div id="avatarModal" class="ui modal">
+							<i class="close icon"></i>
+							<div class="header">Avatar</div>
+							<div class="image content">
+								<div class="ui medium image" style="width: 50%">
+									<img id="avatarView" class="ui fluid image">
+								</div>
+								<div id="avatarPreview" class="ui circular image" style="overflow: hidden; width: 200px; height: 200px"></div>
+							</div>
+							<div class="actions">
+								<div class="ui black deny button">Cancel</div>
+								<div class="ui positive right labeled icon button">Crop<i class="checkmark icon"></i></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="three fields">
+						<div class="field">
+							<label>Nick Name</label>
+							<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
+						</div>
+						<div class="field">
+							<label>Gender</label>
+							<div class="ui selection dropdown" id="gender">
+								<input type="hidden" name="gender">
+								<i class="dropdown icon"></i>
+								<div class="default text">Gender</div>
+								<div class="menu">
+									<div class="item" data-value="male" data-text="Male">
+										<i class="male icon"></i> {{ tables.gender.male }}
+									</div>
+									<div class="item" data-value="female" data-text="Female">
+										<i class="female icon"></i> {{ tables.gender.female }}
+									</div>
+									<div class="item" data-value="transgender" data-text="Transgender">
+										<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
+									</div>
+									<div class="item" data-value="secret" data-text="Secret">
+										<i class="ban icon"></i> {{ tables.gender.secret }}
+									</div>
 								</div>
 							</div>
 						</div>
-
-						<div class="three fields">
-							<div class="field">
-								<label>Nick Name</label>
-								<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
-							</div>
-							<div class="field">
-								<label>Gender</label>
-								<div class="ui selection dropdown" id="gender">
-									<input type="hidden" name="gender">
-									<i class="dropdown icon"></i>
-									<div class="default text">Gender</div>
-									<div class="menu">
-										<div class="item" data-value="male" data-text="Male">
-											<i class="male icon"></i> {{ tables.gender.male }}
-										</div>
-										<div class="item" data-value="female" data-text="Female">
-											<i class="female icon"></i> {{ tables.gender.female }}
-										</div>
-										<div class="item" data-value="transgender" data-text="Transgender">
-											<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
-										</div>
-										<div class="item" data-value="secret" data-text="Secret">
-											<i class="ban icon"></i> {{ tables.gender.secret }}
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="field">
-								<label>Birthday</label>
-								<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
-							</div>
-						</div><!-- End fields -->
-					</div><!-- End field -->
+						<div class="field">
+							<label>Birthday</label>
+							<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
+						</div>
+					</div><!-- End fields -->
 					<button class="ui right floated green button"><i class="ui icon sync alternate"></i> Update Profile</button>
 					<div class="ui hidden divider"></div><br>
 				</form>
@@ -264,6 +261,18 @@ $maxFileSize = 1024*1024*5; // 5mb
 
 				this.classList.add('loading');
 
+				Swal.fire({
+					title: 'Waiting...',
+					html: 'Please waiting for response...',
+					timerProgressBar: true,
+					showCancelButton: false,
+					showConfirmButton: false,
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
+
 				let datas = new FormData(form['profile'][0]);
 
 				$.ajax({
@@ -382,6 +391,18 @@ $maxFileSize = 1024*1024*5; // 5mb
 				event.preventDefault();
 
 				this.classList.add('loading');
+
+				Swal.fire({
+					title: 'Waiting...',
+					html: 'Please waiting for response...',
+					timerProgressBar: true,
+					showCancelButton: false,
+					showConfirmButton: false,
+					allowOutsideClick: false,
+					didOpen: () => {
+						Swal.showLoading();
+					}
+				});
 
 				let datas = new FormData(form['operation'][0]);
 
