@@ -1,6 +1,6 @@
 <?php @include_once('../../init.php'); ?>
 
-function setCookie(name,value,minutes=60*7){
+window.setCookie = function(name,value,minutes=60*7){
     var expires = "";
     if(minutes){
         var date = new Date();
@@ -10,7 +10,7 @@ function setCookie(name,value,minutes=60*7){
     document.cookie = name + "=" + (value || "")  + expires + "; path=<?php echo ROOT; ?>";
 }
 
-function getCookie(name) {
+window.getCookie = function (name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
@@ -21,6 +21,50 @@ function getCookie(name) {
     return null;
 }
 
-function delCookie(name) {   
+window.delCookie = function(name) {   
     document.cookie = name +'=; Path=<?php echo ROOT; ?>; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
+window.timeToString = function(datetime){
+    let t = new Date(datetime*1000);
+    let years = t.getFullYear().toString();
+    let months = (t.getMonth() + 1).toString();
+    let days = t.getDate();
+    let hours = t.getHours();
+    let minutes = t.getMinutes();
+    let seconds = t.getSeconds();
+    if (months<10) { months = "0"+months; }
+    if (days<10) { days = "0"+days; }
+    if (hours<10) { hours = "0"+hours; }
+    if (minutes<10) { minutes = "0"+minutes; }
+    if (seconds<10) { seconds = "0"+seconds; }
+    return `${years}/${months}/${days} ${hours}:${minutes}:${seconds}`;
+}
+
+window.timeToStatus = function(datetime){
+    let t = new Date(datetime*1000);
+    let ct = new Date();
+    let result = (ct - t)/1000;
+    let ret = "-", unit='-';
+
+    let i=60, h=i*60, d=h*24, w=d*7, m=30*d, y=365*d;
+    // just
+    if(result < i){ ret = ''; unit='Just'; }
+    // minutes
+    else if(result < h){ unit='Minutes age'; ret=result/i; }
+    // hours
+    else if(result < d){ unit='Hours ago'; ret=result/h; }
+    // days
+    else if(result < w){ unit='Days ago'; ret=result/d; }
+    // weeks
+    else if(result < m){ unit='Weeks ago'; ret=result/w; }
+    // months
+    else if(result < y/2){ unit='Months ago'; ret=result/m; }
+    // half year
+    else if(result < y){ unit='Half year ago'; ret=''; }
+    // years
+    else{ unit='Years ago'; ret=result/y; }
+    //
+    ret = ret!=''?parseInt(ret, 10):'';
+    return (`${ret} ${unit}`).trim();
 }
