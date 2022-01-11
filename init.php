@@ -1,6 +1,5 @@
 <?php
-
-// die('The website is under maintenance. Please come back later.<br>網站正在維修中，請稍後再回來看看。');
+// die('The website is under maintenance. Please come back later.<br>網站正在維修中，請稍後再回來看看吧。');
 
 /****************************************************************/
 # Read Me
