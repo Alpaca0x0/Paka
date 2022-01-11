@@ -108,24 +108,24 @@ class User{
 			// account
 			$DB->Query("SELECT `id`,`username`,`email`,`identity` FROM `account` WHERE `id`=:id AND `username`=:username;");
 			$result = $DB->Execute([':id' => $id, ':username' => $username]);
-			if(!$result){ $this->Logout(); return false; }
+			if($result===false){ $this->Logout(); return false; }
 			$ac_row = $DB->Fetch($result,'assoc');
 			if(!$ac_row){ $this->Logout(); return 'notfound'; }
 
 			// profile
 			$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
 			$result = $DB->Execute([':id' => $id]);
-			if(!$result){ $this->Logout(); return false; }
+			if($result===false){ $this->Logout(); return false; }
 			$pf_row = $DB->Fetch($result,'assoc');
 			if(!$pf_row){
 				// if does not exist profile, create it
 				$DB->Query("INSERT INTO `profile`(`id`) VALUES(:id);");
 				$result = $DB->Execute([':id' => $id]);
-				if(!$result){ $this->Logout(); return false; }
+				if($result===false){ $this->Logout(); return false; }
 				// query again
 				$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
 				$result = $DB->Execute([':id' => $id]);
-				if(!$result){ $this->Logout(); return false; }
+				if($result===false){ $this->Logout(); return false; }
 				$pf_row = $DB->Fetch($result,'assoc');
 				if(!$pf_row){ $this->Logout(); return 'cannot_create'; }
 			}
