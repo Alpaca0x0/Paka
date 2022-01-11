@@ -19,8 +19,11 @@
 
 	<h4 class="ui horizontal divider header"><i class="tag icon"></i> 今天想說點什麼? </h4>
 
+	<template v-if="isLoading"><div class="ui segment loading"><br><br><br></div></template>
+	<template v-else-if="(posts).length<1"><div class="ui segment"><h1>Oops... Not found any post here... :(</h1></div></template>
+
 	<!-- post -->
-	<div class="ui piled teal segment" v-for="(post, post_key) in posts" :class="{ 'loading': isLoading, 'loading':post.isRemoving }">
+	<div class="ui piled teal segment" v-for="(post,posyKey) in posts" :key="post.id" :class="{ 'loading': isLoading, 'loading':post.isRemoving }">
 		<!-- post info & action -->
 		<div class="ui feed">
 			<div class="event">
@@ -35,7 +38,7 @@
 							<button class="ui button label" @click="post.isEditing=true" :class="{ disabled: post.poster.id!=user.id}">
 								<i class="edit blue icon"><template v-if="post.edited && post.edited.times>0">&nbsp;{{ post.edited.times }}</template></i>
 							</button>
-							<button class="ui button" @click="removePost(post.id)"><i class="trash alternate red icon"></i></button>
+							<button class="ui button" @click="removePost(post)"><i class="trash alternate red icon"></i></button>
 						</div>
 					</div>
 					<div class="meta">
@@ -219,24 +222,23 @@
 		methods:{
 			timeToStatus: window.timeToStatus,
 			timeToString: window.timeToString,
-			removePost: (postId) => {
+			removePost: (post) => {
 				Swal.fire({
 					icon: 'warning',
 					title: 'Sure?',
-					html: `You sure want to remove the post? (#${postId})`,
+					html: `You sure want to remove the post? (#${post.id})`,
 					showDenyButton: true,
 					confirmButtonText: 'Remove it !',
 					denyButtonText: `Don't !`,
 					focusDeny: true,
 				}).then((result)=>{
 					if(result.isConfirmed){
-						let postKey = Posts.posts.findIndex(((post) => post.id === postId));
-						let post = Posts.posts[postKey];
+						let postKey = Posts.posts.indexOf(post);
 						post.isRemoving = true;
 						$.ajax({
 							type: "POST",
 							url: '<?php echo Page('post/remove'); ?>',
-							data: { postId: postId },
+							data: { postId: post.id },
 							dataType: 'json',
 							success: (resp)=>{
 								Loger.Log('info','Remove Post',resp);
@@ -246,13 +248,12 @@
 									'post_id_format_incorrect': 'Send the wrong data request.',
 									'cannot_select': 'We got the error when sql query...',
 									'permission_denied': 'Sorry, you cannot do it',
-									'removed_post': `You removed the post! (#${postId})`,
+									'removed_post': `You removed the post! (#${post.id})`,
 									'error': 'Un... seems has some errors, sorry.',
 								}
 								let config = [];
 								if(Loger.Check(resp,'success')){
 									Posts.posts.splice(postKey,1);
-									// Posts.skipPosts -= 1;
 									config.timer = 1600;
 								}
 								Loger.Swal(resp,table, config);
@@ -551,6 +552,9 @@
 				let ret = comments.filter(comment => { if(comment.reply===commentId){ return comment; } });
 				return ret;
 			},
+			test: (obj)=>{
+				console.log(Posts);
+			}
 		},
 		mounted(){
 			// get posts
@@ -566,12 +570,9 @@
 				},
 			}).then(()=>{
 				this.isLoading = false;
-				// console.log
+				this.test();
 			});
 
-			setInterval(() => {
-				Posts.posts = Posts.posts;
-			},1000);
 		},
 	}).directive('focus', {
 		mounted(el) { el.focus(); }
