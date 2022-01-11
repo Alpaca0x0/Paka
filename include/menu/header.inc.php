@@ -12,6 +12,9 @@
 <div id="Menu">
 	<!-- Sidebar -->
 	<div class="ui sidebar inverted vertical menu" id="Sidebar">
+		<?php if($User->Get('identity')==='admin'){ ?>
+		<a class="item" :class="admin.isActive" :href="admin.link">{{ admin.name }}</a>
+		<?php } ?>
 		<a class="item" :class="about.isActive" :href="about.link">{{ about.name }}</a>
 		<a class="item" :class="announcement.isActive" :href="announcement.link">{{ announcement.name }}</a>
 		<a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
@@ -38,6 +41,9 @@
 				<a class="item" :class="announcement.isActive" :href="announcement.link">{{ announcement.name }}</a>
 				<a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
 				<a class="item" :class="forum.isActive" :href="forum.link">{{ forum.name }}</a>
+				<?php if($User->Get('identity')==='admin'){ ?>
+				<a class="item" :class="admin.isActive" :href="admin.link">{{ admin.name }}</a>
+				<?php } ?>
 			</template>
 
 			<div class="right menu">
@@ -107,45 +113,54 @@
 
 						index: {
 							id: '<?php echo ID('page',Root('index')); ?>',
-							name: '<?php L('Index','Navbar', 'Home') ?>',
+							name: '<?php L('Index','Navbar', 'Home'); ?>',
 							isActive: false,
 							link: `<?php echo Root('index'); ?>`,
 						},
 						forum: {
 							id: '<?php echo ID('page',Root('forum')); ?>',
-							name: '<?php L('Forum','Navbar', 'Forum') ?>',
+							name: '<?php L('Forum','Navbar', 'Forum'); ?>',
 							isActive: false,
 							link: `<?php echo Root('forum'); ?>`,
 						},
 						about: {
 							id: '<?php echo ID('page',Root('about')); ?>',
-							name: '<?php L('About','Navbar', 'About') ?>',
+							name: '<?php L('About','Navbar', 'About'); ?>',
 							isActive: false,
 							link: `<?php echo Root('about'); ?>`,
 						},
 						announcement: {
 							id: '<?php echo ID('page',Root('announcement')); ?>',
-							name: '<?php L('Announcement','Navbar', 'Announcement') ?>',
+							name: '<?php L('Announcement','Navbar', 'Announcement'); ?>',
 							isActive: false,
 							link: `<?php echo Root('announcement'); ?>`,
 						},
 						account: {
 							id: ['<?php echo ID('page',Page('account/index')); ?>', '<?php echo ID('page',Page('account/verify')); ?>'],
-							name: '<?php L('Account','Navbar', 'Account') ?>',
+							name: '<?php L('Account','Navbar', 'Account'); ?>',
 							isActive: false,
 							link: `<?php echo Page('account/index'); ?>`,
 							isLogin: <?php echo $User->Is('Login')?"true":"false"; ?>,
 						},
 						profile: {
 							id: '<?php echo ID('page', Page('account/profile')); ?>',
-							name: '<?php L('Profile','Navbar', 'Profile') ?>',
+							name: '<?php L('Profile','Navbar', 'Profile'); ?>',
 							isActive: false,
 							link: '<?php echo Page('account/profile'); ?>',
 						},
 						languages: {
 							langs: <?php echo json_encode(Langs); ?>,
 							current: '<?php echo $Lang->Lang; ?>',
-						}
+						},
+
+						<?php if($User->Get('identity')==='admin'){ ?>
+						admin: {
+							id: '<?php echo ID('page', Root('admin')); ?>',
+							name: 'Admin',
+							isActive: false,
+							link: '<?php echo Root('admin'); ?>',
+						},
+						<?php } ?>
 				}},
 				methods:{
 					resize: function(){
@@ -239,6 +254,8 @@
 
 <div class="ui hidden divider"></div>
 
+
+<?php @include_once(Inc('loading')); ?>
 
 <?php
 

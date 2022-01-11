@@ -50,8 +50,6 @@
 	</script>
 </head>
 <body>
-
-<div class="ui active dimmer" id="Loader"><div class="ui text loader">Loading...</div></div>
-
+	
 <!-- Header -->
 <?php
