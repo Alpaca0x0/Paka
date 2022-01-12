@@ -10,14 +10,17 @@
 
 
 <div id="Menu">
+
 	<!-- Sidebar -->
-	<div class="ui sidebar inverted vertical menu" id="Sidebar">
+	<div class="ui left vertical inverted sidebar menu" id="Sidebar">
+	<!-- <div class="ui sidebar inverted vertical menu" id="Sidebar"> -->
+		<a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
 		<?php if($User->Get('identity')==='admin'){ ?>
 		<a class="item" :class="admin.isActive" :href="admin.link">{{ admin.name }}</a>
 		<?php } ?>
 		<a class="item" :class="about.isActive" :href="about.link">{{ about.name }}</a>
 		<a class="item" :class="announcement.isActive" :href="announcement.link">{{ announcement.name }}</a>
-		<a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
+		<!-- <a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a> -->
 		<a class="item" :class="forum.isActive" :href="forum.link">{{ forum.name }}</a>
 	</div>
 	<!-- Pusher -->
@@ -26,7 +29,7 @@
 
 	<!-- Navbar -->
 	<div class="ui inverted segment attached" id="Navbar">
-		<div class="ui inverted secondary pointing animated menu">
+		<div class="ui top fixed inverted animated menu">
 			<div class="ui animated black button" onclick="$('.ui.sidebar').sidebar('toggle');" tabindex="0" v-if="sidebar.display">
 				<div class="visible content">
 					<i class="bars icon"></i>
@@ -37,9 +40,13 @@
 			</div>
 
 			<template v-if="navbar.display">
+				<a href="#" class="header item" :class="index.isActive" :href="index.link">
+					<img class="logo" src="<?php echo IMG('default.png'); ?>">
+					{{ index.projectName }}
+			    </a>
 				<a class="item" :class="about.isActive" :href="about.link">{{ about.name }}</a>
 				<a class="item" :class="announcement.isActive" :href="announcement.link">{{ announcement.name }}</a>
-				<a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a>
+				<!-- <a class="item" :class="index.isActive" :href="index.link">{{ index.name }}</a> -->
 				<a class="item" :class="forum.isActive" :href="forum.link">{{ forum.name }}</a>
 				<?php if($User->Get('identity')==='admin'){ ?>
 				<a class="item" :class="admin.isActive" :href="admin.link">{{ admin.name }}</a>
@@ -47,33 +54,37 @@
 			</template>
 
 			<div class="right menu">
-				<div class="ui item language dropdown right floating icon" id="languages" data-content="選擇語言">
-					<i class="world icon"></i>&nbsp;Language
-					<div class="menu transition hidden" style="display: block !important; width: 320px;">
-						<div class="header">選擇語言</div>
+
+				<!-- Change Language -->
+				<div class="ui item dropdown right floating icon" id="languages" data-content="Change Language">
+					<i class="world icon"></i><!-- &nbsp;Language -->
+					<div class="menu transition hidden " style="display: block !important;" :style="{width: clientWidth>550?'320px':'180px', }">
+						<div class="header">Change Language</div>
 						<div class="ui icon search input">
 							<i class="search icon"></i>
-							<input type="text" placeholder="搜尋語言...">
+							<input type="text" placeholder="Search Language">
 						</div>
 						<div class="scrolling menu">					
 							<template v-for="lang,key in languages.langs">
 								<div class="item" :class="{ disabled:!lang.isSupported, selected:(languages.current===key) }" :data-percent="lang['percent']" :data-value="key" :data-english="lang['english']">
-									<span class="description">{{ lang['description']?lang['description']:lang['english'] }}</span>
-									{{ lang.english }}
+									<span class="description">{{ clientWidth>550?lang.english:'&nbsp;' }}</span>
+									{{ lang['description']?lang['description']:lang['english'] }}
 								</div>
 							</template>
-
-							<!-- <div class="item" data-percent="0" data-value="en-us" data-english="English">
+							<!-- 
+							<div class="item" data-percent="0" data-value="en-us" data-english="English">
 								<span class="description">English</span>
 								English
 							</div>
 							<div class="item selected" data-percent="0" data-value="zh-tw" data-english="Chinese (Taiwan)">
 								<span class="description">中文 (臺灣)</span>
 								Chinese (Taiwan)
-							</div> -->
+							</div> 
+							-->
 						</div>
 					</div>
 				</div>
+				<!-- End Change Language -->
 
 				<!-- Is Login -->
 				<div class="ui item dropdown link" v-if="account.isLogin" id="account">
@@ -113,7 +124,8 @@
 
 						index: {
 							id: '<?php echo ID('page',Root('index')); ?>',
-							name: '<?php L('Index','Navbar', 'Home'); ?>',
+							name: '<?php L('Index','Navbar'); ?>',
+							projectName: '<?php L('Project_Name'); ?>',
 							isActive: false,
 							link: `<?php echo Root('index'); ?>`,
 						},
@@ -167,7 +179,7 @@
 						this.clientWidth = document.body.clientWidth;
 						this.clientHeight = document.body.clientHeight;
 						// console.log(`${Menu.clientWidth}x${Menu.clientHeight}`);
-						if(this.clientWidth < 600){ this.navbar.display = false; }
+						if(this.clientWidth < 640){ this.navbar.display = false; }
 						else{ this.navbar.display = true; }
 						this.sidebar.display = !this.navbar.display;
 					},
@@ -181,7 +193,7 @@
 							focusDeny: true,
 						}).then((result) => {
 							if (result.isConfirmed) {
-								Swal.loading();
+								Swal.loading('Logout...');
 								User.Logout('<?php echo Page('account/logout'); ?>', '<?php echo $User->Get('token','no token'); ?>', {
 									success: (resp) => {
 											Loger.Log('info','Logout Response', resp);
@@ -215,30 +227,31 @@
 					window.addEventListener('resize',()=>{this.resize()});
 
 						try{
-								// change the account item to be login style
-								if(this.account.isLogin){
-										$('#Menu .ui.dropdown#account').dropdown();
-										this.account.name = '<?php echo htmlentities($User->Get('nickname',$User->Get('username',"Error"))); ?>';
-								}
-								// active
-								let id = '<?php echo ID('page'); ?>'; // current page id
-								let current = Object.keys(this.$data).find(item => {
-										if(!this[item].id){ return; }
-										else if(!Array.isArray(this[item].id)){ this[item].id = [this[item].id]; }
-										return this[item].id.includes(id);
-								});
-								// if current page is found in items of menu
-								if(current){
-										current = this[current];
-										current.isActive = 'active';
-										current.link = "#";
-								}
+							// change the account item to be login style
+							if(this.account.isLogin){
+									$('#Menu .ui.dropdown#account').dropdown();
+									this.account.name = '<?php echo htmlentities($User->Get('nickname',$User->Get('username',"Error"))); ?>';
+							}
+							// active
+							let id = '<?php echo ID('page'); ?>'; // current page id
+							let current = Object.keys(this.$data).find(item => {
+									if(!this[item].id){ return; }
+									else if(!Array.isArray(this[item].id)){ this[item].id = [this[item].id]; }
+									return this[item].id.includes(id);
+							});
+							// if current page is found in items of menu
+							if(current){
+									current = this[current];
+									current.isActive = 'active';
+									current.link = "#";
+							}
 						}catch(e){}
 				}
 		}).mount('#Menu');
 
 		$('#languages.dropdown').dropdown({
 			onChange: function(value, text, $selectedItem){
+				Swal.loading('Please Wait', 'Changing language to '+text.trim()+' ...');
 				setCookie('lang',value); window.location.reload();
 			}
 		});
