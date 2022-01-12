@@ -245,8 +245,8 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 		"email_format_not_match": 		"Email format not match",
 		"password_format_not_match": 	"Password format not match",
 		"db_cannot_query": 				"Database has some problems",
-		"username_exist": 				'Username already is exist',
-		'email_exist': 					'Email is already exist',
+		"username_exist": 				'Username already exist',
+		'email_exist': 					'Email already exist',
 		'database_cannot_connect': 		'Database has some problems when connecting',
 		'db_cannot_insert': 			'Database has some problems when inserting your data',
 		'cannot_send_email': 			'Something error when sending email',
@@ -366,7 +366,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 					{
 						type: 	'exist',
 						value: 	'username',
-						prompt: 	'This usernmae is exist'
+						prompt: 	'This username already exist'
 					}
 				]
 			},
@@ -389,7 +389,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 					{
 						type: 	'exist',
 						value: 	'email',
-						prompt: 'This email is exist'
+						prompt: 'This email already exist'
 					}
 				]
 			},
