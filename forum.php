@@ -44,7 +44,7 @@
 					<div class="meta">
 						<div class="date"> 
 							{{ timeToStatus(post.datetime) }}
-							<span class="ui" :data-tooltip="timeToStatus(post.edited.last_time)" data-variation="mini" data-position="bottom left" v-if="post.edited && post.edited.times>0">, Edited</span>
+							<span class="ui" :data-tooltip="timeToStatus(post.edited.last_time)" data-variation="mini" data-position="bottom center" v-if="post.edited && post.edited.times>0">, Edited</span>
 						</div>
 						<!-- <a class="like"><i class="like icon"></i> 4 個讚 </a> -->
 					</div>
@@ -109,7 +109,7 @@
 								<div class="metadata">
 									<span class="date">
 										<span class="ui" :data-tooltip="timeToString(comment.datetime)" data-variation="mini" data-position="bottom center">{{ timeToStatus(comment.datetime) }}</span>
-										<span class="ui" :data-tooltip="timeToStatus(comment.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="comment.edited && comment.edited.times>0">, Edited</span>
+										<span class="ui" :data-tooltip="timeToStatus(comment.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom center" v-if="comment.edited && comment.edited.times>0">, Edited</span>
 									</span>
 								</div>
 
@@ -151,7 +151,7 @@
 										<div class="metadata">
 											<span class="date">
 												<span class="ui" :data-tooltip="timeToString(reply.datetime)" data-variation="mini" data-position="bottom center">{{ timeToStatus(reply.datetime) }}</span>
-												<span class="ui" :data-tooltip="timeToStatus(reply.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="reply.edited && reply.edited.times>0">, Edited</span>
+												<span class="ui" :data-tooltip="timeToStatus(reply.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom center" v-if="reply.edited && reply.edited.times>0">, Edited</span>
 											</span>
 											<!-- <span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span> -->
 										</div>
