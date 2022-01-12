@@ -12,7 +12,7 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 
 <div class="ui container" id="Users">
 	<div class="ui inverted segment">
-		<div class="ui four statistics">
+		<div class="ui four mini statistics">
 			<div class="ui grey inverted statistic">
 				<div class="value"><i class="icon users"></i> {{ Count.total }}</div>
 				<div class="label">總會員數</div>
