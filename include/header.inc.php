@@ -10,7 +10,7 @@
 	<meta charset="utf-8">
 	<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 	<meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no" />
-	<title><?php L('AlpacaTech'); ?></title>
+	<title><?php L('Project_Name'); ?></title>
 
 	<!-- A, custom js on this website -->
 	<script type="text/javascript" src="<?php echo JS('init','php'); ?>"></script>
