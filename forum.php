@@ -108,7 +108,7 @@
 								</div>
 								<div class="metadata">
 									<span class="date">
-										<span class="ui" :data-tooltip="timeToString(comment.datetime)" data-variation="mini" data-position="bottom left">{{ timeToStatus(comment.datetime) }}</span>
+										<span class="ui" :data-tooltip="timeToString(comment.datetime)" data-variation="mini" data-position="bottom center">{{ timeToStatus(comment.datetime) }}</span>
 										<span class="ui" :data-tooltip="timeToStatus(comment.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="comment.edited && comment.edited.times>0">, Edited</span>
 									</span>
 								</div>
@@ -150,7 +150,7 @@
 										</div>
 										<div class="metadata">
 											<span class="date">
-												<span class="ui" :data-tooltip="timeToString(reply.datetime)" data-variation="mini" data-position="bottom left">{{ timeToStatus(reply.datetime) }}</span>
+												<span class="ui" :data-tooltip="timeToString(reply.datetime)" data-variation="mini" data-position="bottom center">{{ timeToStatus(reply.datetime) }}</span>
 												<span class="ui" :data-tooltip="timeToStatus(reply.edited.last_time)+' Edited'" data-variation="mini" data-position="bottom left" v-if="reply.edited && reply.edited.times>0">, Edited</span>
 											</span>
 											<!-- <span class="date">{{ timeToStatus(reply.datetime) }} ({{timeToString(reply.datetime)}})</span> -->
@@ -209,16 +209,28 @@
 <script type="text/javascript" src="<?php echo JS('loger'); ?>"></script>
 
 <script type="module">
-	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
+	import { createApp, ref, reactive, watch } from '<?php echo Frame('vue/vue','js'); ?>';
 	const Posts = createApp({
-		data(){return{
-			user:{
+		// data(){return{
+		// 	user:{
+		// 		'id': '<?php echo $User->Get('id','-'); ?>',
+		// 	},
+		// 	posts:[],
+		// 	isLoading: true,
+		// 	postsLimit: 16,
+		// }},
+		setup(){
+			const postsLimit = 16;
+			const user = ref({
 				'id': '<?php echo $User->Get('id','-'); ?>',
-			},
-			posts:[],
-			isLoading: true,
-			postsLimit: 16,
-		}},
+			});
+			let isLoading = ref(true);
+			let posts = reactive([]);
+			//
+			return {
+				user, posts, isLoading, postsLimit
+			};
+		},
 		methods:{
 			timeToStatus: window.timeToStatus,
 			timeToString: window.timeToString,
@@ -552,26 +564,26 @@
 				let ret = comments.filter(comment => { if(comment.reply===commentId){ return comment; } });
 				return ret;
 			},
-			test: (obj)=>{
-				console.log(Posts);
-			}
 		},
 		mounted(){
 			// get posts
 			$.ajax({
 				type: "GET",
 				url: '<?php echo API('post/post'); ?>',
-				data: {skip: (this.posts).length, limit: this.postsLimit, },
+				data: {before: (this.posts).length, limit: this.postsLimit, },
 				dataType: 'json',
 				success: (resp) => {
-					this.posts = resp;
+					// this.posts = resp;
+					(this.posts).push(...resp);
+					console.log(this.posts);
 					// this.skipPosts += this.postsLimit;
 					Loger.Log('info','Post API',resp);
 				},
 			}).then(()=>{
 				this.isLoading = false;
-				this.test();
 			});
+
+			$('.dropdown#settingPost_16').dropdown();
 
 		},
 	}).directive('focus', {
@@ -685,7 +697,6 @@
 		fields: postRule,
 	});
 
-	
 </script>
 
 
