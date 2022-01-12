@@ -13,7 +13,7 @@
 
 <div class="ui container">
 	<h2 class="content-title">About</h2>
-	<p>Here is about page of <?php L('AlpacaTech'); ?>.</p>
+	<p>Here is about page of <?php L('Project_Name'); ?>.</p>
 </div>
 
 
