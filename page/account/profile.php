@@ -21,8 +21,8 @@ $maxFileSize = 1024*1024*5; // 5mb
 		<!-- Accordion -->
 		<div class="ui styled fluid accordion" id="info">
 			<!-- Primary Info -->
-			<div class="title" :class="viewPrimaryInfo?'active':null"><i class="dropdown icon"></i> Primary Info </div>
-			<div class="content" :class="viewPrimaryInfo?'active':null">
+			<div class="title" :class="view=='primary'?'active':null"><i class="dropdown icon"></i> Primary Info </div>
+			<div class="content" :class="view=='primary'?'active':null">
 				<!-- <h2 class="content-title">Sign In</h2> -->
 				<!-- <h4 class="ui dividing header">Primary Info</h4> -->
 				<div class="field">
@@ -52,8 +52,8 @@ $maxFileSize = 1024*1024*5; // 5mb
 			</div>
 
 			<!-- Secondary Info -->
-			<div class="title" :class="viewSecondaryInfo?'active':null"><i class="dropdown icon"></i> Secondary Info </div>
-			<div class="content" :class="viewSecondaryInfo?'active':null">
+			<div class="title" :class="view=='secondary'?'active':null"><i class="dropdown icon"></i> Secondary Info </div>
+			<div class="content" :class="view=='secondary'?'active':null">
 				<!-- <h4 class="ui dividing header">Secondary Info</h4> -->
 				<form enctype="multipart/form-data" class="ui form" onsubmit="return false;" id="Profile">
 					<div class="field">
@@ -125,8 +125,8 @@ $maxFileSize = 1024*1024*5; // 5mb
 			</div>
 
 			<!-- Operation -->
-			<div class="title" :class="viewOperation?'active':null"><i class="dropdown icon"></i> Operation </div>
-			<div class="content" :class="viewOperation?'active':null">
+			<div class="title" :class="view=='operation'?'active':null"><i class="dropdown icon"></i> Operation </div>
+			<div class="content" :class="view=='operation'?'active':null">
 				<!-- <h4 class="ui dividing header">Operation</h4> -->
 				<form class="ui form" onsubmit="return false;" id="Operation">
 					<div class="field">
@@ -157,67 +157,62 @@ $maxFileSize = 1024*1024*5; // 5mb
 <script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 
 <script type="module">
-	import { createApp } from '<?php echo Frame('vue/vue','js'); ?>';
+	import { createApp, ref, reactive } from '<?php echo Frame('vue/vue','js'); ?>';
 
 	const Profile = createApp({
-		data(){return{
-			viewPrimaryInfo: false,
-			viewSecondaryInfo: false,
-			viewOperation: false,
-			tables:{
-				gender:{
+		setup(){
+			<?php
+			$temp = 'secondary';
+			if(isset($_GET['primary'])){ $temp = 'primary'; }
+			else if(isset($_GET['secondary'])){ $temp = 'secondary'; }
+			else if(isset($_GET['operation'])){ $temp = 'operation'; }
+			?>
+			let view = ref('<?php echo $temp; ?>');
+
+			const tables = reactive({
+				gender: {
 					male: 'Male',
 					female: 'Female',
 					transgender: 'Transgender',
 					secret: 'Secret'
 				}
-			},
-			fields:{
+			});
+
+			let fields = reactive({
 				editing: "",
 				nickname: {
 					value: "",
 				},
-			},
-			user:{
+			});
+
+			let user = reactive({
 				id: '<?php echo $User->Get('id'); ?>',
 				name: '<?php echo htmlentities($User->Get('name',' - ')); ?>',
 				email: '<?php echo htmlentities($User->Get('email',' - ')); ?>',
 				identity: '<?php echo htmlentities($User->Get('identity')); ?>',
 				avatar: '<?php $temp=$User->Get('avatar',false); echo $temp===false?IMG('default','png'):'data:image/jpeg;base64, '.base64_encode($temp); ?>',
-				// token: '<?php echo $User->Get('token',' - '); ?>',
 				spawntime: '<?php echo $User->Get('spawntime',' - '); ?>',
 				life: { h: "00", i: "00", s: "00", },
 				nickname: '<?php echo $User->Get('nickname',''); ?>',
 				gender: '<?php echo $User->Get('gender',''); ?>',
 				birthday: '<?php echo $User->Get('birthday',''); ?>',
-			},
-			timeout: 60*60*6,
-		}},
-		mounted(){
-			let timeout = this.user.spawntime, t, currentTime;
+			});
+
+			const timeout = 60*60*6; let currentTime, t;
 			setInterval(() => {
 				currentTime = new Date().getTime() / 1000;
-				t = this.timeout - (currentTime - timeout);
-				this.user.life.h = parseInt(t / 60 / 60);
-				this.user.life.i = parseInt((t / 60) % 60);
-				this.user.life.s = parseInt(t % 60);
+				t = timeout - (currentTime - user.spawntime);
+				user.life.h = parseInt(t / 60 / 60);
+				user.life.i = parseInt((t / 60) % 60);
+				user.life.s = parseInt(t % 60);
 			},1000);
 
-			<?php
-			$viewPrimaryInfo = 'false';
-			$viewSecondaryInfo = 'false';
-			$viewOperation = 'false';
-
-			if(isset($_GET['primary'])){ $viewPrimaryInfo = 'true'; }
-			else if(isset($_GET['secondary'])){ $viewSecondaryInfo = 'true'; }
-			else if(isset($_GET['operation'])){ $viewOperation = 'true'; }
-			else{ $viewSecondaryInfo = 'true'; }
-			?>
-
-			this.viewPrimaryInfo = <?php echo $viewPrimaryInfo; ?>;
-			this.viewSecondaryInfo = <?php echo $viewSecondaryInfo; ?>;
-			this.viewOperation = <?php echo $viewOperation; ?>;
-			this.fields.nickname.value = this.user.nickname;
+			return {
+				view, tables, fields, user, timeout,
+			};
+		},
+		mounted(){
+			//
 		}
 	}).mount('div#Profile');
 
@@ -261,17 +256,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 
 				this.classList.add('loading');
 
-				Swal.fire({
-					title: 'Waiting...',
-					html: 'Please waiting for response...',
-					timerProgressBar: true,
-					showCancelButton: false,
-					showConfirmButton: false,
-					allowOutsideClick: false,
-					didOpen: () => {
-						Swal.showLoading();
-					}
-				});
+				Swalc.Loading().fire();
 
 				let datas = new FormData(form['profile'][0]);
 
