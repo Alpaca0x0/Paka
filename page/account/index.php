@@ -1,6 +1,9 @@
 <?php @include_once('../../init.php'); ?>
 
 <?php
+@include_once(Func('user'));
+$User->Update();
+if($User->Is('login')){ header('Location: '.ROOT); exit(); }
 @include_once(Func('lang')); # Using the function L($label) to return text in current language
 @include_once(Func('captcha'));
 $ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
@@ -181,7 +184,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
-				Swal.loading();
+				Swalc.Loading().fire();
 
 				$.ajax({
 					type: "POST",
@@ -194,6 +197,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						let isSuccess = Loger.Check(resp,'success');
 						let swal_config = isSuccess ? { timer:2000, } : {};
 						Loger.Swal(resp, tables['login'], swal_config).then((val)=>{
+							Swalc.loading('Redirecting...').fire();
 							if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
 							// update the UI status
 							// it will call back to the onSuccess()
@@ -276,7 +280,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
-				Swal.loading();
+				Swalc.Loading().fire();
 
 				$.ajax({
 					type: "POST",
