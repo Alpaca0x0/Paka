@@ -40,7 +40,7 @@
 			</div>
 
 			<template v-if="navbar.display">
-				<a href="#" class="header item" :class="index.isActive" :href="index.link">
+				<a class="header item" :class="index.isActive" :href="index.link">
 					<img class="logo" src="<?php echo IMG('default.png'); ?>">
 					{{ index.projectName }}
 			    </a>
@@ -193,7 +193,7 @@
 							focusDeny: true,
 						}).then((result) => {
 							if (result.isConfirmed) {
-								Swal.loading('Logout...');
+								Swalc.loading('Logout...').fire();
 								User.Logout('<?php echo Page('account/logout'); ?>', '<?php echo $User->Get('token','no token'); ?>', {
 									success: (resp) => {
 											Loger.Log('info','Logout Response', resp);
@@ -251,7 +251,7 @@
 
 		$('#languages.dropdown').dropdown({
 			onChange: function(value, text, $selectedItem){
-				Swal.loading('Please Wait', 'Changing language to '+text.trim()+' ...');
+				Swalc.loading('Please Wait', 'Changing language to '+value.trim()+' ...').fire();
 				setCookie('lang',value); window.location.reload();
 			}
 		});
