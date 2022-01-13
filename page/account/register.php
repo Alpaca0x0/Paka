@@ -83,9 +83,13 @@ Enter the link to verify:<br>
 <a href='${url}' target='_blank'>${url}</a>
 ";
 
-$result = $Email->Send($email, $username, $title, $html_content);
-if($result[0]===false){ $Loger->Push('error','cannot_send_email',$result[1]); }
-else if($result[0]===true){ $Loger->Push('success','db_insert_successfully'); }
-else{ $Loger->Push('error','error_send_email'); }
+if(DEV){
+	$Loger->Push('success','successfully', [$email, $username, $title, $html_content]);
+}else{
+	$result = $Email->Send($email, $username, $title, $html_content);
+	if($result[0]===false){ $Loger->Push('error','cannot_send_email',$result[1]); }
+	else if($result[0]===true){ $Loger->Push('success','successfully'); }
+	else{ $Loger->Push('error','error_send_email'); }
+}
 $Loger->Resp();
 

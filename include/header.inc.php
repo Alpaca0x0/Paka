@@ -28,6 +28,12 @@
 	<!-- SweetAlert2 -->
 	<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
 	<script type="text/javascript" src="<?php echo JS('sweetalert2.custom'); ?>"></script>
+
+	<!-- custom -->
+	<script type="text/javascript">
+		let DEV = <?php echo (DEV)?'true':'false'; ?>;
+		if(DEV){ console.warn('Development Mode'); }
+	</script>
 </head>
 <body>
 	
