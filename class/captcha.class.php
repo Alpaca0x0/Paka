@@ -21,7 +21,7 @@ class Captcha{
 		foreach($config as $key => $val){ $this->Captcha->{$key} = $val; }
 	}
 
-	function Show(){ return $this->Src; }
+	function Src(){ return $this->Src; }
 
 	function Check($captcha){ return $this->Captcha->check($captcha); }
 }

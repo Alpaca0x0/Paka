@@ -4,10 +4,8 @@
 
 <?php
 $Captcha = new Captcha();
-$Captcha->Set([
-	'charset' => 'abcdefghkmnprtuvwyzABCDEFGHJKLMNPQRTUVWXYZ2346789',
-	'code_length' => 6,
-]);
+$config = parse_ini_file(Conf('captcha','ini'),true);
+$Captcha->Set($config);
 
 // (isset($_GET['captcha']) && $Securimage->check($_GET['captcha']) === true)
 
