@@ -189,7 +189,7 @@
 							icon: 'warning',
 							showDenyButton: true,
 							confirmButtonText: 'Logout now',
-							denyButtonText: 'Wait, no!',
+							denyButtonText: 'Wait',
 							focusDeny: true,
 						}).then((result) => {
 							if (result.isConfirmed) {
@@ -214,7 +214,7 @@
 									},
 								});
 							} else if (result.isDenied) {
-								Swal.fire('Thank you for keep :)', '', 'info');
+								// Swal.fire('Thank you for keep :)', '', 'info');
 							}
 						}) // end swal()
 					} // end logout()
