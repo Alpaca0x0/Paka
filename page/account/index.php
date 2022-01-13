@@ -68,10 +68,10 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 					</div>
 					<div class="field error three wide">
 						<label>Captcha</label>
-						<input type="text" name="captcha" minlength="6" maxlength="6">
+						<input type="text" name="captcha" id="captcha" minlength="6" maxlength="6">
 					</div>
 					<div class="field">
-						<img src="<?php echo $Captcha->Show(); ?>" onclick="this.src = '<?php echo $Captcha->Show(); ?>?' + Math.random();" title="Change" style="cursor:pointer;">
+						<img id="captcha_img" src="<?php echo $Captcha->Src(); ?>" onclick="this.src = '<?php echo $Captcha->Src(); ?>?' + Math.random();" title="Change" style="cursor:pointer;">
 					</div>
 					<!-- <div class="field error">
 						<label>Gender</label>
@@ -184,7 +184,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
-				Swalc.Loading().fire();
+				Swalc.loading().fire();
 
 				$.ajax({
 					type: "POST",
@@ -221,7 +221,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["username"]; ?>]',
-						prompt : 'Your username must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["username"]; ?>',//'Your username must be at format {ruleValue}'
 					}
 				]
 			},
@@ -230,7 +230,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
-						prompt : 'Your password must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["password"]; ?>',//'Your password must be at format {ruleValue}'
 					},
 				]
 			}
@@ -243,7 +243,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 	// Loger tables
 	tables['register'] = {
-		"db_insert_successfully": 		"Welcome to join us",
+		"successfully": 				"Welcome to join us",
 		"data_missing": 				"Data missing",
 		"username_format_not_match": 	"Username format not match",
 		"email_format_not_match": 		"Email format not match",
@@ -263,6 +263,13 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 	exist['username'] = [];
 	exist['email'] = [];
 
+	let updateCaptcha = function(focus=false){
+		let captcha = document.querySelector('input#captcha');
+		let captcha_img = document.querySelector('img#captcha_img');
+		captcha_img.click(); // change the image
+		captcha.value='';
+		if(focus){ captcha.focus(); }
+	}
 
 	// custom the function of authentication
 	form['register'].form.settings.rules.exist = function(value,type){
@@ -280,7 +287,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 				this.classList.add('loading');
 
-				Swalc.Loading().fire();
+				Swalc.loading().fire();
 
 				$.ajax({
 					type: "POST",
@@ -302,21 +309,17 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 								exist['email'].push(fields['email']);
 		    				};
 						}
-						// check if success
+
+						
 						let isSuccess = Loger.Check(resp,'success');
 						let swal_config = isSuccess ? { timer: 2600, confirmButtonText: 'Great' } : {};
 						Loger.Swal(resp, tables['register'], swal_config).then((val)=>{
+							// check if success
 							if(isSuccess){
 								<?php $timeout = include(Conf('account/regex')); $timeout = $timeout['verify']['timeout']; ?>
 								let timerInterval;
-								Swal.fire({
-									title: 'Go to check the email',
-									html: 'The token will be timeout after <b></b> seconds.<br>(P.s. You can close this page, it\'s okay)',
+								Swalc.loading('Go to check the email','The token will be timeout after <b></b> seconds.<br>(P.s. You can close this page, it\'s okay)').fire({
 									timer: <?php echo $timeout*1000; ?>,
-									timerProgressBar: true,
-									showCancelButton: false,
-									showConfirmButton: false,
-									allowOutsideClick: false,
 									didOpen: () => {
 										Swal.showLoading();
 										const b = Swal.getHtmlContainer().querySelector('b');
@@ -340,10 +343,16 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 										window.location.replace('?register');
 									});
 								});
+							}else{ // not success
+
+								// update captcha
+								if(Loger.Have(resp,'captcha_incorrect')){ updateCaptcha(true); }
+								else if(Loger.Check(resp)){ updateCaptcha(); }
+
+								// update the UI status
+								// it will call back to the onSuccess()
+								form['register'].form('validate form'); // fix: in promise, event is undefined
 							}
-							// update the UI status
-							// it will call back to the onSuccess()
-							form['login'].form('validate form'); // fix: in promise, event is undefined
 						});
 					},
 				}).then(()=>{
@@ -365,7 +374,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["username"]; ?>]',
-						prompt : 'Your username must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["username"]; ?>',//'Your username must be at format {ruleValue}'
 					},
 					{
 						type: 	'exist',
@@ -379,7 +388,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["password"]; ?>]',
-						prompt : 'Your password must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["password"]; ?>',//'Your password must be at format {ruleValue}'
 					},
 				]
 			},
@@ -388,7 +397,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["email"]; ?>]',
-						prompt : 'Your email must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["email"]; ?>',//'Your email must be at format {ruleValue}'
 					},
 					{
 						type: 	'exist',
@@ -402,7 +411,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 				rules: [
 					{
 						type	 : 'regExp[<?php echo $ac_regex["captcha"]; ?>]',
-						prompt : 'Your captcha must be at format {ruleValue}'
+						prompt : '<?php echo $ac_regex['description']["captcha"]; ?>',//'Your captcha must be at format {ruleValue}'
 					},
 				]
 			},
