@@ -200,13 +200,17 @@
 											let table = {
 													"token_not_match": "Token is not match",
 													"data_missing": "Looks like some datas are missing...",
-													"logout_successfully": "Bye bye, Expect you come back soon QQ",
+													//"logout_successfully": "Bye bye, Expect you come back soon QQ",
 											}
 											let isSuccess = Loger.Check(resp,'success');
 											let swal_config = isSuccess ? { timer:4000, } : {};
-											Loger.Swal(resp, table, swal_config).then((val)=>{
-													if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
-											});
+											if(isSuccess){
+												Swalc.loading('Logout').fire({ icon: 'success', });
+												window.location.replace('<?php echo ROOT; ?>');
+											}else{
+												Loger.Swal(resp, table, swal_config);
+											}
+											
 									},
 									error: (resp) => {
 											Loger.Log('error','Logout Unexpected Errors', resp);

@@ -162,7 +162,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 
 	// Loger tables
 	tables['login'] = {
-		"login_successfully": 			"Login successfully",
+		//"login_successfully": 			"Login successfully",
 		"data_missing": 				"Data missing",
 		"username_format_not_match": 	"Username format not match",
 		"password_format_not_match": 	"Password format not match",
@@ -196,13 +196,16 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						// check if success
 						let isSuccess = Loger.Check(resp,'success');
 						let swal_config = isSuccess ? { timer:2000, } : {};
-						Loger.Swal(resp, tables['login'], swal_config).then((val)=>{
-							Swalc.loading('Redirecting...').fire();
-							if(isSuccess){ window.location.replace('<?php echo ROOT; ?>'); }
-							// update the UI status
-							// it will call back to the onSuccess()
-							form['login'].form('validate form'); // fix: in promise, event is undefined
-						});
+						if(isSuccess){
+							Swalc.loading('Login successfully').fire({ icon: 'success', });
+							window.location.replace('<?php echo ROOT; ?>');
+						}else{
+							Loger.Swal(resp, tables['login'], swal_config).then((val)=>{
+								// update the UI status
+								// it will call back to the onSuccess()
+								form['login'].form('validate form');
+							});
+						}
 					},
 				}).then(()=>{
 					this.classList.remove('loading');
