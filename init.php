@@ -12,7 +12,7 @@ date_default_timezone_set('Asia/Taipei');
 /****************************************************************/
 define('INIT', true); // defined('INIT') or die('NO INIT');
 define('DEBUG', true); // debug mode, will show the error message
-define('DEV', true); // development mode
+define('DEV', false); // development mode
 
 if(DEBUG){ ini_set('display_errors','1'); error_reporting(E_ALL); }
 /****************************************************************/
