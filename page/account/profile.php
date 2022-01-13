@@ -90,7 +90,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 					<div class="three fields">
 						<div class="field">
 							<label>Nick Name</label>
-							<input type="text"	v-model="fields.nickname.value" name="nickname" class="ui fluid" placeholder="Nick Name">
+							<input type="text" :value="user.nickname" name="nickname" class="ui fluid" placeholder="Nick Name">
 						</div>
 						<div class="field">
 							<label>Gender</label>
@@ -116,7 +116,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 						</div>
 						<div class="field">
 							<label>Birthday</label>
-							<input type="date" class="ui fluid button" name="birthday" v-model="user.birthday">
+							<input type="date" class="ui fluid button" name="birthday" :value="user.birthday">
 						</div>
 					</div><!-- End fields -->
 					<button class="ui right floated green button"><i class="ui icon sync alternate"></i> Update Profile</button>
@@ -178,13 +178,6 @@ $maxFileSize = 1024*1024*5; // 5mb
 				}
 			});
 
-			let fields = reactive({
-				editing: "",
-				nickname: {
-					value: "",
-				},
-			});
-
 			let user = reactive({
 				id: '<?php echo $User->Get('id'); ?>',
 				name: '<?php echo htmlentities($User->Get('name',' - ')); ?>',
@@ -208,7 +201,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 			},1000);
 
 			return {
-				view, tables, fields, user, timeout,
+				view, tables, user, timeout,
 			};
 		},
 		mounted(){
@@ -256,7 +249,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 
 				this.classList.add('loading');
 
-				Swalc.Loading().fire();
+				Swalc.loading().fire();
 
 				let datas = new FormData(form['profile'][0]);
 
@@ -286,7 +279,10 @@ $maxFileSize = 1024*1024*5; // 5mb
 						let isSuccess = Loger.Check(resp,'success');
 						let swal_config = isSuccess ? { timer: 3200, confirmButtonText: 'Great' } : {};
 						Loger.Swal(resp, tables['profile'], swal_config).then((val)=>{
-							if(isSuccess){ window.location.reload(); }
+							if(isSuccess){
+								Swalc.loading().fire('Refresh the interface');
+								window.location.reload();
+							}
 							// update the UI status
 							// it will call back to the onSuccess()
 							form['profile'].form('validate form'); // fix: in promise, event is undefined
