@@ -27,27 +27,7 @@
 
 	<!-- SweetAlert2 -->
 	<script type="text/javascript" src="<?php echo JS('sweetalert2'); ?>"></script>
-	<script type="text/javascript">
-		Swal.mixin({
-			icon: 'info',
-			title: 'info',
-			html: false,
-			timer: false,
-			timerProgressBar: true,
-			// confirmButtonText: 'Got it',
-		});
-		Swal.loading = function(title='Waiting...', html='Please waiting for response...'){
-			Swal.fire({
-				title: title,
-				html: html,
-				timerProgressBar: true,
-				showCancelButton: false,
-				showConfirmButton: false,
-				allowOutsideClick: false,
-				didOpen: () => { Swal.showLoading(); },
-			});
-		}
-	</script>
+	<script type="text/javascript" src="<?php echo JS('sweetalert2.custom'); ?>"></script>
 </head>
 <body>
 	
