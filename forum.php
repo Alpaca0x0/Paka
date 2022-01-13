@@ -575,7 +575,6 @@
 				success: (resp) => {
 					// this.posts = resp;
 					(this.posts).push(...resp);
-					console.log(this.posts);
 					// this.skipPosts += this.postsLimit;
 					Loger.Log('info','Post API',resp);
 				},
