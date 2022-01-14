@@ -87,6 +87,7 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 			statuses: {
 				'alive': '存活',
 				'removed': '已刪除',
+				'unverified': '未驗證',
 			},
 			identities: {
 				'admin': '管理員',
