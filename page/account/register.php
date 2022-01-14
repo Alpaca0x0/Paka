@@ -29,7 +29,7 @@ $token = trim(hash('sha256',bin2hex(random_bytes(16))));
 // $email = 'alpaca0x0@gmail.com';
 
 # Check
-// if(!$Captcha->Check($captcha)){ $Loger->Resp('warning','captcha_incorrect'); }
+if(!$Captcha->Check($captcha)){ $Loger->Resp('warning','captcha_incorrect'); }
 $rule = include(Conf('account')); // Setting Rules
 if(!preg_match($rule['email'], $email)){ $Loger->Push('warning','email_format_not_match'); }
 if(!preg_match($rule['username'], $username)){ $Loger->Push('warning','username_format_not_match'); }
