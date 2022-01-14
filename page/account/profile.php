@@ -184,24 +184,24 @@ $maxFileSize = 1024*1024*5; // 5mb
 				email: '<?php echo htmlentities($User->Get('email',' - ')); ?>',
 				identity: '<?php echo htmlentities($User->Get('identity')); ?>',
 				avatar: '<?php $temp=$User->Get('avatar',false); echo $temp===false?IMG('default','png'):'data:image/jpeg;base64, '.base64_encode($temp); ?>',
-				spawntime: '<?php echo $User->Get('spawntime',' - '); ?>',
+				expire: '<?php echo $User->Get('expire',' - '); ?>',
 				life: reactive({ h: "00", i: "00", s: "00", }),
 				nickname: '<?php echo $User->Get('nickname',''); ?>',
 				gender: '<?php echo $User->Get('gender',''); ?>',
 				birthday: '<?php echo $User->Get('birthday',''); ?>',
 			};
 
-			const timeout = 60*60*6; let currentTime, t;
+			let currentTime, t;
 			setInterval(() => {
 				currentTime = new Date().getTime() / 1000;
-				t = timeout - (currentTime - user.spawntime);
+				t = user.expire - currentTime;
 				user.life.h = parseInt(t / 60 / 60);
 				user.life.i = parseInt((t / 60) % 60);
 				user.life.s = parseInt(t % 60);
 			},1000);
 
 			return {
-				view, tables, user, timeout,
+				view, tables, user,
 			};
 		},
 		mounted(){

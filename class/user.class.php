@@ -32,7 +32,7 @@ class User{
 				}else{ return "login"; }
 				return "error";
 
-			break;case 'id': case 'identity': case 'username': case 'spawntime': case 'email': case 'gender':
+			break;case 'id': case 'identity': case 'username': case 'spawntime': case 'email': case 'gender': case 'expire':
 				return (isset($this->Info[$what])?$this->Info[$what]:$replace);
 
 			break;case 'token':
