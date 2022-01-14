@@ -175,11 +175,13 @@ class User{
 	function Clear(){
 		global $DB;
 		$datetime = time();
-		$DB->Query("
-			UPDATE `account_event` SET `status`='invalid' WHERE `action`=:action AND :t>`expire`;
-		");
+		//
+		$DB->Query("UPDATE `account_event` SET `status`='invalid' WHERE `action`=:action AND :t>`expire`;");
 		$result = $DB->Execute([':action'=>'login' ,':t' => $datetime]);
-		if($result===false){ return false; }
+		// if($result===false){ return false; }
+		$DB->Query("UPDATE `account` SET `status`='removed' WHERE `action`=:action AND :t>`expire`;");
+		$result = $DB->Execute([':action'=>'login' ,':t' => $datetime]);
+
 	}
 
 }
