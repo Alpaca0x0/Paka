@@ -29,19 +29,19 @@ $maxFileSize = 1024*1024*5; // 5mb
 					<div class="five fields">
 						<div class="field two wide">
 							<label>ID</label>
-							<input type="input" class="ui fluid button" :value="user.id" disabled>
+							<input type="input" class="ui fluid button" v-once :value="user.id" disabled>
 						</div>
 						<div class="field two wide">
 							<label>Identity</label>
-							<input type="input" class="ui fluid button" :value="user.identity" disabled>
+							<input type="input" class="ui fluid button" v-once :value="user.identity" disabled>
 						</div>
 						<div class="field three wide">
 							<label>Username</label>
-							<input type="input" class="ui fluid button" :value="user.name" disabled>
+							<input type="input" class="ui fluid button" v-once :value="user.name" disabled>
 						</div>
 						<div class="field six wide">
 							<label>E-Mail</label>
-							<input type="input" class="ui fluid button" :value="user.email" disabled>
+							<input type="input" class="ui fluid button" v-once :value="user.email" disabled>
 						</div>
 						<div class="field">
 							<label>Session Dead-Time</label>
@@ -62,7 +62,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 						<div class="ui container center aligned">
 							<label for='avatar' style="cursor:pointer;">
 								<div class="ui circular image" onmouseenter="$(this).dimmer('show');" onmouseleave="$(this).dimmer('hide');">
-									<img id="avatarCurrent" class="ui small image circular" :src="user.avatar" style="background-color: black;">
+									<img id="avatarCurrent" class="ui small image circular" v-once :src="user.avatar" style="background-color: black;">
 									<div class="ui center aligned dimmer">
 										<div class="content">
 											<h2 class="ui inverted header">Change</h2>
@@ -90,7 +90,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 					<div class="three fields">
 						<div class="field">
 							<label>Nick Name</label>
-							<input type="text" :value="user.nickname" name="nickname" class="ui fluid" placeholder="Nick Name">
+							<input type="text" v-once :value="user.nickname" name="nickname" class="ui fluid" placeholder="Nick Name">
 						</div>
 						<div class="field">
 							<label>Gender</label>
@@ -99,16 +99,16 @@ $maxFileSize = 1024*1024*5; // 5mb
 								<i class="dropdown icon"></i>
 								<div class="default text">Gender</div>
 								<div class="menu">
-									<div class="item" data-value="male" data-text="Male">
+									<div class="item" v-once data-value="male" data-text="Male">
 										<i class="male icon"></i> {{ tables.gender.male }}
 									</div>
-									<div class="item" data-value="female" data-text="Female">
+									<div class="item" v-once data-value="female" data-text="Female">
 										<i class="female icon"></i> {{ tables.gender.female }}
 									</div>
-									<div class="item" data-value="transgender" data-text="Transgender">
+									<div class="item" v-once data-value="transgender" data-text="Transgender">
 										<i class="transgender alternate icon"></i> {{ tables.gender.transgender }}
 									</div>
-									<div class="item" data-value="secret" data-text="Secret">
+									<div class="item" v-once data-value="secret" data-text="Secret">
 										<i class="ban icon"></i> {{ tables.gender.secret }}
 									</div>
 								</div>
@@ -116,7 +116,7 @@ $maxFileSize = 1024*1024*5; // 5mb
 						</div>
 						<div class="field">
 							<label>Birthday</label>
-							<input type="date" class="ui fluid button" name="birthday" :value="user.birthday">
+							<input type="date" class="ui fluid button" name="birthday" v-once :value="user.birthday">
 						</div>
 					</div><!-- End fields -->
 					<button class="ui right floated green button"><i class="ui icon sync alternate"></i> Update Profile</button>
@@ -167,29 +167,29 @@ $maxFileSize = 1024*1024*5; // 5mb
 			else if(isset($_GET['secondary'])){ $temp = 'secondary'; }
 			else if(isset($_GET['operation'])){ $temp = 'operation'; }
 			?>
-			let view = ref('<?php echo $temp; ?>');
+			let view = '<?php echo $temp; ?>';
 
-			const tables = reactive({
+			const tables = {
 				gender: {
 					male: 'Male',
 					female: 'Female',
 					transgender: 'Transgender',
 					secret: 'Secret'
 				}
-			});
+			};
 
-			let user = reactive({
+			let user = {
 				id: '<?php echo $User->Get('id'); ?>',
 				name: '<?php echo htmlentities($User->Get('name',' - ')); ?>',
 				email: '<?php echo htmlentities($User->Get('email',' - ')); ?>',
 				identity: '<?php echo htmlentities($User->Get('identity')); ?>',
 				avatar: '<?php $temp=$User->Get('avatar',false); echo $temp===false?IMG('default','png'):'data:image/jpeg;base64, '.base64_encode($temp); ?>',
 				spawntime: '<?php echo $User->Get('spawntime',' - '); ?>',
-				life: { h: "00", i: "00", s: "00", },
+				life: reactive({ h: "00", i: "00", s: "00", }),
 				nickname: '<?php echo $User->Get('nickname',''); ?>',
 				gender: '<?php echo $User->Get('gender',''); ?>',
 				birthday: '<?php echo $User->Get('birthday',''); ?>',
-			});
+			};
 
 			const timeout = 60*60*6; let currentTime, t;
 			setInterval(() => {
