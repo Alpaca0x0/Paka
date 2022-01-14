@@ -68,8 +68,8 @@ if(!$result){ $Loger->Push('error','db_cannot_insert','profile'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // Write account_event
-$DB->Query("INSERT INTO `account_event`(`account`, `action`, `detail`, `ip`, `datetime`) VALUES(:account, :action, :detail, :ip, :t);");
-$result = $DB->Execute([':account'=>$id, ':action'=>'register', ':detail'=>$token, ':ip'=>$ip, ':t'=>$datetime ]);
+$DB->Query("INSERT INTO `account_event`(`account`, `action`, `target`, `ip`, `datetime`) VALUES(:account, :action, :target, :ip, :t);");
+$result = $DB->Execute([':account'=>$id, ':action'=>'register', ':target'=>$token, ':ip'=>$ip, ':t'=>$datetime ]);
 if(!$result){ $Loger->Push('error','db_cannot_insert','account_event'); }
 if($Loger->Check()){ $Loger->Resp(); }
 

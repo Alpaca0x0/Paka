@@ -22,51 +22,30 @@ class User{
 	// get the user info, info[] or false or "timeout"
 	function Get($what, $replace=false){
 		$what = strtolower(trim($what));
+		if($what==='name'){ $what='username'; }
+
 		switch ($what) {
 			case 'status':
-				if(!isset($_SESSION['account']) || !isset($_SESSION['spawntime']) ){
-					return "logout";
-				}else if( (time()-$_SESSION['spawntime']) > ($this->timeout) ){
+				if(!isset($_SESSION['token'])){ return "logout"; }
+				else if( time() > $this->Info['expire'] ){
 					return "timeout";
 				}else{ return "login"; }
 				return "error";
 
-			break;case 'session':
-				return (isset($_SESSION['account'])?$_SESSION['account']:$replace);
-
-			break;case 'id': case 'identity':
-				return (isset($_SESSION['account'][$what])?$_SESSION['account'][$what]:$replace);
-
-			break;case 'username': case 'name':
-				return (isset($_SESSION['account']['username'])?$_SESSION['account']['username']:$replace);
+			break;case 'id': case 'identity': case 'username': case 'spawntime': case 'email': case 'gender':
+				return (isset($this->Info[$what])?$this->Info[$what]:$replace);
 
 			break;case 'token':
 				return (isset($_SESSION['token'])?$_SESSION['token']:$replace);
 
-			break;case 'spawntime':
-				return (isset($_SESSION['spawntime'])?$_SESSION['spawntime']:$replace);
-
 			break;case 'life':
-				return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
-			
-			// break;case 'users':
-			// 	return (isset($_SESSION['spawntime'])?($this->timeout-(time()-$_SESSION['spawntime'])):$replace);
+				return (isset($this->Info['expire'])?($this->Info['expire']-time()):$replace);
 
-			break;case 'email':
-				return (isset($this->Info['email'])?($this->Info['email']):$replace);
+			// options
 
-			break;case 'nickname':
-				return (isset($this->Info['nickname']) && !is_null($this->Info['nickname'])?($this->Info['nickname']):$replace);
+			break;case 'nickname': case 'avatar': case 'birthday':
+				return (isset($this->Info[$what]) && !is_null($this->Info[$what])?($this->Info[$what]):$replace);
 
-			break;case 'avatar':
-				return (isset($this->Info['avatar']) && !is_null($this->Info['avatar'])?($this->Info['avatar']):$replace);
-
-			break;case 'gender':
-				return (isset($this->Info['gender'])?($this->Info['gender']):$replace);
-
-			break;case 'birthday':
-				return (isset($this->Info['birthday'])?($this->Info['birthday']):$replace);
-			
 			break;default:
 				return 'error:user.class';
 			break;
@@ -92,63 +71,115 @@ class User{
 		}
 	}
 
-	function Logout(){ @session_destroy(); return true; }
+	function Logout(){
+		global $DB;
+		// catch
+		$token = $this->Get('token',false);
+		if(!$token){ return false; }
+		// destroy session
+		@session_destroy();
+		// logout token
+		$DB->Query("UPDATE `account_event` SET `status`=:status WHERE `target`=:target AND `action`=:action;");
+		$result = $DB->Execute([':status'=>'invalid', ':target'=>$token, ':action'=>'login', ]);
+		if($result===false){ return false; }
+		return true;
+	}
 
 	function Update($force=false){
-		// check if timeout
-		if($this->Is('timeout')){ $this->Logout(); return 'timeout'; }
-		// check $DB
+		// check if updated
+		if($this->isUpdated && !$force){ return 'updated'; }
+
+		// DB
 		global $DB;
-		if(!isset($DB)){ die('user.class: need to include DB class'); }
-		// update from database
-		if(!$this->isUpdated || $force){
-			$id = $this->Get('id','');
-			$username = $this->Get('username','');
+		// get token
+		$token = $this->Get('token',false);
+		$datetime = time();
+		// search token
+		$DB->Query("
+			SELECT `account_event`.`id` AS `event_id`, `account_event`.`account`, `account_event`.`expire`, `account_event`.`datetime` AS 'spawntime',
+			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
+			FROM `account_event` 
+			JOIN `account` ON(`account`.id=`account_event`.`account`) 
+			WHERE `account_event`.`status`=:status AND `account_event`.`target`=:target
+			LIMIT 1;
+		");
+		$result = $DB->Execute([':status'=>'alive', ':target'=>$token]);
+		if($result===false){ $this->Logout(); return false; }
+		$ac_row = $DB->Fetch($result,'assoc');
+		if(!$ac_row){ $this->Logout(); return 'notfound'; }
+		// check if timeout
+		if( $datetime > $ac_row['expire'] ){ $this->Logout(); return 'timeout'; }
+		// check account status
+		if(in_array($ac_row['status'], ['removed','review','unverified','invalid'])){ $this->Logout(); return $ac_row['status']; }
+		else if($ac_row['status']==='alive'){ }
+		else { $this->Logout(); return 'not_alive'; }
 
-			// account
-			$DB->Query("SELECT `id`,`username`,`email`,`identity` FROM `account` WHERE `id`=:id AND `username`=:username;");
-			$result = $DB->Execute([':id' => $id, ':username' => $username]);
+		// successfully
+		$expire = time()+$this->timeout;
+		// update expire
+		$DB->Query('UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;');
+		$result = $DB->Execute([':expire'=>(int)$expire, ':event_id'=>(int)$ac_row['event_id'], ]);
+		if($result===false){ return 'cannot_update'; }
+
+		$id = (int)$ac_row['id'];
+		$username = $ac_row['username'];
+		$identity = $ac_row['identity'];
+		$email = $ac_row['email'];
+		$status = $ac_row['status'];
+		$spawntime = (int)$ac_row['spawntime'];
+
+		// profile
+		$DB->Query("SELECT `nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
+		$result = $DB->Execute([':id' => $id]);
+		if($result===false){ $this->Logout(); return false; }
+		$pf_row = $DB->Fetch($result,'assoc');
+		if(!$pf_row){
+			// if does not exist profile, create it
+			$DB->Query("INSERT INTO `profile`(`id`) VALUES(:id);");
+			$result = $DB->Execute([':id' => $id]);
 			if($result===false){ $this->Logout(); return false; }
-			$ac_row = $DB->Fetch($result,'assoc');
-			if(!$ac_row){ $this->Logout(); return 'notfound'; }
-
-			// profile
+			// query again
 			$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
 			$result = $DB->Execute([':id' => $id]);
 			if($result===false){ $this->Logout(); return false; }
 			$pf_row = $DB->Fetch($result,'assoc');
-			if(!$pf_row){
-				// if does not exist profile, create it
-				$DB->Query("INSERT INTO `profile`(`id`) VALUES(:id);");
-				$result = $DB->Execute([':id' => $id]);
-				if($result===false){ $this->Logout(); return false; }
-				// query again
-				$DB->Query("SELECT `id`,`nickname`,`gender`,`birthday`,`avatar` FROM `profile` WHERE `id`=:id;");
-				$result = $DB->Execute([':id' => $id]);
-				if($result===false){ $this->Logout(); return false; }
-				$pf_row = $DB->Fetch($result,'assoc');
-				if(!$pf_row){ $this->Logout(); return 'cannot_create'; }
-			}
-			//
-			$this->Info = [
-				'id' => $ac_row['id'],
-				'email' => $ac_row['email'],
-				'username' => $ac_row['username'],
-				'identity' => $ac_row['identity'],
-				'nickname' => $pf_row['nickname'],
-				'gender' => $pf_row['gender'],
-				'birthday' => $pf_row['birthday'],
-				'avatar' => $pf_row['avatar'],
-			];
-			$_SESSION['account'] = [
-			    'id' => $ac_row['id'],
-			    'username' => $ac_row['username'],
-			    'identity' => $ac_row['identity'],
-			];
-			$_SESSION['spawntime'] = time();
-			$this->isUpdated = true;
+			if(!$pf_row){ $this->Logout(); return 'cannot_create'; }
 		}
+		//
+		$this->Info = [
+			'id' => $id,
+			'email' => $email,
+			'username' => $username,
+			'identity' => $identity,
+			'expire' => $expire,
+			'status' => $status,
+			'spawntime' => $spawntime,
+			'nickname' => $pf_row['nickname'],
+			'gender' => $pf_row['gender'],
+			'birthday' => $pf_row['birthday'],
+			'avatar' => $pf_row['avatar'],
+		];
+		// $_SESSION['account'] = [
+		//     'id' => $ac_row['id'],
+		//     'username' => $ac_row['username'],
+		//     'identity' => $ac_row['identity'],
+		// ];
+		// $_SESSION['spawntime'] = time();
+
+		$_SESSION['token'] = $token; // update session time
+		$this->isUpdated = true;
+
 		return 'updated';
+	}
+
+	function Clear(){
+		global $DB;
+		$datetime = time();
+		$DB->Query("
+			UPDATE `account_event` SET `status`='invalid' WHERE `action`=:action AND :t>`expire`;
+		");
+		$result = $DB->Execute([':action'=>'login' ,':t' => $datetime]);
+		if($result===false){ return false; }
 	}
 
 }
