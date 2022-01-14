@@ -6,7 +6,7 @@ $User->Update();
 if($User->Is('login')){ header('Location: '.ROOT); exit(); }
 @include_once(Func('lang')); # Using the function L($label) to return text in current language
 @include_once(Func('captcha'));
-$ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
+$ac_regex = @include_once(Conf('account')); // get the regex of register form
 ?>
 
 <?php @include_once(Inc('header')); ?>
@@ -320,7 +320,7 @@ $ac_regex = @include_once(Conf('account/regex')); // get the regex of register f
 						Loger.Swal(resp, tables['register'], swal_config).then((val)=>{
 							// check if success
 							if(isSuccess){
-								<?php $timeout = include(Conf('account/regex')); $timeout = $timeout['verify']['timeout']; ?>
+								<?php $timeout = include(Conf('account')); $timeout = $timeout['verify']['timeout']; ?>
 								let timerInterval;
 								Swalc.loading('Go to check the email','The token will be timeout after <b></b> seconds.<br>(P.s. You can close this page, it\'s okay)').fire({
 									timer: <?php echo $timeout*1000; ?>,

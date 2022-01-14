@@ -25,7 +25,7 @@ $old_password = $_POST['old_password'];
 $new_password = $_POST['new_password'];
 
 # Check
-$regex = @include_once(Conf('account/regex')); // Setting Rules
+$regex = @include_once(Conf('account')); // Setting Rules
 if(!preg_match($regex['password'], $new_password)){ $Loger->Push('warning','password_format_not_match'); }
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
 

@@ -6,7 +6,7 @@ $User->Update();
 $User->Is('login') OR exit(header("Location: ".Root('index')));
 @include_once(Func('lang')); # Using the function T($id) to return text in current language
 @include_once(Func('loger'));
-$ac_regex = @include_once(Conf('account/regex')); // get the regex of register form
+$ac_regex = @include_once(Conf('account')); // get the regex of register form
 $iniMaxFileSize = ini_get('upload_max_filesize');
 $maxFileSize = 1024*1024*5; // 5mb
 ?>

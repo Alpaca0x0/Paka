@@ -15,7 +15,6 @@ foreach ($needed_datas as $data){
         break;
     }
 }
-
 # Catch Datas
 $username = @trim($_POST['username']);
 $password = @$_POST['password'];
@@ -24,7 +23,7 @@ $password = @$_POST['password'];
 // $email = 'alpaca0x0@gmail.com';
 
 # Check
-$regex = @include_once(Conf('account/regex')); // Setting Rules
+$regex = @include_once(Conf('account')); // Setting Rules
 if(!preg_match($regex['username'], $username)){ $Loger->Push('warning','username_format_not_match'); }
 if(!preg_match($regex['password'], $password)){ $Loger->Push('warning','password_format_not_match'); }
 if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
@@ -65,9 +64,11 @@ $expire = $datetime + $user_regex['timeout'];
 $ip = trim($_SERVER["REMOTE_ADDR"]);
 
 # Write into Database
-$DB->Query("INSERT INTO `account_event`(`account`,`action`,`target`,`ip`,`expire`,`datetime`,`status`) 
-	VALUES(:account, :action, :target, :ip, :expire, :t, :status);");
-$result = $DB->Execute([':account'=>(int)$row['id'], ':action'=>'login', ':target'=>$token, ':ip'=>$ip, ':expire'=>$expire, ':t'=>$datetime, ':status'=>'alive' ]);
+$DB->Query("
+    INSERT INTO `account_event`(`account`,`action`,`target`,`ip`,`expire`,`datetime`) 
+	VALUES(:account, :action, :target, :ip, :expire, :t);
+");
+$result = $DB->Execute([':account'=>(int)$row['id'], ':action'=>'login', ':target'=>$token, ':ip'=>$ip, ':expire'=>$expire, ':t'=>$datetime, ]);
 if($result===false){ $Loger->Push('error','db_cannot_insert','account_event'); }
 if($Loger->Check()){ $Loger->Resp(); }
 

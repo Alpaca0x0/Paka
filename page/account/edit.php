@@ -35,7 +35,7 @@ if(empty($_FILES["avatar"]["name"]) || !file_exists($_FILES['avatar']['tmp_name'
 }else{ $avatar = $_FILES['avatar']; $Image->Image($avatar); }
 
 # Check
-$regex = @include_once(Conf('account/regex')); // Setting Rules
+$regex = @include_once(Conf('account')); // Setting Rules
 // nickname
 if(!preg_match($regex['nickname'], $nickname)){ $Loger->Push('warning','nickname_format_not_match'); }
 // gender

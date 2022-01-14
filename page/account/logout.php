@@ -17,7 +17,7 @@ foreach ($needed_datas as $data){
 }
 
 # Catch Datas
-$token = @trim($_POST['token']);
+$token = trim(@$_POST['token']);
 
 # Check
 @include_once(Func('user'));
@@ -27,4 +27,3 @@ if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warnin
 # Logout 
 $User->Logout();
 $Loger->Resp('success','logout_successfully');
-$Loger->Resp();

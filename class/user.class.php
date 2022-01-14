@@ -79,8 +79,8 @@ class User{
 		// destroy session
 		@session_destroy();
 		// logout token
-		$DB->Query("UPDATE `account_event` SET `status`=:status WHERE `target`=:target AND `action`=:action;");
-		$result = $DB->Execute([':status'=>'invalid', ':target'=>$token, ':action'=>'login', ]);
+		$DB->Query("UPDATE `account_event` SET `expire`=:expire WHERE `target`=:target AND `action`=:action;");
+		$result = $DB->Execute([':expire'=>0, ':target'=>$token, ':action'=>'login', ]);
 		if($result===false){ return false; }
 		return true;
 	}
@@ -89,21 +89,24 @@ class User{
 		// check if updated
 		if($this->isUpdated && !$force){ return 'updated'; }
 
+		$this->Clear();
+
 		// DB
 		global $DB;
 		// get token
 		$token = $this->Get('token',false);
+		if(!$token){ return 'updated'; }
 		$datetime = time();
 		// search token
 		$DB->Query("
-			SELECT `account_event`.`id` AS `event_id`, `account_event`.`account`, `account_event`.`expire`, `account_event`.`datetime` AS 'spawntime',
+			SELECT `account_event`.`id` AS `event_id`, `account_event`.`expire`, `account_event`.`datetime` AS 'spawntime',
 			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
 			FROM `account_event` 
-			JOIN `account` ON(`account`.id=`account_event`.`account`) 
-			WHERE `account_event`.`status`=:status AND `account_event`.`target`=:target
+			JOIN `account` ON(`account`.`id`=`account_event`.`account`) 
+			WHERE `account`.`status`='alive' AND `account_event`.`target`=:target
 			LIMIT 1;
 		");
-		$result = $DB->Execute([':status'=>'alive', ':target'=>$token]);
+		$result = $DB->Execute([':target'=>$token]);
 		if($result===false){ $this->Logout(); return false; }
 		$ac_row = $DB->Fetch($result,'assoc');
 		if(!$ac_row){ $this->Logout(); return 'notfound'; }
@@ -176,12 +179,13 @@ class User{
 		global $DB;
 		$datetime = time();
 		//
-		$DB->Query("UPDATE `account_event` SET `status`='invalid' WHERE `action`=:action AND :t>`expire`;");
-		$result = $DB->Execute([':action'=>'login' ,':t' => $datetime]);
-		// if($result===false){ return false; }
-		$DB->Query("UPDATE `account` SET `status`='removed' WHERE `action`=:action AND :t>`expire`;");
-		$result = $DB->Execute([':action'=>'login' ,':t' => $datetime]);
+		$DB->Query("
+			UPDATE `account` 
+			LEFT JOIN `account_event` ON(`account`.`id`=`account_event`.`account`)
+			SET `account`.`status`='removed' 
+			WHERE `account`.`status`='unverified' AND `account_event`.`action`='register' AND :t>`account_event`.`expire`;
+		");
+		$result = $DB->Execute([':t' => $datetime]);
 
 	}
-
 }
