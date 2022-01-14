@@ -16,12 +16,21 @@ return [
     'verify' => [
         'timeout' => 60*15, // 15 mins
     ],
-
     'description' => [
         'username' => 'Can only be lowercase English and number, start with English, length 6~13',
         'email' => 'Must be email format, and only second-level domain are accepted',
         'password' => 'Must have at least numbers, lowercase English, length 8~32',
         'captcha' => 'English and numbers, length 6, not case sensitive',
+    ],
+    // 做這些動作時，status 不能有的值
+    'no_status' => [
+        'register' => ['alive','unverified','review','invalid',],
+    ],
+    'status' => [ 
+        'alive' => '存活',
+        'unverified' => '未驗證',
+        'review' => '審查中',
+        'invalid' => '失效',
     ],
 ];
 
