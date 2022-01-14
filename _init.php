@@ -1,6 +1,5 @@
 <?php
-
-// die('The website is under maintenance. Please come back later.<br>網站正在維修中，請稍後再回來看看。');
+// die('The website is under maintenance. Please come back later.<br>網站正在維修中，請稍後再回來看看吧。');
 
 /****************************************************************/
 # Read Me
@@ -8,10 +7,14 @@
 # Every page need to include this file or exit()
 /****************************************************************/
 # Initialize
-ini_set('display_errors','1'); error_reporting(E_ALL);
 if(!isset($_SESSION)){ @session_start(); }
 date_default_timezone_set('Asia/Taipei');
+/****************************************************************/
 define('INIT', true); // defined('INIT') or die('NO INIT');
+define('DEBUG', true); // debug mode, will show the error message
+define('DEV', false); // development mode
+
+if(DEBUG){ ini_set('display_errors','1'); error_reporting(E_ALL); }
 /****************************************************************/
 # Basic paths
 {
