@@ -91,8 +91,16 @@ class Admin{
 	function Count(){
 		global $DB;
 		$DB->Query("
-			SELECT COUNT(`account`.`id`) as `total`, COUNT(if(`account`.`identity`='admin',true,null)) as `admin`,
-				COUNT(if(`account`.`identity`='member',true,null)) as `member`, COUNT(if(`account`.`identity`='vip',true,null)) as `vip`
+			SELECT 
+			COUNT(`account`.`id`) as `total`, 
+			COUNT(if(`account`.`identity`='admin',true,null)) as `admin`,
+			COUNT(if(`account`.`identity`='member',true,null)) as `member`, 
+			COUNT(if(`account`.`identity`='vip',true,null)) as `vip`,
+			COUNT(if(`account`.`status`='alive',true,null)) as `alive`,
+			COUNT(if(`account`.`status`='unverified',true,null)) as `unverified`,
+			COUNT(if(`account`.`status`='review',true,null)) as `review`,
+			COUNT(if(`account`.`status`='removed',true,null)) as `removed`,
+			COUNT(if(`account`.`status`='invalid',true,null)) as `invalid`
 			FROM `account` 
 			LEFT JOIN `profile` ON(`account`.`id`=`profile`.`id`) 
 			LEFT JOIN `account_event` ON(`account`.`id`=`account_event`.`account` AND `action`='register') 

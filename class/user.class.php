@@ -9,7 +9,9 @@ class User{
 	private $isUpdated = false;
 	private $timeout = 0;
 	
-	private $Info = [];
+	private $Info = [
+		'expire' => 0,
+	];
 
 	function __construct(){
 		if(!isset($_SESSION)){ $this->__destruct(); return false; }
@@ -75,12 +77,12 @@ class User{
 		global $DB;
 		// catch
 		$token = $this->Get('token',false);
-		if(!$token){ return false; }
+		if(!$token){ return true; }
 		// destroy session
 		@session_destroy();
 		// logout token
-		$DB->Query("UPDATE `account_event` SET `expire`=:expire WHERE `target`=:target AND `action`=:action;");
-		$result = $DB->Execute([':expire'=>0, ':target'=>$token, ':action'=>'login', ]);
+		$DB->Query("UPDATE `account_event` SET `expire`=0-`expire` WHERE `target`=:target AND `expire`>0 AND `action`=:action;");
+		$result = $DB->Execute([':target'=>$token, ':action'=>'login', ]);
 		if($result===false){ return false; }
 		return true;
 	}
@@ -88,32 +90,34 @@ class User{
 	function Update($force=false){
 		// check if updated
 		if($this->isUpdated && !$force){ return 'updated'; }
+		else{ $this->isUpdated = true; }
 
 		$this->Clear();
 
-		// DB
-		global $DB;
 		// get token
 		$token = $this->Get('token',false);
 		if(!$token){ return 'updated'; }
 		$datetime = time();
+
 		// search token
+		global $DB;
 		$DB->Query("
 			SELECT `account_event`.`id` AS `event_id`, `account_event`.`expire`, `account_event`.`datetime` AS 'spawntime',
 			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
 			FROM `account_event` 
 			JOIN `account` ON(`account`.`id`=`account_event`.`account`) 
-			WHERE `account`.`status`='alive' AND `account_event`.`target`=:target
+			WHERE `account`.`status`<>'removed' AND `account_event`.`target`=:target
 			LIMIT 1;
 		");
 		$result = $DB->Execute([':target'=>$token]);
 		if($result===false){ $this->Logout(); return false; }
 		$ac_row = $DB->Fetch($result,'assoc');
 		if(!$ac_row){ $this->Logout(); return 'notfound'; }
+
 		// check if timeout
 		if( $datetime > $ac_row['expire'] ){ $this->Logout(); return 'timeout'; }
 		// check account status
-		if(in_array($ac_row['status'], ['removed','review','unverified','invalid'])){ $this->Logout(); return $ac_row['status']; }
+		if(in_array($ac_row['status'], ['review','unverified','invalid'])){ $this->Logout(); return $ac_row['status']; }
 		else if($ac_row['status']==='alive'){ }
 		else { $this->Logout(); return 'not_alive'; }
 
@@ -170,7 +174,6 @@ class User{
 		// $_SESSION['spawntime'] = time();
 
 		$_SESSION['token'] = $token; // update session time
-		$this->isUpdated = true;
 
 		return 'updated';
 	}
