@@ -15,7 +15,7 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 		<div class="ui four mini statistics">
 			<div class="ui grey inverted statistic">
 				<div class="value"><i class="icon users"></i> {{ Count.total }}</div>
-				<div class="label">總會員數</div>
+				<div class="label">總數</div>
 			</div>
 			<div class="ui red inverted statistic">
 				<div class="value"><i class="icon gavel"></i> {{ Count.admin }}</div>
@@ -23,11 +23,34 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 			</div>
 			<div class="ui green inverted statistic">
 				<div class="value"><i class="icon user"></i> {{ Count.member }}</div>
-				<div class="label">成員</div>
+				<div class="label">會員</div>
 			</div>
 			<div class="ui yellow inverted statistic">
 				<div class="value"><i class="icon gem"></i> {{ Count.vip }}</div>
 				<div class="label">VIP</div>
+			</div>
+		</div>
+		<br>
+		<div class="ui five mini statistics">
+			<div class="ui pink inverted statistic">
+				<div class="value"><i class="icon heartbeat"></i> {{ Count.alive }}</div>
+				<div class="label">存活</div>
+			</div>
+			<div class="ui grey inverted statistic">
+				<div class="value"><i class="icon heart outline"></i> {{ Count.unverified }}</div>
+				<div class="label">未驗證</div>
+			</div>
+			<div class="ui orange inverted statistic">
+				<div class="value"><i class="icon eye"></i> {{ Count.review }}</div>
+				<div class="label">審查</div>
+			</div>
+			<div class="ui red inverted statistic">
+				<div class="value"><i class="icon lock"></i> {{ Count.invalid }}</div>
+				<div class="label">無效</div>
+			</div>
+			<div class="ui red inverted statistic">
+				<div class="value"><i class="icon ban"></i> {{ Count.removed }}</div>
+				<div class="label">移除</div>
 			</div>
 		</div>
 	</div>
@@ -47,12 +70,14 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 			<tbody>
 				<!-- positive, negative -->
 				<!-- checkmark, close -->
-				<tr v-for="User in Users">
+				<tr v-for="User in Users" style="white-space: nowrap; overflow:scroll;">
 					<td>{{ User.id }}</td>
 					<td>{{ identities[User.identity] || User.identity }}</td>
 					<td>
-						<img class="ui avatar image" :src="User.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+User.avatar">
-						<span>{{ User.username }}</span>
+						<div>
+							<img class="ui avatar image" :src="User.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+User.avatar">
+							<span>{{ User.username }}</span>
+						</div>
 					</td>
 					<td>{{ User.email }}</td>
 					<td @mouseenter="" @mouseout="">{{ User.register_time }}</td>
