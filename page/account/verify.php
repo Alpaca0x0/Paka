@@ -10,11 +10,11 @@ $User->Clear();
 <?php @include_once(Inc('menu/header')); ?>
 
 <?php
-	$html = 'The account can not be verify...';
-	$icon = 'error';
-	$title = false;
+	$icon = 'error'; $html = 'Token format incorrect'; $title = false;
 
-	if(isset($_GET['token'])){
+	if(isset($_GET['token']) && is_string($_GET['token']) && strlen(trim($_GET['token']))==64){
+		$html = 'The account can not be verify...'; $icon = 'error';
+
 		$token = trim($_GET['token']);
 
 		# Start to using database
@@ -68,8 +68,6 @@ $User->Clear();
 				}
 			}
 		}
-	}else{
-		$icon = 'error'; $html = 'Token missing';
 	}
 ?>
 

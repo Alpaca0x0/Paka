@@ -11,7 +11,7 @@ $User->Update();
 if($User->Is('logout')){ $Loger->Resp('warning','is_logout'); }
 
 // remove the comment
-if(isset($_POST['commentId'])){
+if(isset($_POST['commentId']) && is_string($_POST['commentId'])){
 	@include_once(Func('post'));
 	$commenter = $User->Get('id',false);
 	if(!$commenter){ $Loger->Resp('warning','is_logout'); }
@@ -37,7 +37,7 @@ if(isset($_POST['commentId'])){
 }
 
 // remove the post
-else if(isset($_POST['postId'])){
+else if(isset($_POST['postId']) && is_string($_POST['postId'])){
 	@include_once(Func('post'));
 	$poster = $User->Get('id',false);
 	if(!$poster){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
@@ -58,6 +58,7 @@ else if(isset($_POST['postId'])){
 	else{ $Loger->Push('error','error',[$result]); }
 	$Loger->Resp();
 }
+
 else{ $Loger->Resp('warning','data_missing'); }
 
 $Loger->Resp();

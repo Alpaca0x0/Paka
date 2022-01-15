@@ -13,7 +13,9 @@ if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
 // must have post data
 $needed_datas = ['postId','content','reply'];
 foreach ($needed_datas as $data){
-	if(!isset($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
+	if(!isset($_POST[$data]) || !is_string($_POST[$data])){
+		$Loger->Push('warning','data_missing',$data);
+	}
 }if($Loger->Check()){ $Loger->Resp(); }
 
 // get data

@@ -10,19 +10,19 @@
 # If have post data
 $needed_datas = ['token'];
 foreach ($needed_datas as $data){
-    if( !isset($_POST[$data]) ){
+    if( !isset($_POST[$data]) || !is_string($_POST[$data]) ){
         $Loger->Resp('warning','data_missing',$data);
         break;
     }
 }
 
 # Catch Datas
-$token = trim(@$_POST['token']);
+if(is_string($_POST['token'])){ $token = trim($_POST['token']); }
+else{ $token = false; }
 
 # Check
 @include_once(Func('user'));
-if($User->Get('token') !== $token){ $Loger->Push('warning','token_not_match',[$User->Get('token'),$token]); }
-if($Loger->Check()){ $Loger->Resp(); } // if have one of [unknown, error, warning], response
+if($User->Get('token',false) !== $token){ $Loger->Resp('warning','token_not_match'); }
 
 # Logout 
 $User->Logout();

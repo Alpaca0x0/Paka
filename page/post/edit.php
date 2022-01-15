@@ -11,11 +11,11 @@ $User->Update();
 if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
 
 // edit comment
-if(isset($_POST['commentId'])){
+if(isset($_POST['commentId']) && is_string($_POST['commentId'])){
 	// must have data
 	$needed_datas = ['postId','commentId','content'];
 	foreach ($needed_datas as $data){
-		if(!isset($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
+		if(!isset($_POST[$data]) || !is_string($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
 	}if($Loger->Check()){ $Loger->Resp(); }
 
 	// get data
@@ -48,7 +48,7 @@ else{
 	// must have post data
 	$needed_datas = ['title','content','postId',];
 	foreach ($needed_datas as $data){
-		if(!isset($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
+		if(!isset($_POST[$data]) || !is_string($_POST[$data])){ $Loger->Push('warning','data_missing',$data); }
 	}if($Loger->Check()){ $Loger->Resp(); }
 
 	// get data

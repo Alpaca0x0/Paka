@@ -32,7 +32,7 @@ $def = [
 // check option
 $before = isset($_GET['before']) ? (int)$_GET['before'] : false; 
 $after = isset($_GET['after']) ? (int)$_GET['after'] : false; 
-$order = isset($_GET['order']) ? strtoupper($_GET['order']) : 'DESC'; 
+$order = isset($_GET['order']) && is_string($_GET['order']) ? strtoupper($_GET['order']) : 'DESC'; 
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 12;
 
 // filter

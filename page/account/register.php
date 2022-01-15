@@ -9,7 +9,7 @@
 # If have post data
 $needed_datas = ['username','password','email','captcha'];
 foreach ($needed_datas as $data){
-    if( !isset($_POST[$data]) ){
+    if( !isset($_POST[$data]) || !is_string($_POST[$data]) ){
         $Loger->Resp('warning','data_missing',$data);
         break;
     }

@@ -10,7 +10,7 @@ header('Content-Type: application/json; charset=utf-8');
 // check
 $needed_datas = ['commentId',];
 foreach ($needed_datas as $data){
-    if( !isset($_GET[$data]) ){
+    if( !isset($_GET[$data]) || !is_string($_GET[$data]) ){
         $Loger->Push('warning','data_missing',$data);
     }
 } if($Loger->Check()){ $Loger->Resp(); }

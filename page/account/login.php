@@ -10,14 +10,14 @@
 # If have post data
 $needed_datas = ['username','password'];
 foreach ($needed_datas as $data){
-    if( !isset($_POST[$data]) ){
+    if( !isset($_POST[$data]) || !is_string($_POST[$data]) ){
         $Loger->Resp('warning','data_missing',$data);
         break;
     }
 }
 # Catch Datas
-$username = @trim($_POST['username']);
-$password = @$_POST['password'];
+$username = trim($_POST['username']);
+$password = $_POST['password'];
 // $username = 'alpaca';
 // $password = 'passw0rd';
 // $email = 'alpaca0x0@gmail.com';

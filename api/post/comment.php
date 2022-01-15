@@ -10,13 +10,13 @@ header('Content-Type: application/json; charset=utf-8');
 // check
 $needed_datas = ['postId',];
 foreach ($needed_datas as $data){
-    if( !isset($_GET[$data]) ){
+    if( !isset($_GET[$data]) || !is_string($_GET[$data]) ){
         $Loger->Push('warning','data_missing',$data);
     }
 } if($Loger->Check()){ $Loger->Resp(); }
 
 // get datas
-$postId = (int)(@$_GET['postId']);
+$postId = (int)$_GET['postId'];
 
 // filter
 if($postId < 1){ $Loger->Push('warning','post_id_incorrect',$postId); }

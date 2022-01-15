@@ -13,7 +13,7 @@ if($User->Is('logout')){ $Loger->Resp('warning','is_logout'); }
 # If have post data
 $needed_datas = ['old_password','new_password'];
 foreach ($needed_datas as $data){
-    if( !isset($_POST[$data]) ){
+    if( !isset($_POST[$data]) || !is_string($_POST[$data]) ){
         $Loger->Resp('warning','data_missing',$data);
         break;
     }
