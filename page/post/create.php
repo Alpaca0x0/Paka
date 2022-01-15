@@ -1,4 +1,4 @@
-<?php @include_once('../../init.php'); ?>
+<?php require('../../init.php'); ?>
 
 <?php
 @include_once(Func('loger'));

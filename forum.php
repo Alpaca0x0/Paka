@@ -1,4 +1,4 @@
-<?php @include_once('init.php'); ?>
+<?php require('init.php'); ?>
 <?php
 @include_once(Func('lang')); # Using the function T($id) to return text in current language
 ?>
