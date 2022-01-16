@@ -1,4 +1,6 @@
-<?php @include_once('../../init.php'); ?>
+<?php require('../../init.php'); ?>
+<?php header('Content-Type: application/javascript'); ?>
+
 
 window.setCookie = function(name,value,minutes=60*7){
     var expires = "";
