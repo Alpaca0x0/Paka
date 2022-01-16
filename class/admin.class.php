@@ -67,7 +67,7 @@ class Admin{
 				// push
 				$temp = [];
 				foreach ($rows as $row) {
-					$temp[$row['id']] = [
+					array_push($temp,[
 						'id' => $row['id'],
 						'status' => $row['status'],
 						'email' => $row['email'],
@@ -78,7 +78,7 @@ class Admin{
 						'birthday' => $row['birthday'],
 						'register_time' => $row['register_time'],
 						'avatar' => $row['avatar']===null?null:base64_encode($row['avatar']),
-					];
+					]);
 				}return $temp;
 			
 			break;default:
