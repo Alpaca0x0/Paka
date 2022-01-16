@@ -219,7 +219,7 @@
 						// auto run
 						resize();
 						// listener
-						window.addEventListener('resize',()=>{resize()});
+						window.addEventListener('resize',()=>{ resize(); });
 						// change the account item to be login style
 						if(items.account.isLogin){
 							$('#Menu .ui.dropdown#account').dropdown();
