@@ -12,26 +12,40 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 
 <div class="ui container" id="Users">
 	<div class="ui inverted segment">
+		<!-- <div class="ui grid">
+			<div class="four wide column">
+				<button class="ui button black statistic" :class="{active:filter.current.status.includes('alive')}" @click="filter.status('alive').toggle()">
+					<div class="ui pink inverted statistic">
+						<div class="value"><i class="icon mini heartbeat"></i> {{ Count.alive }}</div>
+						<div class="label">存活</div>
+					</div>
+				</button>
+			</div>
+			<div class="four wide column"></div>
+			<div class="four wide column"></div>
+			<div class="four wide column"></div>
+		</div>
+		<br> -->
 		<div class="ui four mini statistics">
-			<button class="ui button black statistic" :class="{active:filter.isEmpty()}" @click="filter.init()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.isEmpty()}" @click="filter.init()">
 				<div class="ui grey inverted statistic">
 					<div class="value"><i class="icon users"></i> {{ Count.total }}</div>
 					<div class="label">全部</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.identity.includes('admin')}" @click="filter.identity('admin').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.identity.includes('admin')}" @click="filter.identity('admin').toggle()">
 				<div class="ui red inverted statistic">
 					<div class="value"><i class="icon gavel"></i> {{ Count.admin }}</div>
 					<div class="label">管理員</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.identity.includes('member')}" @click="filter.identity('member').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.identity.includes('member')}" @click="filter.identity('member').toggle()">
 				<div class="ui green inverted statistic">
 					<div class="value"><i class="icon user"></i> {{ Count.member }}</div>
 					<div class="label">會員</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.identity.includes('vip')}" @click="filter.identity('vip').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.identity.includes('vip')}" @click="filter.identity('vip').toggle()">
 				<div class="ui yellow inverted statistic">
 					<div class="value"><i class="icon gem"></i> {{ Count.vip }}</div>
 					<div class="label">VIP</div>
@@ -40,31 +54,31 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 		</div>
 		<br>
 		<div class="ui five mini statistics">
-			<button class="ui button black statistic" :class="{active:filter.current.status.includes('alive')}" @click="filter.status('alive').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.status.includes('alive')}" @click="filter.status('alive').toggle()">
 				<div class="ui pink inverted statistic">
 					<div class="value"><i class="icon heartbeat"></i> {{ Count.alive }}</div>
 					<div class="label">存活</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.status.includes('unverified')}" @click="filter.status('unverified').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.status.includes('unverified')}" @click="filter.status('unverified').toggle()">
 				<div class="ui grey inverted statistic">
 					<div class="value"><i class="icon heart outline"></i> {{ Count.unverified }}</div>
 					<div class="label">未驗證</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.status.includes('review')}" @click="filter.status('review').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.status.includes('review')}" @click="filter.status('review').toggle()">
 				<div class="ui orange inverted statistic">
 					<div class="value"><i class="icon eye"></i> {{ Count.review }}</div>
 					<div class="label">審查</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.status.includes('invalid')}" @click="filter.status('invalid').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.status.includes('invalid')}" @click="filter.status('invalid').toggle()">
 				<div class="ui red inverted statistic">
 					<div class="value"><i class="icon lock"></i> {{ Count.invalid }}</div>
 					<div class="label">無效</div>
 				</div>
 			</button>
-			<button class="ui button black statistic" :class="{active:filter.current.status.includes('removed')}" @click="filter.status('removed').toggle()">
+			<button class="ui compact button mini black statistic" :class="{active:filter.current.status.includes('removed')}" @click="filter.status('removed').toggle()">
 				<div class="ui red inverted statistic">
 					<div class="value"><i class="icon ban"></i> {{ Count.removed }}</div>
 					<div class="label">移除</div>
@@ -86,44 +100,44 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 				</tr>
 			</thead>
 			<tbody>
-				<!-- positive, negative -->
-				<!-- checkmark, close -->
-				<tr v-for="User in filter.filter(Users)" style="white-space: nowrap; overflow:scroll;">
-					<td>{{ User.id }}</td>
-					<td>{{ identities[User.identity] || User.identity }}</td>
-					<td>
-						<div>
-							<img class="ui avatar image" :src="User.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+User.avatar">
-							<span>{{ User.username }}</span>
-						</div>
-					</td>
-					<td>{{ User.email }}</td>
-					<td :title="timeToString(User.register_time)">{{ timeToStatus(User.register_time) }}</td>
-					<td>{{ statuses[User.status] || User.status }}</td>
-				</tr>
+				<template v-for="(User,User_key) in Show.Users">
+					<template v-if="User_key >= Show.page.rows_number*(Show.page.current_number-1) && User_key < Show.page.rows_number*(Show.page.current_number-1)+Show.page.rows_number">
+						<tr style="white-space: nowrap; overflow:scroll;">
+							<td>{{ User.id }}</td>
+							<td>{{ identities[User.identity] || User.identity }}</td>
+							<td>
+								<div>
+									<img class="ui avatar image" :src="User.avatar==null?'<?php echo IMG('default','png'); ?>':'data:image/jpeg;base64, '+User.avatar">
+									<span>{{ User.username }}</span>
+								</div>
+							</td>
+							<td>{{ User.email }}</td>
+							<td :title="timeToString(User.register_time)">{{ timeToStatus(User.register_time) }}</td>
+							<td>{{ statuses[User.status] || User.status }}</td>
+						</tr>
+					</template>
+				</template>
 			</tbody>
 		</table>
 	</div>
 
 	<div class="ui divider"></div>
 
-	<div class="ui right floated pagination menu">
-		<a class="icon item">
-			<i class="left chevron icon"></i>
-		</a>
-		<a class="item">1</a>
-		<a class="item">2</a>
-		<a class="item">3</a>
-		<a class="item">4</a>
-		<a class="icon item">
-			<i class="right chevron icon"></i>
-		</a>
+	<div class="seven ui buttons black">
+		<button class="ui button" @click="Show.page.current_number-1<1?false:Show.page.current_number-=1"><i class="left chevron icon"></i></button>
+		<div class="five ui buttons" style="overflow-x: scroll;">
+			<template v-for="page_number in Show.page.number">
+				<button class="ui button" @click="Show.page.current_number=page_number">{{ page_number }}</button>
+			</template>
+		</div>
+		<button class="ui button" @click="Show.page.current_number+1>Show.page.number?false:Show.page.current_number+=1"><i class="right chevron icon"></i></button>
 	</div>
+
 </div>
 
 
 <script type="module">
-	import { createApp, ref, reactive, onMounted } from '<?php echo Frame('vue/vue','js'); ?>';
+	import { createApp, ref, reactive, onMounted, watch } from '<?php echo Frame('vue/vue','js'); ?>';
 	const Users = createApp({
 		setup(){
 			let timeToStatus = window.timeToStatus;
@@ -140,8 +154,6 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 				'member': '會員',
 				'vip': 'VIP',
 			};
-			let Count = <?php echo json_encode($Admin->Count()); ?>;
-			let Users = reactive([]);
 
 			let filter = reactive({
 				current: {},
@@ -209,17 +221,29 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 					if(filter.isEmpty()){ return users; }
 					//
 					return (users).filter(user => {
-						return (filter.current.identity).includes(user.identity) || (filter.current.status).includes(user.status);
+						// user = JSON.parse(JSON.stringify(user));
+						return ((filter.current.identity).includes(user.identity)||(filter.current.identity).length<1) && 
+						((filter.current.status).includes(user.status)||(filter.current.status).length<1);
 					});
 				},
-				// render: ()=>{
-				// 	let result = Object.values(filter.current).every(val => val.length<1 );
-				// 	if(result){ Display = Users; return; }
-				// 	Object.keys(filter.current).forEach(type=>{
-				// 		console.log(filter.current[type]);
-				// 	});
-				// 	// Display = (Users).filter(user => user.status)
-				// },
+			});
+			filter.init();
+
+			let Count = <?php echo json_encode($Admin->Count()); ?>;
+			let Users = [];
+
+			let Show = reactive({
+				page: {
+					rows_number: 9, // number of colums in one page
+					number: 1, // page number
+					current_number: 1, // current page number
+				},
+				Users: [],
+			});
+
+			watch(filter,()=>{
+				Show.Users = filter.filter(Users);
+				Show.page.number = Math.ceil(Show.Users.length/Show.page.rows_number);
 			});
 
 			onMounted(()=>{
@@ -230,51 +254,18 @@ if($User->Get('identity',false)!=='admin'){ header("Location:".ROOT); die('Permi
 					dataType: 'json',
 					success: (resp) => {
 						Array.prototype.push.apply(Users, resp);
-						// this.skipPosts += this.postsLimit;
 						Loger.Log('info','Users API',resp);
 					},
 				}).then(()=>{
+					filter.status('alive').add();
 					isLoading.value = false;
 				});
 			});
-			// filter display
-			filter.init();
 
 			return {
-				isLoading, statuses, identities, Count, Users, timeToString, timeToString, timeToStatus, filter,
+				isLoading, statuses, identities, Count, timeToString, timeToStatus, filter, Show
 			};
 		},
-		// methods:{
-			// timeToStatus: window.timeToStatus,
-			// timeToString: window.timeToString,
-		// },
-		// mounted(){
-			// get posts
-			// $.ajax({
-			// 	type: "GET",
-			// 	url: '<?php echo API('admin/users'); ?>',
-			// 	data: {order: 'DESC', limit: 99, after:0 },
-			// 	dataType: 'json',
-			// 	success: (resp) => {
-			// 		this.Users = resp;
-			// 		// this.skipPosts += this.postsLimit;
-			// 		Loger.Log('info','Users API',resp);
-			// 	},
-			// }).then(()=>{
-			// 	this.isLoading = false;
-			// });
-
-			// this.Users.forEach((User)=>{
-			// 	let temp = User.register_time;
-			// 	User.register_time = {
-			// 		time: temp,
-			// 		status: timeToStatus(User.register_time),
-			// 		string: timeToString(User.register_time),
-			// 		display: '-'
-			// 	};
-			// 	User.register_time.display = User.register_time.status;
-			// });
-		// }
 	}).mount('div#Users');
 </script>
 
