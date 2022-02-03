@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.1
+-- version 4.9.5deb2
 -- https://www.phpmyadmin.net/
 --
--- 主機： 127.0.0.1
--- 產生時間： 2022-01-14 08:20:49
--- 伺服器版本： 10.4.21-MariaDB
--- PHP 版本： 8.0.10
+-- Host: localhost:3306
+-- Generation Time: Feb 03, 2022 at 03:34 PM
+-- Server version: 8.0.27-0ubuntu0.20.04.1
+-- PHP Version: 7.4.3
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,26 +19,26 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫: `alpacatech`
+-- Database: `alpacatech`
 --
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `account`
+-- Table structure for table `account`
 --
 
 CREATE TABLE `account` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `username` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `password` varchar(77) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `identity` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'member',
   `email` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review, unverified'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
 --
--- 傾印資料表的資料 `account`
+-- Dumping data for table `account`
 --
 
 INSERT INTO `account` (`id`, `username`, `password`, `identity`, `email`, `status`) VALUES
@@ -48,21 +49,21 @@ INSERT INTO `account` (`id`, `username`, `password`, `identity`, `email`, `statu
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `account_event`
+-- Table structure for table `account_event`
 --
 
 CREATE TABLE `account_event` (
-  `id` int(11) NOT NULL,
-  `account` int(11) NOT NULL COMMENT 'account id',
-  `action` varchar(16) COLLATE utf8mb4_bin NOT NULL,
-  `target` varchar(64) COLLATE utf8mb4_bin DEFAULT NULL,
-  `ip` varchar(40) COLLATE utf8mb4_bin NOT NULL,
-  `expire` int(11) NOT NULL DEFAULT 0,
-  `datetime` int(11) NOT NULL
+  `id` int NOT NULL,
+  `account` int NOT NULL COMMENT 'account id',
+  `action` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `target` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `ip` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `expire` int NOT NULL DEFAULT '0',
+  `datetime` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
--- 傾印資料表的資料 `account_event`
+-- Dumping data for table `account_event`
 --
 
 INSERT INTO `account_event` (`id`, `account`, `action`, `target`, `ip`, `expire`, `datetime`) VALUES
@@ -73,211 +74,205 @@ INSERT INTO `account_event` (`id`, `account`, `action`, `target`, `ip`, `expire`
 (18, 24, 'login', '5b2a395a1f96feba4f362c3b31fdf4c26bed1ca28e4a6f35381dfa61d33ad86a', '::1', 0, 1642141821),
 (19, 24, 'login', 'c1a75e33b6c67ff3431d443f1a6de679f2af33cdabf2377774117552e67af261', '::1', 0, 1642141942),
 (20, 24, 'login', '2399208d288c87fc9d78d13c114950f6e3495a6fe8d0000d0a0aabc92d60bfa4', '::1', 0, 1642142248),
-(21, 24, 'login', 'c537a20895bd01146e5d9fb47fde58e292c34341f005915026a9f87c541aff6f', '::1', 0, 1642142295);
+(21, 24, 'login', 'c537a20895bd01146e5d9fb47fde58e292c34341f005915026a9f87c541aff6f', '::1', 0, 1642142295),
+(22, 24, 'login', 'ccb0870f32b18316286c4681debebba16c5c2e270157a4a1b933fd7c929600b4', '127.0.0.1', 1643468915, 1643447188),
+(23, 24, 'login', '4167914c946ed732242c40d607e32547bba56fd64a473f06ef0035cdcf148b0c', '127.0.0.1', 1643895085, 1643868231);
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `comment`
+-- Table structure for table `comment`
 --
 
 CREATE TABLE `comment` (
-  `id` int(11) NOT NULL,
-  `reply` int(11) DEFAULT NULL COMMENT 'reply id or null for post',
-  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
-  `commenter` int(11) NOT NULL COMMENT 'id who commented',
-  `datetime` int(11) NOT NULL,
-  `post` int(11) NOT NULL COMMENT 'in which post',
-  `status` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+  `id` int NOT NULL,
+  `reply` int DEFAULT NULL COMMENT 'reply id or null for post',
+  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `commenter` int NOT NULL COMMENT 'id who commented',
+  `datetime` int NOT NULL,
+  `post` int NOT NULL COMMENT 'in which post',
+  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `comment_edited`
+-- Table structure for table `comment_edited`
 --
 
 CREATE TABLE `comment_edited` (
-  `id` int(11) NOT NULL,
-  `editor` int(11) NOT NULL,
-  `post` int(11) NOT NULL,
-  `comment` int(11) NOT NULL,
-  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL
+  `id` int NOT NULL,
+  `editor` int NOT NULL,
+  `post` int NOT NULL,
+  `comment` int NOT NULL,
+  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `datetime` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `post`
+-- Table structure for table `post`
 --
 
 CREATE TABLE `post` (
-  `id` int(11) NOT NULL,
-  `poster` int(11) NOT NULL,
-  `title` varchar(24) COLLATE utf8mb4_bin NOT NULL,
-  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
-  `status` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+  `id` int NOT NULL,
+  `poster` int NOT NULL,
+  `title` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `datetime` int NOT NULL,
+  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
---
--- 傾印資料表的資料 `post`
---
-
-INSERT INTO `post` (`id`, `poster`, `title`, `content`, `datetime`, `status`) VALUES
-(2, 24, 'adsasddada', 'dasasssda', 1641748726, 'alive'),
-(3, 24, 'dassd', 'Marihuana, [2022/1/10 上午 01:17] 現在開始，註冊帳號的部分需要使用信箱認證，也就是大家熟悉的驗證信。👉 我官方的 email 為「alpaca.tech.service@gmail.com」，請小心其他釣魚連結。另外也開始陸續再重要的功能上使用驗證碼機制👊以防止機器人刷資料庫。💁‍♂️雖然有了這些，但好的社群環境依然需要大家共同維護，請大家盡力配合。😀謝謝各位的光臨。', 1641748753, 'alive');
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `post_edited`
+-- Table structure for table `post_edited`
 --
 
 CREATE TABLE `post_edited` (
-  `id` int(11) NOT NULL,
-  `editor` int(11) NOT NULL,
-  `post` int(11) NOT NULL,
-  `title` varchar(24) COLLATE utf8mb4_bin NOT NULL,
-  `content` varchar(535) COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL
+  `id` int NOT NULL,
+  `editor` int NOT NULL,
+  `post` int NOT NULL,
+  `title` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `content` varchar(535) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `datetime` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `post_event`
+-- Table structure for table `post_event`
 --
 
 CREATE TABLE `post_event` (
-  `id` int(11) NOT NULL,
-  `committer` int(11) NOT NULL,
-  `action` varchar(16) COLLATE utf8_bin NOT NULL COMMENT 'good,suck',
-  `post` int(11) NOT NULL,
-  `datetime` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+  `id` int NOT NULL,
+  `committer` int NOT NULL,
+  `action` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL COMMENT 'good,suck',
+  `post` int NOT NULL,
+  `datetime` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
 --
--- 資料表結構 `profile`
+-- Table structure for table `profile`
 --
 
 CREATE TABLE `profile` (
-  `id` int(11) NOT NULL COMMENT 'account id',
-  `nickname` varchar(16) COLLATE utf8mb4_bin DEFAULT NULL,
-  `gender` varchar(16) COLLATE utf8mb4_bin NOT NULL DEFAULT 'secret',
-  `birthday` varchar(10) COLLATE utf8mb4_bin DEFAULT NULL,
-  `avatar` mediumblob DEFAULT NULL COMMENT 'avatar, max 16mb'
+  `id` int NOT NULL COMMENT 'account id',
+  `nickname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `gender` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'secret',
+  `birthday` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `avatar` mediumblob COMMENT 'avatar, max 16mb'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
--- 傾印資料表的資料 `profile`
+-- Dumping data for table `profile`
 --
 
 INSERT INTO `profile` (`id`, `nickname`, `gender`, `birthday`, `avatar`) VALUES
-(24, NULL, 'secret', NULL, NULL),
+(24, '羊駝葛格', 'secret', NULL, NULL),
 (25, NULL, 'secret', NULL, NULL),
 (26, NULL, 'secret', NULL, NULL);
 
 --
--- 已傾印資料表的索引
+-- Indexes for dumped tables
 --
 
 --
--- 資料表索引 `account`
+-- Indexes for table `account`
 --
 ALTER TABLE `account`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `account_event`
+-- Indexes for table `account_event`
 --
 ALTER TABLE `account_event`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `comment`
+-- Indexes for table `comment`
 --
 ALTER TABLE `comment`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `comment_edited`
+-- Indexes for table `comment_edited`
 --
 ALTER TABLE `comment_edited`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `post`
+-- Indexes for table `post`
 --
 ALTER TABLE `post`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `post_edited`
+-- Indexes for table `post_edited`
 --
 ALTER TABLE `post_edited`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `post_event`
+-- Indexes for table `post_event`
 --
 ALTER TABLE `post_event`
   ADD PRIMARY KEY (`id`);
 
 --
--- 資料表索引 `profile`
+-- Indexes for table `profile`
 --
 ALTER TABLE `profile`
   ADD PRIMARY KEY (`id`);
 
 --
--- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `account`
+-- AUTO_INCREMENT for table `account`
 --
 ALTER TABLE `account`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `account_event`
+-- AUTO_INCREMENT for table `account_event`
 --
 ALTER TABLE `account_event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `comment`
+-- AUTO_INCREMENT for table `comment`
 --
 ALTER TABLE `comment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `comment_edited`
+-- AUTO_INCREMENT for table `comment_edited`
 --
 ALTER TABLE `comment_edited`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `post`
+-- AUTO_INCREMENT for table `post`
 --
 ALTER TABLE `post`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `post_edited`
+-- AUTO_INCREMENT for table `post_edited`
 --
 ALTER TABLE `post_edited`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- 使用資料表自動遞增(AUTO_INCREMENT) `post_event`
+-- AUTO_INCREMENT for table `post_event`
 --
 ALTER TABLE `post_event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
