@@ -10,6 +10,8 @@
 $User->Update();
 if($User->Is('logout')){ $Loger->Push('warning','is_logout'); $Loger->Resp(); }
 
+$rules = @include_once(Conf('post'));
+
 // edit comment
 if(isset($_POST['commentId']) && is_string($_POST['commentId'])){
 	// must have data
@@ -29,7 +31,8 @@ if(isset($_POST['commentId']) && is_string($_POST['commentId'])){
 	$content = preg_replace('/[\n\r\t]/', ' ', trim($content));
 	// remove multiple spaces
 	$content = preg_replace('/\s(?=\s)/', '', $content);
-	if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
+	if(mb_strlen($content)<$rules['comment']['min']){ $Loger->Push('warning','content_too_short'); }
+	else if(mb_strlen($content)>$rules['comment']['max']){ $Loger->Push('warning','content_too_long'); }
 	if($Loger->Check()){ $Loger->Resp(); }
 
 	$result = $Post->EditComment($postId, $commentId, $content);
@@ -64,8 +67,10 @@ else{
 	// remove multiple spaces
 	$title = preg_replace('/\s(?=\s)/', '', $title);
 	$content = preg_replace('/\s(?=\s)/', '', $content);
-	if(strlen($title)<2){ $Loger->Push('warning','title_too_short'); }
-	if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
+	if(mb_strlen($title)<$rules['title']['min']){ $Loger->Push('warning','title_too_short'); }
+	else if(mb_strlen($title)>$rules['title']['max']){ $Loger->Push('warning','title_too_long'); }
+	if(mb_strlen($content)<$rules['content']['min']){ $Loger->Push('warning','content_too_short'); }
+	else if(mb_strlen($content)>$rules['content']['max']){ $Loger->Push('warning','content_too_long'); }
 	if($Loger->Check()){ $Loger->Resp(); }
 
 
@@ -75,7 +80,7 @@ else{
 	if(in_array($result, $warnResps)){ $Loger->Push('warning',$result); }
 	else if($result==='chnaged_nothing'){ $Loger->Push('success',$result); }
 	else if(is_array($result)){ $Loger->Push('success','edited_post',$result); }
-	else{ $Loger->Push('error','error',$result); }
+	else{ $Loger->Push('error','error',[$result]); }
 
 	$Loger->Resp();
 }

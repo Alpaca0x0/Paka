@@ -31,7 +31,9 @@ $content = preg_replace('/[\n\r\t]/', ' ', $content);
 $content = preg_replace('/\s(?=\s)/', '', $content);
 
 // format
-if(strlen($content)<2){ $Loger->Push('warning','content_too_short'); }
+$rules = @include_once(Conf('post'));
+if(mb_strlen($content)<$rules['comment']['min']){ $Loger->Push('warning','content_too_short'); }
+else if(mb_strlen($content)>$rules['comment']['max']){ $Loger->Push('warning','content_too_long'); }
 if($Loger->Check()){ $Loger->Resp(); }
 
 // check if access is permission
