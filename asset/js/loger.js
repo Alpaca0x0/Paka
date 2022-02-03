@@ -56,8 +56,8 @@ Loger.Swal = function(logs, tables=[],custom={}){
 
 	// not found any key, set it to be unexpected error
 	if(first>=contents.length){
-		custom.type = 'unknown';
-		custom.html = 'Unexpected response';
+		custom.icon = 'error';
+		custom.html = 'Unexpected response<br>('+logs+')';
 	}else{
 		config.html = dispalys[first];
 	}
