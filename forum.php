@@ -6,14 +6,16 @@
 <?php @include_once(Inc('header')); ?>
 <?php @include_once(Inc('menu/header')); ?>
 
+<?php $postRule = @include_once(Conf('post')); ?>
+
 <!-- comments container -->
 <div class="ui container" id="Forum">
 	<h2 class="content-title"><?php L('Forum','Forum'); ?></h2>
 
 	<!-- write post form -->
 	<form class="ui form" id="CreatePost" ref='CreatePost'>
-		<div class="field"><input type="text" name="title" id="title" ref='title' placeholder="Title..."></div>
-		<div class="field"><textarea name="content" id="content" ref='content' placeholder="Content..." rows="2"></textarea></div>
+		<div class="field"><input type="text" name="title" id="title" ref='title' placeholder="Title..." maxlength="<?php echo $postRule['title']['max']; ?>" minlength="<?php echo $postRule['title']['min']; ?>"></div>
+		<div class="field"><textarea name="content" id="content" ref='content' placeholder="Content..." rows="2" maxlength="<?php echo $postRule['content']['max']; ?>" minlength="<?php echo $postRule['content']['min']; ?>"></textarea></div>
 		<div class="ui blue labeled submit icon button right floated"><i class="icon edit"></i> Post it</div>
 	</form><!-- end write post form -->
 
@@ -56,10 +58,10 @@
 		<template v-if="post.isEditing">
 			<form class="ui form" :id="'editPost_'+post.id" onsubmit="return false;">
 				<div class="field">
-					<input type="text" id="title" name="title" :placeholder="post.title" :value="post.title">
+					<input type="text" id="title" name="title" :placeholder="post.title" :value="post.title" maxlength="<?php echo $postRule['title']['max']; ?>" minlength="<?php echo $postRule['title']['min']; ?>">
 				</div>
 				<div class="field">
-					<textarea rows="2" :placeholder="post.content" id="content" name="content">{{ post.content }}</textarea>
+					<textarea rows="2" :placeholder="post.content" id="content" name="content" maxlength="<?php echo $postRule['content']['max']; ?>" minlength="<?php echo $postRule['content']['min']; ?>">{{ post.content }}</textarea>
 				</div>
 				<div class="ui right floated buttons">
 					<button class="ui button" @click="post.isEditing=false" type="button">Cancel</button>
@@ -116,7 +118,7 @@
 								<template v-if="comment.isEditing">
 									<form class="ui form" :id="'editComment_'+comment.id" onsubmit="return false;" :class="{ loading : comment.isRemoving }">
 										<div class="ui mini action icon fluid input field">
-											<input type="text" placeholder="Reply..." :value="comment.content" id="content" name="content" v-focus>
+											<input type="text" placeholder="Reply..." :value="comment.content" id="content" name="content" maxlength="<?php echo $postRule['comment']['max']; ?>" minlength="<?php echo $postRule['comment']['min']; ?>" v-focus>
 											&nbsp;
 											<div class="ui right floated buttons">
 												<button class="ui button" @click="comment.isEditing=false" type="button">Cancel</button>
@@ -158,7 +160,7 @@
 										<template v-if="reply.isEditing">
 											<form class="ui form" :id="'editComment_'+reply.id" onsubmit="return false;">
 												<div class="ui mini action icon fluid input field">
-													<input type="text" placeholder="Reply..." :value="reply.content" id="content" name="content" v-focus>
+													<input type="text" placeholder="Reply..." :value="reply.content" id="content" name="content" maxlength="<?php echo $postRule['comment']['max']; ?>" minlength="<?php echo $postRule['comment']['min']; ?>" v-focus>
 													&nbsp;
 													<div class="ui right floated buttons">
 														<button class="ui button" @click="reply.isEditing=false" type="button">Cancel</button>
@@ -376,6 +378,8 @@
 												'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 												'title_too_short': `Title is too short!`,
 												'content_too_short': 'Content is too short!',
+												'title_too_long': `Title is too long!`,
+												'content_too_long': 'Content is too long!',
 												'permission_denied': 'Permission denied!',
 												'edited_post': 	'successfully edited!',
 											}
@@ -453,6 +457,8 @@
 												'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 												'title_too_short': `Title is too short!`,
 												'content_too_short': 'Content is too short!',
+												'title_too_long': `Title is too long!`,
+												'content_too_long': 'Content is too long!',
 												'permission_denied': 'Permission denied!',
 												'edited_comment': 	'successfully edited!',
 											}
@@ -542,6 +548,8 @@
 								'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 								'title_too_short': 'Need to type more text in title!',
 								'content_too_short': `Need to type more text in contnet!`,
+								'title_too_long': 'Title is too long!',
+								'content_too_long': `Contnet is too long!`,
 								'error_insert': 'Un... seems has some errors when writing your data, sorry.',
 								'permission_denied': 'Access denied!',
 								'error': 'Sorry, we got the error...',
@@ -597,8 +605,12 @@
 			identifier: 'title',
 			rules: [
 				{
-					type	 : 'minLength[2]',
-					prompt : 'Title 必須至少 2 個字元長度(中文為1字元長度)'
+					type: 'minLength[<?php echo $postRule['title']['min']; ?>]',
+					prompt : 'Title 字元長度必須大於 <?php echo $postRule['title']['min']; ?>'
+				},
+				{
+					type: 	'maxLength[<?php echo $postRule['title']['max']; ?>]',
+					prompt : 'Title 字元長度必須小於 <?php echo $postRule['title']['max']; ?>'
 				}
 			]
 		},
@@ -606,9 +618,13 @@
 			identifier: 'content',
 			rules: [
 				{
-					type	 : 'minLength[2]',
-					prompt : 'Content 必須至少 2 個字元長度(中文為1字元長度)'
+					type: 'minLength[<?php echo $postRule['content']['min']; ?>]',
+					prompt : 'Content 字元長度必須大於 <?php echo $postRule['content']['min']; ?>'
 				},
+				{
+					type: 	'maxLength[<?php echo $postRule['content']['max']; ?>]',
+					prompt : 'Content 字元長度必須小於 <?php echo $postRule['content']['max']; ?>'
+				}
 			]
 		}
 	};
@@ -618,9 +634,13 @@
 			identifier: 'content',
 			rules: [
 				{
-					type	 : 'minLength[2]',
-					prompt : 'Content 必須至少 2 個字元長度(中文為1字元長度)'
+					type: 'minLength[<?php echo $postRule['comment']['min']; ?>]',
+					prompt : 'Content 字元長度必須大於 <?php echo $postRule['comment']['min']; ?>'
 				},
+				{
+					type: 	'maxLength[<?php echo $postRule['comment']['max']; ?>]',
+					prompt : 'Content 字元長度必須小於 <?php echo $postRule['comment']['max']; ?>'
+				}
 			]
 		}
 	};
@@ -668,6 +688,7 @@
 									'data_missing': 'Sorry, we lose the some datas. <br>Please refresh the site and try again.',
 									'created_post': `You created the post!`,
 									'failed_create_post': 'Un... seems has some errors, sorry.',
+									'error_insert': 'We can not insert the datas into database because of some unexpected reasons.',
 								}
 								let config = [ ];
 								// update new post into page
