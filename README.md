@@ -20,6 +20,9 @@
 
 ### :memo: Todo list
 
+
+- Other
+  - edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
 - Account
   - [x] login
   - [ ] register
