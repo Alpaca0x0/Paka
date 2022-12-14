@@ -18,6 +18,30 @@
 
 相較於前一個版本，多了路由的設計，使後端程式更加簡潔乾淨，在 URI 上也較直覺。所有流量都會被導向至`/router.php`，其稱作`Main Router`，再由此路由判斷請求的類型，並將其導向至其類型專屬的子路由(`Sub Router`)。
 
+### :memo: Todo list
+
+- Account
+  - [x] login
+  - [ ] register
+  - [ ] register-SMTP
+  - [ ] change email
+  - [x] profile
+  - [x] edit profile
+  - [ ] edit avatar
+  - [ ] events note
+- Forum
+  - [ ] create post
+  - [ ] delete post
+  - [ ] comment post
+  - [ ] delete comment
+  - [ ] reply comment
+  - [ ] like post
+  - [ ] share post
+- RWD
+  - [x] login & register pages
+  - [x] profile
+  - [ ] forum
+
 ---
 
 ### :zap: Using
