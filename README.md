@@ -4,9 +4,9 @@
 
 ## :cactus: Update
 
-<!-- ### :bug: Bugs
+### :bug: Bugs
 
-- [ ] Bug -->
+- [X] Profile 中的 nickname 輸入中文時，前端與後端判斷其長度不相同(後端判斷中文並非 1 長度)。
 
 ### :pinched_fingers: Issues
 
