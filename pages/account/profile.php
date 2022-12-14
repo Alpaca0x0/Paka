@@ -43,7 +43,7 @@ $config = Inc::config('account');
                 <div class="ts-text is-label">Birthday</div>
                 <div class="ts-space is-small"></div>
                 <div :class="classObjects('birthday')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
+                    <input @input="check()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
                 </div>
             </div>
         </div>
@@ -196,8 +196,17 @@ $config = Inc::config('account');
             birthday: {
                 status: 'success',
                 value: user.birthday,
+                range: [null, null]
             },
         });
+        // set birthday range
+        {let today = new Date();
+        let dd = String(today.getDate()).padStart(2, '0');
+        let mm = String(today.getMonth() + 1).padStart(2, '0');
+        fields.birthday.range = [
+            String(today.getFullYear() - <?=$config['birthday'][1]?>) + `-${mm}-${dd}`,
+            String(today.getFullYear() - <?=$config['birthday'][0]?> + `-${mm}-${dd}`),
+        ];}
         // 
         const classObjects = (key) => {
             let objects = {
@@ -250,12 +259,13 @@ $config = Inc::config('account');
         // 
         const submit = () => {
             if(is.submitting){ return; }
+            if(!check()){ return; }
             is.submitting = true;
             // 
             let datas = {
                 email: fields.email.value,
                 nickname: fields.nickname.value,
-                birthday: fields.birthday.value, 
+                birthday: fields.birthday.value,
             };
             // 
             let info = {
@@ -282,9 +292,9 @@ $config = Inc::config('account');
                         fields[key]['value'] = val;
                     }update();
                 }else{
-                    if(resp.status === 'nickname_format'){
+                    if(['nickname_format'].includes(resp.status)){
                         fields.nickname.status = 'warning';
-                    }else if(resp.status === 'birthday_format'){
+                    }else if(['birthday_format','too_young','too_old'].includes(resp.status)){
                         fields.birthday.status = 'warning';
                     }
                 }
@@ -295,7 +305,7 @@ $config = Inc::config('account');
                     title: info.msg,
                     toast: true,
                     showConfirmButton: false,
-                    timer: 2500,
+                    timer: info.type==='success' ? 2000 : false,
                     timerProgressBar: true,
                     didOpen: (toast) => {
                         toast.addEventListener('mouseenter', Swal.stopTimer)
@@ -314,8 +324,7 @@ $config = Inc::config('account');
         }
         // 
         onMounted(() => {
-            
-            
+            // 
         });
         // 
         return { user, refs, setRef, check, submit, fields, classObjects, is, reset }

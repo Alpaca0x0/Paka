@@ -6,6 +6,7 @@ return [
     'nickname' => '/^.{0,16}$/', // 任意字元，長度 0~16
     'captcha' => '/^[a-zA-Z0-9]{6}$/',
     'gender' => ['male','female','transgender','secret'],
+    'birthday' => [18, 122], // age range
     'avatar' => [
         'width' => 320,
         'height' => 320,

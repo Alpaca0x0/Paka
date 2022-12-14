@@ -13,38 +13,56 @@ if(Arr::includes($_POST, 'nickname')){
     $nickname = Type::string($_POST['nickname'], false);
 }
 if($nickname !== false){
+    // remove all space char
     $nickname = preg_replace('/\s+/', '', $nickname);
-    if($nickname === ''){ $nickname = null; }
-    else if(!preg_match($config['nickname'], $nickname)){ Resp::warning('nickname_format', $nickname, '暱稱格式不正確'); }
+    // make chinese word length to 1
+    $preNickname = preg_replace("#[^\x{00}-\x{ff}]#u", '*', $nickname);
+    if($preNickname === ''){ $nickname = null; }
+    else if(!preg_match($config['nickname'], $preNickname)){ Resp::warning('nickname_format', $nickname, '暱稱格式不正確'); }
 }
 
 # birthday
 $birthday = [
-    'origin' => false,
-    'full' => false,
-    'years' => -1,
-    'months' => -1,
-    'days' => -1,
+    'string' => false,
+    'all' => false,
+    'year' => -1,
+    'month' => -1,
+    'day' => -1,
 ];
 if(Arr::includes($_POST, 'birthday')){
-    $birthday['origin'] = Type::string($_POST['birthday'], '');
-    $birthday['origin'] = trim($birthday['origin']);
-    if($birthday['origin'] === ''){
+    $birthday['string'] = Type::string($_POST['birthday'], '');
+    $birthday['string'] = trim($birthday['string']);
+    if($birthday['string'] === ''){
         // set birthday to null
-        $birthday['full'] = null;
+        $birthday['all'] = null;
     }else{
         // convert birthday to date format
-        $birthday['full'] = strtotime($birthday['origin']);
-        if($birthday['full']){
-            $birthday['years'] = date('Y', $birthday['full']);
-            $birthday['months'] = date('m', $birthday['full']);
-            $birthday['days'] = date('d', $birthday['full']);
-        }
+        $birthday['all'] = explode('-',$birthday['string']);
+        if(count($birthday['all']) < 3){ Resp::warning('birthday_format', $birthday['string'], '無法解析日期'); }
+        $birthday['year'] = Type::int($birthday['all'][0], 0);
+        $birthday['month'] = Type::int($birthday['all'][1], 0);
+        $birthday['day'] = Type::int($birthday['all'][2], 0);
         // if format is incorrect
-        if(!$birthday['full'] || !checkdate($birthday['months'], $birthday['days'], $birthday['years'])){
-            Resp::warning('birthday_format', $birthday['origin'], '生日格式不正確');
-            $birthday['full'] = false;
+        if(!checkdate($birthday['month'], $birthday['day'], $birthday['year'])){
+            Resp::warning('birthday_format', $birthday['string'], '生日格式不正確');
         }
+        // if range is normal
+        $ageRange = $config['birthday'];
+        $age = 0;
+        $currentDate = Array();
+        $currentDate['string'] = date('Y-m-d');
+        $currentDate['all'] = explode('-',$currentDate['string']);
+        if(count($currentDate['all']) < 3){ Resp::error('cannot_get_current_day', $currentDate['string'], '發生致命錯誤，伺服器無法獲取日期'); }
+        $currentDate['year'] = $currentDate['all'][0];
+        $currentDate['month'] = $currentDate['all'][1];
+        $currentDate['day'] = $currentDate['all'][2];
+        // 
+        $age = $currentDate['year'] - $birthday['year'];
+        if($birthday['month'] > $currentDate['month']){ $age += 1; }
+        else if($birthday['month'] === $currentDate['month'] && $birthday['day'] >= $currentDate['day']){ $age += 1; }
+        // 
+        if($age < $ageRange[0]){ Resp::warning('too_young', $age, "本站會員需年滿 {$ageRange[0]} 歲"); }
+        else if($age > $ageRange[1]){ Resp::warning('too_old', $age, "嘿，您的年齡打破世界紀錄！？"); }
     }
 }
 
@@ -76,7 +94,8 @@ $id or Resp::error('cannot_get_user_id','發生致命錯誤，無法獲取當前
 
 $columns = [];
 if($nickname !== false){ $columns['nickname'] = $nickname; }
-if($birthday['full'] !== false){ $columns['birthday'] = $birthday['full']; }
+if(is_array($birthday['all'])){ $columns['birthday'] = join('-',$birthday['all']); }
+else if(is_null($birthday['all'])){ $columns['birthday'] = null; }
 // 'gender' => false
 // 'avatar' => $avatar
 count($columns)>0 or Resp::warning('nothing_happend', '資料並沒有任何更動');
@@ -97,9 +116,5 @@ if(DB::error()){ Resp::error('sql_cannot_update', 'SQL 語法執行失敗'); }
 
 # return new datas
 unset($columns['avatar']);
-# birthday
-if($columns['birthday'] && !is_null($columns['birthday'])){
-    $columns['birthday'] = date('Y-m-d', $columns['birthday']);
-}
 
 Resp::success('successfully', $columns, '資料更新成功');

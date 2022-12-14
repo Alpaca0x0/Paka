@@ -105,7 +105,7 @@ class User{
 			'spawntime' => $spawntime,
 			'nickname' => $profile['nickname'],
 			'gender' => $profile['gender'],
-			'birthday' => ( is_null($profile['birthday']) ? null : date('Y-m-d', $profile['birthday']) ),
+			'birthday' => $profile['birthday'],
 			'avatar' => ( is_null($profile['avatar']) ? null : base64_encode($profile['avatar']) ),
 		];
 		return true;
