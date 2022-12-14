@@ -6,11 +6,11 @@
 
 <!-- ### :bug: Bugs
 
-- [ ] Bug
+- [ ] Bug -->
 
 ### :pinched_fingers: Issues
 
-- [ ] Issue -->
+- [ ] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。
 
 ### :fire: Features
 
