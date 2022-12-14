@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Dec 14, 2022 at 04:37 AM
+-- Generation Time: Dec 14, 2022 at 11:55 AM
 -- Server version: 8.0.31-0ubuntu0.20.04.2
 -- PHP Version: 8.2.0RC7
 
@@ -31,7 +31,7 @@ CREATE TABLE `profile` (
   `id` int NOT NULL COMMENT 'account id',
   `nickname` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `gender` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'secret',
-  `birthday` int DEFAULT NULL,
+  `birthday` varchar(10) COLLATE utf8mb4_bin DEFAULT NULL,
   `avatar` mediumblob COMMENT 'avatar, max 16mb'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
