@@ -11,7 +11,7 @@ $config = Inc::config('account');
     <!-- <div class="ts-space"></div> -->
     <div class="ts-container is-very-narrow">
         <div class="ts-header is-big is-heavy">Login</div>
-        <div class="ts-text is-secondary">還沒有帳號？<a href="<?=htmlentities(Uri::page('account/register'))?>">註冊</a>一個吧！</div>
+        <div class="ts-text is-secondary">還沒有帳號？<a href="<?=Uri::page('account/register')?>">註冊</a>一個吧！</div>
     </div>
     <!-- <div class="ts-space"></div> -->
 </div>

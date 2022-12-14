@@ -10,7 +10,7 @@ $config = Inc::config('account');
     <!-- <div class="ts-space"></div> -->
     <div class="ts-container is-very-narrow">
         <div class="ts-header is-big is-heavy">Register</div>
-        <div class="ts-text is-secondary">已有帳號？馬上<a href="<?=htmlentities(Uri::page('account/login'))?>">登入</a>吧！</div>
+        <div class="ts-text is-secondary">已有帳號？馬上<a href="<?=Uri::page('account/login')?>">登入</a>吧！</div>
     </div>
     <!-- <div class="ts-space"></div> -->
 </div>
