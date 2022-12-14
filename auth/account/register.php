@@ -22,7 +22,7 @@ $username = strtolower(trim($username));
 $captcha = trim($captcha);
 
 # check format
-$rule = include(Local::configig('account'));
+$rule = include(Local::config('account'));
 if(!preg_match($rule['email'], $email)){ Roger::push('format','email'); }
 if(!preg_match($rule['username'], $username)){ Roger::push('format','username'); }
 if(!preg_match($rule['password'], $password)){ Roger::push('format','password'); }

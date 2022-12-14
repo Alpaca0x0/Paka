@@ -17,7 +17,7 @@ class Inc{
 
     static function config($name){
         foreach(['', '.php', '.ini', '.json'] as $exName){
-            $filename = File::in(Path::configig)::exist($name.$exName);
+            $filename = File::in(Path::config)::exist($name.$exName);
             if($filename) break;
         }
         if(!$filename){ die("Inc::config() - Not found file. ({$name})"); };
