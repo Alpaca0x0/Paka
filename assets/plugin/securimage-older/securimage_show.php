@@ -6,7 +6,7 @@ require_once dirname(__FILE__) . '/securimage.php';
 
 $img = new Securimage();
 
-$config = Inc::conf('captcha');
+$config = Inc::config('captcha');
 foreach($config as $key => $val){ $img->{$key} = $val; }
 
 // You can customize the image by making changes below, some examples are included - remove the "//" to uncomment

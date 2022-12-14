@@ -16,7 +16,7 @@ $password = Type::string($_POST['password'], '');
 $username = strtolower(trim($username));
 
 // # check
-$config = Inc::conf('account');
+$config = Inc::config('account');
 if(!preg_match($config['username'], $username) && 
 !preg_match($config['email'], $username)){ Resp::warning('format_not_match','username','Username 或 E-Mail 格式不正確'); }
 if(!preg_match($config['password'], $password)){ Resp::warning('format_not_match','password', 'Password 格式不正確'); }

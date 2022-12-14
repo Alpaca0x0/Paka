@@ -1,9 +1,9 @@
 <?php
 Inc::clas('user');
 !User::isLogin() or die(header('Location: '.Root));
-Inc::sub('header');
-Inc::sub('navbar');
-$config = Inc::conf('account');
+Inc::component('header');
+Inc::component('navbar');
+$config = Inc::config('account');
 ?>
 
 <div class="ts-content is-tertiary is-vertically-padded">
@@ -112,4 +112,4 @@ $config = Inc::conf('account');
 
 
 <?php
-Inc::sub('footer');
+Inc::component('footer');

@@ -1,6 +1,6 @@
 <?php
-Inc::sub('header');
-Inc::sub('navbar');
+Inc::component('header');
+Inc::component('navbar');
 Inc::clas('user');
 ?>
 
@@ -410,4 +410,4 @@ Inc::clas('user');
 </div>
 
 <?php
-Inc::sub('footer');
+Inc::component('footer');

@@ -1,6 +1,6 @@
 <?php
-Inc::sub('header');
-Inc::sub('navbar');
+Inc::component('header');
+Inc::component('navbar');
 ?>
 
 <div class="ts-space is-large"></div>
@@ -56,4 +56,4 @@ Inc::sub('navbar');
 </div>
 
 <?php
-Inc::sub('footer');
+Inc::component('footer');

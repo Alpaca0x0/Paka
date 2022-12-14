@@ -29,7 +29,7 @@ $content = preg_replace('/\s(?=\s)/', '', $content);
 
 # check
 if($userId < 1){ Roger::error('error'); }
-$rules = require(Local::Config('post'));
+$rules = require(Local::configig('post'));
 if(mb_strlen($title) < $rules['title']['min']){ Roger::push('title_too_short'); }
 else if(mb_strlen($title) > $rules['title']['max']){ Roger::push('title_too_long'); }
 if(mb_strlen($content) < $rules['content']['min']){ Roger::push('content_too_short'); }

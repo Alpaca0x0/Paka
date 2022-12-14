@@ -5,7 +5,7 @@ Inc::clas('user');
 if(!User::isLogin()){ Resp::warning('is_logout','當前尚未登入任何帳戶，可能是 Token 過期了，請重新登入'); }
 
 # Get and filter datas
-$config = Inc::conf('account');
+$config = Inc::config('account');
 
 #nickname
 $nickname = false;

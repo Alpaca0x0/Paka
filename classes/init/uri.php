@@ -7,5 +7,5 @@ class Uri{
     static function api($name, $exName=''){ return htmlentities(Root.Path::api.$name.$exName); }
     // static function root($name){ return htmlentities(Root.$name); }
     static function page($name, $exName=''){ return htmlentities(Root.$name.$exName); }
-    static function plug($name){ return htmlentities(Root.Path::plug.$name); }
+    static function plug($name){ return htmlentities(Root.Path::plugin.$name); }
 }

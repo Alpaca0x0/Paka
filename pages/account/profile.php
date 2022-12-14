@@ -1,9 +1,9 @@
 <?php
 Inc::clas('user');
 User::isLogin() or die(header('Location:'.Uri::page('account/login')));
-Inc::sub('header');
-Inc::sub('navbar');
-$config = Inc::conf('account');
+Inc::component('header');
+Inc::component('navbar');
+$config = Inc::config('account');
 ?>
 
 <div id="Profile" class="cell is-fluid is-secondary">
@@ -329,4 +329,4 @@ $config = Inc::conf('account');
 
 
 <?php
-Inc::sub('footer');
+Inc::component('footer');

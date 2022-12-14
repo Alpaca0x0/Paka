@@ -1,4 +1,4 @@
-<?php class_exists('Securimage') or Inc::asset(Path::plug.'securimage/securimage.php'); ?>
+<?php class_exists('Securimage') or Inc::asset(Path::plugin.'securimage/securimage.php'); ?>
 
 <?php
 class Captcha{
@@ -7,9 +7,9 @@ class Captcha{
 
 	static function init($force=false){
 		if(self::$Init && !$force){ return; } self::$Init = true;
-		self::$src = Uri::plug('securimage/securimage_show.php');
+		self::$src = Uri::plugin('securimage/securimage_show.php');
 		self::$captcha = new Securimage();
-		self::$config = Inc::conf('captcha');
+		self::$config = Inc::config('captcha');
 		self::set(self::$config);
 	}
 

@@ -22,7 +22,7 @@ class DB{
 	static function connect($config=[]){
 		if(self::isConnected() && isset($config['name']) && $config['name']===self::$config['name']){ self::success(true); return true; }
 		#
-		$temp = Inc::conf('db'); // default
+		$temp = Inc::config('db'); // default
 		foreach($config as $key => $val){ $temp[$key] = $val; }
 		$config = $temp; unset($temp);
 		#

@@ -39,8 +39,8 @@ class Path{
         clas = 'classes/',
         func = 'functions/',
         page = 'pages/',
-        conf = 'configs/',
-        sub = 'subpages/',
+        config = 'configs/',
+        component = 'components/',
         router = 'routers/',
         asset = 'assets/'
     ;
@@ -50,7 +50,7 @@ class Path{
         img = 'img/',
         auth = 'auth/',
         api = 'api/',
-        plug = 'plugin/'
+        plugin = 'plugin/'
     ;
 }
 

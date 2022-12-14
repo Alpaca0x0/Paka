@@ -71,7 +71,7 @@ class User{
 		if($user['status'] !== 'alive'){ self::logout(); return 'not_alive'; }
 
 		# successfully, update expire
-		$rule = Inc::conf('account');
+		$rule = Inc::config('account');
 		$expire = time() + $rule['timeout']['login'];
 		$result = DB::query(
 			'UPDATE `event` SET `expire`=:expire WHERE `id`=:event_id;'

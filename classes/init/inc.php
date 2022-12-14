@@ -15,21 +15,21 @@ class Inc{
         return require($filename);
     }
 
-    static function conf($name){
+    static function config($name){
         foreach(['', '.php', '.ini', '.json'] as $exName){
-            $filename = File::in(Path::conf)::exist($name.$exName);
+            $filename = File::in(Path::configig)::exist($name.$exName);
             if($filename) break;
         }
-        if(!$filename){ die("Inc::conf() - Not found file. ({$name})"); };
+        if(!$filename){ die("Inc::config() - Not found file. ({$name})"); };
         return include($filename);
     }
     
-    static function sub($name){
+    static function component($name){
         foreach(['', '.php'] as $exName){
-            $filename = File::in(Path::sub)::exist($name.$exName);
+            $filename = File::in(Path::component)::exist($name.$exName);
             if($filename) break;
         }
-        if($filename === false){ die('Inc::sub(): Error - Can not include subpage "'.$name.'".'); }
+        if($filename === false){ die('Inc::component(): Error - Can not include subpage "'.$name.'".'); }
         return require($filename);
     }
 
