@@ -131,7 +131,7 @@ location ^~ /paka/ {
 
 ---
 
-## :pushpin: Frameworks
+## :sparkles: Frameworks
 
 ### :art: CSS
 
