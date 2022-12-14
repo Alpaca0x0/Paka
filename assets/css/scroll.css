@@ -1,0 +1,9 @@
+/* hide scroll */
+* {
+    /* #2ac87e #c2e4d2 */
+    
+    scrollbar-width: thin;
+}
+body {
+    scrollbar-color: transparent transparent;
+}
