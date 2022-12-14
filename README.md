@@ -72,7 +72,6 @@ location ^~ /paka/ {
 
 #### :small_blue_diamond: `api`
 
-``1dasdsad`` `1dasdasd`
 一些專門用於獲取資料的頁面。
 
 - `captcha` 取得驗證碼的值，當然這只能用於 DEV 模式下。
