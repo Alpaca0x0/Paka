@@ -14,7 +14,8 @@ if(Arr::includes($_POST, 'nickname')){
 }
 if($nickname !== false){
     // remove all space char
-    $nickname = preg_replace('/\s+/', '', $nickname);
+    $nickname = trim($nickname);
+    $nickname = preg_replace('/\s+/', ' ', $nickname);
     // make chinese word length to 1
     $preNickname = preg_replace("#[^\x{00}-\x{ff}]#u", '*', $nickname);
     if($preNickname === ''){ $nickname = null; }

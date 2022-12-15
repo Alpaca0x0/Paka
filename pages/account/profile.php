@@ -236,7 +236,8 @@ $config = Inc::config('account');
         }
         // 
         const check = () => {
-            let isPass = true;         
+            let isPass = true;
+            fields.nickname.value = fields.nickname.value.replace(/\s+/g, ' ').trim(' '); // remove all space in nickname
             Object.values(fields).forEach((field) => {
                 if(typeof(field.value) === undefined || typeof(field.regex) === undefined || field.value === null){ return; }
                 if(!Array.isArray(field.regex)){ field.regex = [field.regex]; }
