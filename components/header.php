@@ -17,7 +17,7 @@
     
     <!-- Sweet Alert 2 -->
     <script src="<?=Uri::js('sweetalert2')?>"></script>
-    <link rel=stylesheet type="text/css" href="<?=Uri::css('sweetalert2-dark')?>">
+    <!-- <link rel=stylesheet type="text/css" href="<?=Uri::css('sweetalert2-dark')?>"> -->
 
     <!-- Hide Scroll -->
     <link rel=stylesheet type="text/css" href="<?=Uri::css('scroll')?>">

@@ -10,7 +10,7 @@
 
 ### :pinched_fingers: Issues
 
-- [ ] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。
+- [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
 
 ### :fire: Features
 
