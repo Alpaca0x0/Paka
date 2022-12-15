@@ -98,8 +98,13 @@ if(is_array($birthday['all'])){ $columns['birthday'] = join('-',$birthday['all']
 else if(is_null($birthday['all'])){ $columns['birthday'] = null; }
 // 'gender' => false
 // 'avatar' => $avatar
-count($columns)>0 or Resp::warning('nothing_happend', '資料並沒有任何更動');
 
+# check if datas has been changed
+foreach ($columns as $key => $val) {
+    if(User::get($key, false) === $val){ unset($columns[$key]); }
+}count($columns)>0 or Resp::warning('nothing_happend', '資料並沒有任何更動');
+
+# start to update profile
 $sql = "UPDATE `profile` SET ";
 $sqlSet = "";
 $sqlValue = [':id' => $id];
