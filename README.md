@@ -2,22 +2,58 @@
 
 ![Cover image of Paka](https://i.imgur.com/XXuMFlA.jpg)
 
+### :zap: Using
+
+```bash
+# Clone this project first
+git clone https://github.com/alpaca0x0/paka.git -b v2 paka
+```
+
+```bash
+# Enter project folder
+cd paka
+# Copy config example files
+cp config.example.php config.php
+cp configs/db.example.php configs/db.php
+# Edit config files (choose your own editor)
+vim config.php
+vim configs/db.php
+```
+
+```bash
+# Setting router in web server
+# For example, nginx:
+vim /etc/nginx/conf.d/default.conf
+```
+
+```nginx
+# Route all traffic to router.php in project root path
+# p.s. The "root" value set as your own path of project root
+#      The same goes for other fields...
+location ^~ /paka/ {
+    root /var/www/html/paka;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root/router.php;
+    fastcgi_pass unix:/run/php/php-fpm.sock;
+}
+```
+
+:grin: Have fun.
+
+---
+
 ## :cactus: Update
 
 ### :bug: Bugs
 
 - [X] Profile 中的 nickname 輸入中文時，前端與後端判斷其長度不相同(後端判斷中文並非 1 長度)。
 
-### :pinched_fingers: Issues
+### :wrench: Issues
 
 - [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
+
+### :seedling: Optimization, Beautify
 - [ ] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
-
-### :fire: Features
-
-#### :sassy_woman: `router`
-
-相較於前一個版本，多了路由的設計，使後端程式更加簡潔乾淨，在 URI 上也較直覺。所有流量都會被導向至`/router.php`，其稱作`Main Router`，再由此路由判斷請求的類型，並將其導向至其類型專屬的子路由(`Sub Router`)。
 
 ### :memo: Todo list
 
@@ -48,47 +84,13 @@
 
 ---
 
-### :zap: Using
-
-```bash
-# Clone this project first
-git clone https://github.com/alpaca0x0/paka.git -b v2 paka
-```
-
-```bash
-# Enter project folder
-cd paka
-# Copy config example files
-cp config.example.php config.php
-cp configs/db.example.php configs/db.php
-# Edit config files (choose your own editor)
-vim config.php
-vim configs/db.php
-```
-
-```bash
-# Setting router in web server
-# For example, nginx:
-vim /etc/nginx/conf.d/default.conf
-```
-
-```nginx
-# Route all traffic to router.php in project root path
-location ^~ /paka/ {
-    root /var/www/html/paka;
-    include fastcgi_params;
-    fastcgi_param SCRIPT_FILENAME $document_root/router.php;
-    fastcgi_pass unix:/run/php/php-fpm.sock;
-}
-```
-
-:grin: Have fun.
-
----
-
 ## :gear: Structures
 
 說明一些關於該專案的架構，僅僅解釋較為主要或有疑慮的部份。
+
+#### :sassy_woman: `router`
+
+相較於前一個版本，多了路由的設計，使後端程式更加簡潔乾淨，在 URI 上也較直覺。所有流量都會被導向至`/router.php`，其稱作`Main Router`，再由此路由判斷請求的類型，並將其導向至其類型專屬的子路由(`Sub Router`)。
 
 ### :clipboard: Files
 
