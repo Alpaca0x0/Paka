@@ -32,7 +32,7 @@ $config = Inc::config('account');
             <!-- info board -->
             <div v-show="info.type" class="ts-segment is-dense"  style="width: 320px">
                 <div class="ts-checklist">
-                    <div class="item" :class="classObjects('info')" v-text="info.msg"></div>
+                    <div class="item" :class="classObject('info')" v-text="info.msg"></div>
                 </div>
             </div>
             <!--  -->
@@ -40,14 +40,14 @@ $config = Inc::config('account');
                 <div class="ts-wrap is-vertical">
 
                     <div class="ts-text is-label">使用者帳號 / E-Mail</div>
-                    <div :class="classObjects('username')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
+                    <div :class="classObject('username')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-user-icon"></span>
                         <input type="text" ref="refUsername" v-model="fields.username.value" :readonly="is.submitting" v-focus>
                     </div>
                     
 
                     <div class="ts-text is-label">密碼</div>
-                    <div :class="classObjects('password')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
+                    <div :class="classObject('password')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-lock-icon"></span>
                         <input type="password" ref="refPassword" v-model="fields.password.value" :readonly="is.submitting">
                     </div>
@@ -56,7 +56,7 @@ $config = Inc::config('account');
                     </div> -->
                     <div v-show="is.need.verified" class="ts-text is-label">驗證碼</div>
                     <img v-if="is.need.verified" :src="fields.captcha.src" @click="fields.captcha.change()" style="cursor: pointer;">
-                    <div v-show="is.need.verified" :class="classObjects('captcha')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
+                    <div v-show="is.need.verified" :class="classObject('captcha')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-robot-icon"></span>
                         <input type="text" ref="refCaptcha" v-model="fields.captcha.value" :readonly="is.submitting" maxlength="6">
                     </div>
@@ -122,7 +122,7 @@ $config = Inc::config('account');
             }
         });
         // 
-        const classObjects = (key) => {
+        const classObject = (key) => {
             let objects = {
                 username: {
                     'is-negative': fields.username.status==='warning',
@@ -263,7 +263,7 @@ $config = Inc::config('account');
         });
         // 
         return {
-            fields, submit, checkDatas, is, classObjects, Dev, info,
+            fields, submit, checkDatas, is, classObject, Dev, info,
             refUsername, refPassword, refCaptcha, refSubmit
         }
     }}).directive('focus',

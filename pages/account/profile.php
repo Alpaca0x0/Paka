@@ -19,7 +19,7 @@ $config = Inc::config('account');
             <div class="column is-8-wide">
                 <div class="ts-text is-label">Username</div>
                 <div class="ts-space is-small"></div>
-                <div :class="classObjects('username')" class="ts-input is-start-labeled">
+                <div :class="classObject('username')" class="ts-input is-start-labeled">
                     <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
                     <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
                 </div>
@@ -28,21 +28,21 @@ $config = Inc::config('account');
             <div class="column is-8-wide">
                 <div class="ts-text is-label">E-Mail</div>
                 <div class="ts-space is-small"></div>
-                <div :class="classObjects('email')" class="ts-input">
+                <div :class="classObject('email')" class="ts-input">
                     <input @input="check()" :readonly="is.submitting" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
                 </div>
             </div>
             <div class="column is-8-wide">
                 <div class="ts-text is-label">Nickname</div>
                 <div class="ts-space is-small"></div>
-                <div :class="classObjects('nickname')" class="ts-input">
+                <div :class="classObject('nickname')" class="ts-input">
                     <input @input="check()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" :ref="setRef" id="nickname">
                 </div>
             </div>
             <div class="column is-8-wide">
                 <div class="ts-text is-label">Birthday</div>
                 <div class="ts-space is-small"></div>
-                <div :class="classObjects('birthday')" class="ts-input">
+                <div :class="classObject('birthday')" class="ts-input">
                     <input @input="check()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
                 </div>
             </div>
@@ -52,12 +52,12 @@ $config = Inc::config('account');
         <!--  -->
         <div class="ts-row">
             <div class="column is-end-aligned is-fluid">
-                <button @click="reset()" :class="classObjects('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
+                <button @click="reset()" :class="classObject('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
                     <span class="ts-icon is-rotate-left-icon"></span>
                 </button>
             </div>
             <div class="column is-end-aligned">
-                <button @click="submit()" :class="classObjects('submit')" :disabled="is.submitting" class="ts-button is-end-icon is-dense is-small">
+                <button @click="submit()" :class="classObject('submit')" :disabled="is.submitting" class="ts-button is-end-icon is-dense is-small">
                     保存設定
                     <span class="ts-icon is-check-icon"></span>
                 </button>
@@ -208,7 +208,7 @@ $config = Inc::config('account');
             String(today.getFullYear() - <?=$config['birthday'][0]?> + `-${mm}-${dd}`),
         ];}
         // 
-        const classObjects = (key) => {
+        const classObject = (key) => {
             let objects = {
                 username: {
                     'is-disabled': is.submitting,
@@ -328,7 +328,7 @@ $config = Inc::config('account');
             // 
         });
         // 
-        return { user, refs, setRef, check, submit, fields, classObjects, is, reset }
+        return { user, refs, setRef, check, submit, fields, classObject, is, reset }
     }}).directive('focus',
         directives.focus
     );
