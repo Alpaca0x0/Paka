@@ -17,7 +17,9 @@ return [
         'login' => 60*60*6, // login session keeping 6 hours
     ],
     'description' => [
-        'username' => '小寫英文及數字,首字英文,長度8~32',
-        'password' => '需有數字及小寫英文,長度 8~32',
+        'email' => '僅允許二級網域 (如 gmail.com)',
+        'username' => '小寫英文及數字, 首字英文, 長度6~13',
+        'password' => '需有數字及小寫英文, 長度 8~32',
+        'captcha' => '英文大小寫不區分',
     ],
 ];
