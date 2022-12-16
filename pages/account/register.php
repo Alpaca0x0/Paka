@@ -80,7 +80,7 @@ $config = Inc::config('account');
 
 
     <div class="ts-space is-large"></div>
-    <button class="ts-button is-fluid">下一步</button>
+    <button @click="submit()" :class="classObject('submit')" class="ts-button is-fluid">下一步</button>
     <div class="ts-space is-small"></div>
     <!-- <div class="ts-text is-center-aligned is-description">按下「下一步」表示您也接受「伊繁星最高協議」、「個人隱私政策」、「使用者規範」。</div> -->
 </div>
@@ -90,6 +90,7 @@ $config = Inc::config('account');
 <script type="module">
     import { createApp, reactive, ref, nextTick, onMounted } from '<?=Uri::js('vue')?>';
     import * as directives from '<?=Uri::js('vue/directives')?>';
+    import * as Resp from '<?=Uri::js('resp')?>';
 
     const Register = createApp({setup(){
         let refs = reactive({});
@@ -102,7 +103,7 @@ $config = Inc::config('account');
         let fields = reactive({
             email: {
                 status: 'warning', 
-                value: '<?=(DEV)?'gzmalxnsk@gmail.com':''?>',
+                value: '<?=(DEV)?'gzmalxnsk8246@gmail.com':''?>',
                 regex: [<?=$config['email']?>],
             },
             username: {
@@ -119,18 +120,18 @@ $config = Inc::config('account');
                 status: 'warning',
                 value: '',
                 regex: <?=$config['captcha']?>,
-                src: '<?=Captcha::src()?>?' + Math.random(),
+                // src: '<?=Captcha::src()?>?' + Math.random(),
+                src: '',
                 change: ()=>{
                     (async ()=>{
                         fields.captcha.src='<?=Captcha::src()?>?' + Math.random();
                         await nextTick();
-                        <?php if(DEV){ ?>
-                            // auto type captcha when in DEV mode
-                            fields.captcha.value = Dev.getCaptcha(); 
-                        <?php } ?>
+                        // auto type captcha when in DEV mode
+                        fields.captcha.value = Dev.getCaptcha();
+                        await nextTick();
                     })();
                 },
-            }
+            },
         });
         // 
         const classObject = (key) => {
@@ -154,7 +155,11 @@ $config = Inc::config('account');
                 info: {
                     'is-negative': info.type==='warning' || info.type==='error',
                     'is-positive': info.type==='success',
-                }
+                },
+                submit: {
+                    'is-loading': is.submitting,
+                    'is-disabled': is.submitting,
+                },
             };
             return objects[key];
         };
@@ -177,7 +182,10 @@ $config = Inc::config('account');
         //  
         const Dev = {
             getCaptcha: () => {
-                var captcha = '';
+                <?php if(!DEV){ ?>
+                    return '';
+                <?php } ?>
+                let captcha = '';
                 $.ajax({
                     type: "GET",
                     url: '<?=Uri::api('captcha')?>',
@@ -194,11 +202,95 @@ $config = Inc::config('account');
             msg: null,
         });
         // 
+        const submit = () => {
+            if(is.submitting){ return; }
+            if(!checkDatas()){ return; }
+            is.submitting = true;
+            // 
+            let datas = {
+                email: fields.email.value,
+                username: fields.username.value,
+                password: fields.password.value,
+                captcha: fields.captcha.value,
+            };
+            // 
+            let info = {
+                type: 'error',
+                msg: 'Unexpected error!',
+            };
+            // 
+            $.ajax({
+                type: 'POST',
+                url: '<?=Uri::auth('account/register')?>',
+                data: datas,
+                dataType: 'json',
+            }).fail((xhr, status, error) => {
+                console.error(xhr.responseText);
+            }).done((resp) => {
+                console.log(resp);
+                if(!Resp.object(resp)){ return false; }
+                // 
+                info.type = resp.type;
+                info.msg = resp.message;
+                // 
+                if(resp.type !== 'success'){
+                    (async ()=>{
+                        if(['captcha_not_match', 'captcha_format'].includes(resp.status)){
+                            refs.captcha.focus();
+                        }else if(['email_format', 'email_exist'].includes(resp.status)){
+                            fields.email.status = 'warning';
+                            refs.email.focus();
+                        }else if(['username_format', 'username_exist'].includes(resp.status)){
+                            fields.username.status = 'warning';
+                            refs.username.focus();
+                        }else if(['password_format'].includes(resp.status)){
+                            fields.password.status = 'warning';
+                            refs.password.focus();
+                        }
+                        fields.captcha.status = 'warning';
+                        await nextTick();
+                        fields.captcha.change();
+                    })();
+                }
+            }).always((resp) => {
+                if(Resp.object(resp) && resp.type === 'success'){
+                    Swal.fire({
+                        icon: info.type,
+                        title: info.msg,
+                    }).then(()=>{
+                        window.location.replace('<?=Uri::page('account/login')?>');
+                    });
+                    return;
+                }
+                // 
+                Swal.fire({
+                    position: 'bottom-start',
+                    icon: info.type,
+                    title: info.msg,
+                    toast: true,
+                    showConfirmButton: false,
+                    timer: false,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                is.submitting = false;
+            });
+        };
+        // 
         onMounted(() => {
-            checkDatas();
+            (async ()=>{
+                // show dom first
+                // fields.captcha.value = Dev.getCaptcha();
+                fields.captcha.change();
+                await nextTick();
+                checkDatas();
+            })();
         });
         // 
-        return { is, refs, fields, classObject, info, checkDatas };
+        return { is, refs, setRef, fields, classObject, info, checkDatas, submit };
     }}).directive('focus',
         directives.focus
     ).mount('#Register');
