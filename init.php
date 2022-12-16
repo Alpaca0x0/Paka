@@ -42,7 +42,8 @@ class Path{
         config = 'configs/',
         component = 'components/',
         router = 'routers/',
-        asset = 'assets/'
+        asset = 'assets/',
+        lib = 'libraries/'
     ;
     const
         js = 'js/',
