@@ -59,9 +59,9 @@ location ^~ /paka/ {
 ### :seedling: Optimization, Beautify
 
 - [ ] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
+- [ ] Register 驗證信內容排版不好看QQ
 
 ### :memo: Todo list
-
 
 - Other
   - edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
@@ -93,7 +93,7 @@ location ^~ /paka/ {
 
 說明一些關於該專案的架構，僅僅解釋較為主要或有疑慮的部份。
 
-#### :sassy_woman: `router`
+### :sassy_woman: `router`
 
 相較於前一個版本，多了路由的設計，使後端程式更加簡潔乾淨，在 URI 上也較直覺。所有流量都會被導向至`/router.php`，其稱作`Main Router`，再由此路由判斷請求的類型，並將其導向至其類型專屬的子路由(`Sub Router`)。
 
