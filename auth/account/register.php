@@ -124,4 +124,4 @@ if(!DEV){
 Resp::success('successfully', [
     'token' => DEV ? $token : null,
     'username' => $username,
-], '註冊成功，可以登入囉！');
+], '註冊成功，請前往信箱驗證帳號！');

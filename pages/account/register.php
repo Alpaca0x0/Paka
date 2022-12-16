@@ -256,7 +256,8 @@ $config = Inc::config('account');
                 if(Resp.object(resp) && resp.type === 'success'){
                     Swal.fire({
                         icon: info.type,
-                        title: info.msg,
+                        title: 'Success',
+                        text: info.msg,
                     }).then(()=>{
                         window.location.replace('<?=Uri::page('account/login')?>');
                     });
