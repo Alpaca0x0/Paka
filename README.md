@@ -52,12 +52,11 @@ location ^~ /paka/ {
 - [X] Profile 中的 nickname 輸入空值後，後端回傳新的資料為 `null`，而前端在字串處理上，將會報錯「`fields.nickname.value is null`」。
 - [X] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
 
-### :wrench: Issues
-
-- [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
+<!-- ### :wrench: Issues -->
 
 ### :seedling: Optimization, Beautify
 
+- [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
 - [ ] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
 - [ ] register 驗證信內容排版不好看QQ
 - [ ] edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
