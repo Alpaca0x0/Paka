@@ -59,12 +59,12 @@ location ^~ /paka/ {
 ### :seedling: Optimization, Beautify
 
 - [ ] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
-- [ ] Register 驗證信內容排版不好看QQ
+- [ ] register 驗證信內容排版不好看QQ
+- [ ] edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
+- [ ] register 與 login 時，界面 Loading 應該明顯一點。
 
 ### :memo: Todo list
 
-- Other
-  - edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
 - Account
   - [x] login
   - [x] register
