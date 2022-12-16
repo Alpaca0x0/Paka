@@ -113,10 +113,8 @@ $config = Inc::config('account');
                     (async ()=>{
                         fields.captcha.src='<?=Captcha::src()?>?' + Math.random();
                         await nextTick();
-                        <?php if(DEV){ ?>
-                            // auto type captcha when in DEV mode
-                            fields.captcha.value = Dev.getCaptcha(); 
-                        <?php } ?>
+                        // auto type captcha when in DEV mode
+                        fields.captcha.value = Dev.getCaptcha(); 
                     })();
                 },
             }
@@ -162,6 +160,9 @@ $config = Inc::config('account');
         // 
         const Dev = {
             getCaptcha: () => {
+                <?php if(DEV){ ?>
+                    return '';
+                <?php } ?>
                 var captcha = '';
                 $.ajax({
                     type: "GET",
@@ -227,7 +228,6 @@ $config = Inc::config('account');
                 if(['needs_captcha', 'captcha_not_match'].includes(resp.status)
                     || (['password_not_match'].includes(resp.status) && resp.data < 1) ){
                     fields.captcha.change();
-                    fields.captcha.value = '';
                     // show dom first
                     (async ()=>{
                         is.need.verified = true;

@@ -227,6 +227,7 @@ $config = Inc::config('account');
                 },
                 submit: {
                     'is-loading': is.submitting,
+                    'is-disabled': is.submitting,
                 },
                 reset: {
                     'is-disabled': is.submitting,
