@@ -48,6 +48,7 @@ location ^~ /paka/ {
 
 - [X] Profile 中的 nickname 輸入中文時，前端與後端判斷其長度不相同(後端判斷中文並非 1 長度)。
 - [X] Profile 中的 nickname 輸入空值後，後端回傳新的資料為 `null`，而前端在字串處理上，將會報錯「`fields.nickname.value is null`」。
+- [X] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
 
 ### :wrench: Issues
 

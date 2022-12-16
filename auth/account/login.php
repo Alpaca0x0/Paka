@@ -34,7 +34,11 @@ $result = DB::query(
 ]);
 if($result::error()){ Resp::error('sql_query', 'SQL 語法執行錯誤'); }
 $user = DB::fetch();
-if(!$user){ Resp::warning('not_found_user',$username, "找不到使用者 \"{$username}\""); }
+if(!$user){ Resp::warning('not_found_user', $username, "找不到帳號 \"{$username}\""); }
+
+# check status
+if($user['status'] === 'unverified'){ Resp::warning('user_status_unverifie', $username, "帳號 \"{$username}\" 尚未驗證信箱"); }
+else if($user['status'] !== 'alive'){ Resp::warning('user_status', $username, "帳號 \"{$username}\" 暫時無法使用"); }
 
 # found user, check if have too many requests
 # tried times limit, more than 3 times since 15 minutes, needs captcha
