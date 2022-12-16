@@ -26,7 +26,7 @@ class User{
 			'UPDATE `account` 
 			LEFT JOIN `account_event` ON(`account`.`id`=`account_event`.`uid`)
 			SET `account`.`status`="removed"
-			WHERE `account`.`status`="unverified" AND `account_event`.`action`="register" AND :datetime>`account_event`.`expire`;'
+			WHERE `account`.`status`="unverified" AND `account_event`.`commit`="register" AND :datetime>`account_event`.`expire`;'
 		)::execute([':datetime' => $datetime]);
 		# token expire
 		DB::query(
