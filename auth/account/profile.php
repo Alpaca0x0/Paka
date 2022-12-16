@@ -102,7 +102,7 @@ else if(is_null($birthday['all'])){ $columns['birthday'] = null; }
 
 # check if datas has been changed
 foreach ($columns as $key => $val) {
-    if(User::get($key, false) === $val){ unset($columns[$key]); }
+    if(User::get($key, null) === $val){ unset($columns[$key]); }
 }count($columns)>0 or Resp::warning('nothing_happend', '資料並沒有任何更動');
 
 # start to update profile

@@ -29,21 +29,21 @@ $config = Inc::config('account');
                 <div class="ts-text is-label">E-Mail</div>
                 <div class="ts-space is-small"></div>
                 <div :class="classObjects('email')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
+                    <input @input="checkDatas()" :readonly="is.submitting" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
                 </div>
             </div>
             <div class="column is-8-wide">
                 <div class="ts-text is-label">Nickname</div>
                 <div class="ts-space is-small"></div>
                 <div :class="classObjects('nickname')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" :ref="setRef" id="nickname">
+                    <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" :ref="setRef" id="nickname">
                 </div>
             </div>
             <div class="column is-8-wide">
                 <div class="ts-text is-label">Birthday</div>
                 <div class="ts-space is-small"></div>
                 <div :class="classObjects('birthday')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
+                    <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
                 </div>
             </div>
         </div>
@@ -235,7 +235,7 @@ $config = Inc::config('account');
             return objects[key];
         }
         // 
-        const check = () => {
+        const checkDatas = () => {
             let isPass = true;
             fields.nickname.value = fields.nickname.value.replace(/\s+/g, ' ').trim(' '); // remove all space in nickname
             Object.values(fields).forEach((field) => {
@@ -260,7 +260,7 @@ $config = Inc::config('account');
         // 
         const submit = () => {
             if(is.submitting){ return; }
-            if(!check()){ return; }
+            if(!checkDatas()){ return; }
             is.submitting = true;
             // 
             let datas = {
@@ -290,7 +290,7 @@ $config = Inc::config('account');
                 // 
                 if(resp.type === 'success'){
                     for(const [key, val] of Object.entries(resp.data)){
-                        fields[key]['value'] = val;
+                        fields[key]['value'] = val === null ? '' : val;
                     }update();
                 }else{
                     if(['nickname_format'].includes(resp.status)){
@@ -321,14 +321,14 @@ $config = Inc::config('account');
             fields.email.value = user.email;
             fields.nickname.value = user.nickname;
             fields.birthday.value = user.birthday;
-            check();
+            checkDatas();
         }
         // 
         onMounted(() => {
             // 
         });
         // 
-        return { user, refs, setRef, check, submit, fields, classObjects, is, reset }
+        return { user, refs, setRef, checkDatas, submit, fields, classObjects, is, reset }
     }}).directive('focus',
         directives.focus
     );
