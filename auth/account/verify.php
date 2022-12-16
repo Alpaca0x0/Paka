@@ -1,7 +1,9 @@
 <?php
 Inc::component('header');
 
-$swal = [];
+$GLOBALS['swal'] = [];
+$swal = $GLOBALS['swal'];
+
 function setSwal($icon, $html, $link=false){
 	global $swal;
 	$swal['icon'] = $icon;
@@ -11,15 +13,12 @@ function setSwal($icon, $html, $link=false){
 }
 
 # default
-setSwal(
-	'error',
-	'很抱歉，發生了致命且非預期的錯誤！'
-);
+setSwal('error', '很抱歉，發生了致命且非預期的錯誤！');
 
 do{
-	if(!Arr::includes($_GET, 'token')){ setSwal('warning', '需要有 Token 以進行驗證'); break; }
+	if(!Arr::includes($_GET, 'token')){ setSwal('warning', '需要給予 Token 以進行驗證'); break; }
 	$token = trim(Type::string($_GET['token'], ''));
-	if(strlen(trim($_GET['token'])) !== 64){ setSwal('warning', 'Token 格式錯誤'); break; }
+	if(strlen($token) !== 64){ setSwal('warning', 'Token 格式錯誤'); break; }
 
 	# connect db
 	Inc::Clas('db');
@@ -31,89 +30,47 @@ do{
 		FROM `account_event` 
 		JOIN `account` ON (`account`.`id`=`account_event`.`uid`) 
 		WHERE `account_event`.`commit`="register" AND `account_event`.`token`=:token AND `account`.`status`<>"removed"
+		ORDER BY `account_event`.`id` DESC
 		LIMIT 1;'
 	)::execute([':token' => $token]);
 	# query error
 	if(DB::error()){ setSwal('error', '很抱歉，SQL 語法查詢時發生錯誤！'); break; }
-	# check if token is found
+	# if token is not found
 	$row = DB::fetch();
-	# not found
 	if($row === false){ 
-		setSwal('warning', '', Uri::page('account/register'));
+		setSwal('warning', '找不到該用戶或 Token...<br>可能是驗證時間超時，煩請重新註冊。', Uri::page('account/register'));
 		break;
 	}
-	
+	# found, check status 
+	$id = $row['id'];
+	$username = $row['username'];
+	$email = $row['email'];
+	$status = trim($row['status']);
+	$datetime = time();
+	// 
+	if($status === 'alive'){ setSwal('success', "該帳號已通過驗證，不需要再驗證囉。",Uri::page('account/login')); break; }
+	if($status === 'review'){ setSwal('warning', '暫時無法驗證，該帳號目前受審查當中...'); break; }
+	if($status !== 'unverified'){ setSwal('warning', '很抱歉，該帳戶暫時無法被驗證。'); break; }
+	# update status of account
+	# if timeout
+	if($datetime > $row['expire']){
+		setSwal('warning', '很抱歉，驗證時間已經超時，煩請重新註冊。', Uri::page('account/register'));
+		$status = "invalid";
+	}
+	# successfully
+	else{
+		setSwal('success',"您好呀 {$username} !<br>您的 E-Mail 驗證成功，可以開始登入囉！", Uri::page('account/login'));
+		$status = "alive";
+	}
+	# sql query
+	$result = DB::query(
+		'UPDATE `account` SET `status`=:status WHERE `id`=:id;'
+	)::execute([':status'=>$status, ':id'=>$id]);
+	# if sql error
+	if(DB::error()){ setSwal('error', '很抱歉，標記帳戶驗證狀態的過程發生了非預期的錯誤。'); break; }
 }while(false);
 
-		# found 
-		else{
-			$id = (int)$row['id'];
-			$username = $row['username'];
-			$email = $row['email'];
-			$status = trim($row['status']);
-
-			# check status
-			if($status==='alive'){ 
-				setSwal(
-					'success',
-					'Success',
-					"Hello {$username}<br>Your account has already been verified.<br>You can go to login now.",
-					Uri::page('account/login')
-				);
-			}
-			else if($status==='review'){ 
-				setSwal(
-					'warning',
-					'Warning',
-					'The account is reviewing...'
-				);
-			}
-			else if($status==='unverified'){
-				# update account status
-				$status = 'error';
-
-				# timeout
-				if(time() > $row['expire']){
-					setSwal(
-						'warning',
-						'Warning',
-						'Sorry, the token is timeout...<br>Please register again :('
-					);
-					$status = "invalid";
-				}
-				# successfuly
-				else{
-					setSwal(
-						'success',
-						'Successfully',
-						"Hello {$username}, your email 「{$email}」 is successfully verified.<br>You can go to login now."
-					);
-					$status = "alive";
-				}
-
-				# sql query
-				$result = DB::query(
-					'UPDATE `account` SET `status`=:status WHERE `id`=:id;'
-				)::execute([':status'=>$status, ':id'=>$id]);
-				# if sql error
-				if($result===false){ 
-					setSwal(
-						'error',
-						'Error',
-						'Sorry, we got the error when verifying your account...'
-					); 
-				}
-			}
-			else{
-				setSwal(
-					'warning',
-					'Warning',
-					'Sorry, this account has some problems, we can not verify it now.'
-				);
-			}
-		}
-	}
-}
+$swal = $GLOBALS['swal'];
 ?>
 
 <script type="text/javascript">
@@ -124,7 +81,7 @@ do{
 		showConfirmButton: <?=$swal['link']?'true':'false'; ?>,
 		showCancelButton: false,
 		allowOutsideClick: false,
-		confirmButtonText: 'Got it'
+		confirmButtonText: 'Okay'
 	}).then(()=>{
 		window.location.replace('<?=$swal['link']?$swal['link']:'#!'?>');
 	});

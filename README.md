@@ -15,9 +15,11 @@ cd paka
 # Copy config example files
 cp config.example.php config.php
 cp configs/db.example.php configs/db.php
+cp configs/email.example.php configs/email.php
 # Edit config files (choose your own editor)
 vim config.php
 vim configs/db.php
+vim configs/email.php
 ```
 
 ```bash
@@ -65,8 +67,8 @@ location ^~ /paka/ {
   - edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
 - Account
   - [x] login
-  - [ ] register
-  - [ ] register-SMTP
+  - [x] register
+  - [x] register-SMTP
   - [ ] change email
   - [x] profile
   - [x] edit profile
@@ -149,6 +151,10 @@ location ^~ /paka/ {
 一些核心的函式。
 
 - `init` 在該目錄下的檔案會在初始時自動的被載入。
+
+#### :small_blue_diamond: `libraries`
+
+`libraries` 與 `assets/plugin` 不同的在於，`plugin` 資源可於前端調用，而 `libraries` 僅供後端使用。
 
 #### :small_blue_diamond: `pages`
 

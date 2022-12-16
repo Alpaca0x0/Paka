@@ -92,46 +92,36 @@ if(DB::error()){
     DB::rollback();
     Resp::error('db_insert_error', 'event', '發生錯誤，無法將帳戶憑證寫入資料庫');
 }
+DB::commit();
 
 # successfully register
-DB::commit();
+# send the email
+Inc::clas('email');
+if(!Email::init()){ Resp::error('smtp_init', '糟糕，SMTP 伺服器無法連接，暫時無法寄信'); };
+//
+$url = Protocol.'://'.Domain.Uri::auth('account/verify').'?token='.$token;
+$title = 'Verify your email for '.NAME.' !';
+$username = htmlentities($username);
+$content = "
+    Hello <b>{$username}</b> <br>
+    Enter the link to verify your email:<br>
+    <a href='{$url}' target='_blank'>{$url}</a><hr>
+    If you did NOT register any account on this site, please ignore this email.
+";
+// 
+if(!DEV){
+    $result = Email::to($email, $username)
+        ::subject($title)
+        ::content($content)
+        ::send();
+    if(!$result){
+        $msg = DEBUG ? Email::errorMsg() : null;
+        Resp::error('smtp_send', $msg, '寄送驗證信時，發生非預期錯誤');
+    }
+}
+// 
+
 Resp::success('successfully', [
+    'token' => DEV ? $token : null,
     'username' => $username,
 ], '註冊成功，可以登入囉！');
-
-# create profile (mix to single sql sentence)
-// $id = (int)DB::lastInsertId();
-// $result = DB::query('INSERT INTO `profile`(`id`) VALUES(:id);')::execute([':id'=>$id, ]);
-// if($result===false){ Roger::error('db_insert_error','profile'); }
-
-# write account_event (mix to single sql sentence)
-// $result = DB::query(
-//     'INSERT INTO `account_event`(`account`, `action`, `target`, `ip`, `expire`, `datetime`) VALUES(:account, :action, :target, :ip, :expire, :t);'
-// )::execute([':account'=>$id, ':action'=>'register', ':target'=>$token, ':ip'=>$ip, ':expire'=>$datetime+$config['verify']['timeout'], ':t'=>$datetime ]);
-// if(DB::error()){ Resp::warning('db_insert_error','account_event', '發生錯誤，無法將帳戶憑證寫入資料庫'); }
-
-// Send the email
-// isset($Email) or include_once(Local::Func('email'));
-// class_exists('Email') or require_once(Local::Clas('email'));
-// $url = (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 
-//     'https' : 'http').'://'.DOMAIN.Root::Auth('account/verify').'?token='.$token;
-// $title = htmlentities('Verify your email in '.Project::Name());
-// $username = htmlentities($username);
-// $html_content = "
-//     Hello <b>{$username}</b> <br>
-//     Enter the link to verify your email:<br>
-//     <a href='{$url}' target='_blank'>{$url}</a><hr>
-//     If you did NOT register any account on this site, please ignore this email.
-// ";
-
-// if(DEV){
-// 	Resp::success('successfully', [$email, $username, $title, $html_content]);
-// }else{
-// 	$result = Email::send($email, $username, $title, $html_content);
-// 	if($result[0]===false){ Roger::error('send_email_error',$result[1]); }
-// 	else if($result[0]===true){ Roger::success('successfully'); }
-// 	else{ Roger::error('send_email_error'); }
-// }
-
-Resp::error('unexpected_error', '發生非預期錯誤');
-
