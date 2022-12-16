@@ -138,4 +138,8 @@ class DB{
 		if(!self::isConnected() || self::error()){ return false; }
 		return self::$connect->lastInsertId();
 	}
+
+	static function beginTransaction(){ self::$connect->beginTransaction(); }
+	static function commit(){ self::$connect->commit(); }
+	static function rollback(){ self::$connect->rollback(); }
 }
