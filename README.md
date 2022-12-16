@@ -61,6 +61,7 @@ location ^~ /paka/ {
 - [ ] register 驗證信內容排版不好看QQ
 - [ ] edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
 - [ ] register 與 login 時，界面 Loading 應該明顯一點。
+- [ ] login page 驗證碼不正確時，其欄位 status 外觀不會反應。
 
 ### :memo: Todo list
 
