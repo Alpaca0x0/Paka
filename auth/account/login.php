@@ -40,7 +40,7 @@ if(!$user){ Resp::warning('not_found_user',$username, "找不到使用者 \"{$us
 # tried times limit, more than 3 times since 15 minutes, needs captcha
 $loginMaxTimes = 3;
 $result = DB::query(
-    'SELECT COUNT(`id`) AS `count` FROM `event` 
+    'SELECT COUNT(`id`) AS `count` FROM `account_event` 
     WHERE `commit`=:commit AND `uid`=:uid AND (:datetime-`datetime`)<15*60  # 15 mins
     LIMIT 1;'
 )::execute([
@@ -64,7 +64,7 @@ if($row['count'] > $loginMaxTimes){
 $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
 if($user['password'] !== hash('sha256',$password)){ 
     $result = DB::query(
-        'INSERT INTO `event`(`uid`,`commit`,`ip`,`datetime`) 
+        'INSERT INTO `account_event`(`uid`,`commit`,`ip`,`datetime`) 
         VALUES(:uid, :commit, :ip, :datetime);'
     )::execute([
         ':uid' => $user['id'], 
@@ -81,7 +81,7 @@ if($user['password'] !== hash('sha256',$password)){
 $token = hash('sha256',bin2hex(random_bytes(16)));
 $expire = $datetime + $config['timeout']['login'];
 $result = DB::query(
-    'INSERT INTO `event`(`uid`,`commit`,`token`,`ip`,`expire`,`datetime`) 
+    'INSERT INTO `account_event`(`uid`,`commit`,`token`,`ip`,`expire`,`datetime`) 
     VALUES(:uid, :commit, :token, :ip, :expire, :datetime);'
 )::execute([
     ':uid' => $user['id'], 

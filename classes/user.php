@@ -24,13 +24,13 @@ class User{
 		# register, unverified and expire
 		DB::query(
 			'UPDATE `account` 
-			LEFT JOIN `event` ON(`account`.`id`=`event`.`uid`)
+			LEFT JOIN `account_event` ON(`account`.`id`=`account_event`.`uid`)
 			SET `account`.`status`="removed"
-			WHERE `account`.`status`="unverified" AND `event`.`action`="register" AND :datetime>`event`.`expire`;'
+			WHERE `account`.`status`="unverified" AND `account_event`.`action`="register" AND :datetime>`account_event`.`expire`;'
 		)::execute([':datetime' => $datetime]);
 		# token expire
 		DB::query(
-			'UPDATE `event` 
+			'UPDATE `account_event` 
 			SET `expire`=0-`expire` 
 			WHERE `expire`>0 AND :datetime>`expire`;'
 		)::execute([':datetime' => $datetime]);
@@ -53,12 +53,12 @@ class User{
 
 		# if user exist
 		$result = DB::query(
-			'SELECT `event`.`id` AS `event_id`, `event`.`expire`, `event`.`datetime` AS "spawntime",
+			'SELECT `account_event`.`id` AS `event_id`, `account_event`.`expire`, `account_event`.`datetime` AS "spawntime",
 			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
-			FROM `event` 
-			JOIN `account` ON(`account`.`id`=`event`.`uid`) 
-			WHERE `account`.`status`<>"removed" AND `event`.`token`=:token
-			ORDER BY `event`.`id` DESC
+			FROM `account_event` 
+			JOIN `account` ON(`account`.`id`=`account_event`.`uid`) 
+			WHERE `account`.`status`<>"removed" AND `account_event`.`token`=:token
+			ORDER BY `account_event`.`id` DESC
 			LIMIT 1;'
 		)::execute([':token' => $token]);
 		if(!$result){ return false; }
@@ -74,7 +74,7 @@ class User{
 		$rule = Inc::config('account');
 		$expire = time() + $rule['timeout']['login'];
 		$result = DB::query(
-			'UPDATE `event` SET `expire`=:expire WHERE `id`=:event_id;'
+			'UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;'
 		)::execute([':expire'=>$expire, ':event_id'=>$user['event_id'], ]);
 		if(!$result){ return false; }
 		
@@ -126,7 +126,7 @@ class User{
 
 		# set token expire
 		$result = DB::query(
-			'UPDATE `event` SET `expire`=:datetime 
+			'UPDATE `account_event` SET `expire`=:datetime 
 			WHERE `token`=:token AND `expire`>:datetime2 AND `commit`=:commit;'
 		)::execute([
 			':datetime' => $datetime,
