@@ -94,10 +94,8 @@ class DB{
 		}catch (Exception $e) { return self::error(true); }
 	}
 
-	static function sentence(){
-		if(!self::isConnected()){ return false; }
-		return self::$query->queryString;
-	}
+	static function sentence(){ return self::$query->queryString; }
+	static function debugDumpParams(){ return self::$query->debugDumpParams(); }
 
 	static function fetch($type='assoc'){
 		if(!self::isConnected() || self::error()){ self::error(true); return false; }
