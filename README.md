@@ -75,6 +75,7 @@ location ^~ /paka/ {
   - [ ] edit avatar
   - [ ] events note
 - Forum
+  - [x] posts api & view post
   - [ ] create post
   - [ ] delete post
   - [ ] comment post
