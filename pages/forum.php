@@ -4,7 +4,7 @@ Inc::component('navbar');
 Inc::clas('user');
 ?>
 
-<div class="ts-app-layout is-full is-vertical">
+<div id="Forum" class="ts-app-layout is-full is-vertical">
     <div class="cell is-secondary is-fluid">
         <div class="ts-space is-large"></div>
         <div class="ts-container">
@@ -14,9 +14,9 @@ Inc::clas('user');
                         <div class="ts-divider is-section"></div>
                         <div class="ts-wrap is-middle-aligned">
                             <div class="ts-avatar is-circular">
-                                <img src="<?=User::get('avatar', false) ? 'data:image/jpeg;base64,'.User::get('avatar','') : Uri::img('user.png')?>">
+                                <img :src="user.avatar || user.avatarDefault">
                             </div>
-                            <div class="ts-text is-heavy"><?=User::get('username','Guest')?></div>
+                            <div class="ts-text is-heavy" v-text="user.username"></div>
                         </div>
                         <div class="ts-divider is-section"></div>
                         <div class="ts-menu is-start-icon is-separated">
@@ -30,12 +30,14 @@ Inc::clas('user');
                         </div>
                     </div>
                 </div>
+                <!-- main -->
                 <div class="column is-9-wide">
+                    <!-- write post -->
                     <div class="ts-segment">
                         <div class="ts-row">
                             <div class="column">
                                 <div class="ts-avatar is-large is-circular">
-                                    <img src="<?=Uri::img('user.png')?>">
+                                    <img :src="user.avatar || user.avatarDefault">
                                 </div>
                             </div>
                             <div class="column is-fluid">
@@ -67,16 +69,22 @@ Inc::clas('user');
                         </div>
                     </div>
                     <div class="ts-space"></div>
+                    <!-- write post end -->
+
+                    <!-- posts -->
+                    <div id="Posts" :ref="setRef" v-for="post in posts">
                     <div class="ts-segment">
                         <div class="ts-row">
                             <div class="column">
                                 <div class="ts-avatar is-large is-circular">
-                                    <img src="<?=Uri::img('user.png')?>">
+                                    <img :src="post.poster.avatar ? 'data:image/jpeg;base64,'+post.poster.avatar : user.avatarDefault">
                                 </div>
                             </div>
                             <div class="column is-fluid">
                                 <div style="line-height: 1.5">
-                                    <div class="ts-text is-heavy">Yami Odymel</div>
+                                    <div class="ts-text is-heavy">
+                                        {{ post.poster.nickname ? post.poster.nickname+' ('+post.poster.username+')' : post.poster.username }}
+                                    </div>
                                     <div class="ts-meta is-small is-secondary">
                                         <div class="item">
                                             <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
@@ -86,9 +94,9 @@ Inc::clas('user');
                                     </div>
                                 </div>
                                 <div class="ts-space is-small"></div>
-                                敬告所有尤米爾的子民，<br>
-                                我的名字是艾連葉卡。<br>
-                                正透過始祖巨人的力量與所有尤米爾的子民對話。
+                                {{ post.title }}
+                                <br>
+                                {{ post.content }}
                                 <div class="ts-space is-small"></div>
                             </div>
                         </div>
@@ -115,159 +123,9 @@ Inc::clas('user');
                         </div>
                     </div>
                     <div class="ts-space"></div>
-                    <div class="ts-segment">
-                        <div class="ts-row">
-                            <div class="column">
-                                <div class="ts-avatar is-large is-circular">
-                                    <img src="<?=Uri::img('user.png')?>">
-                                </div>
-                            </div>
-                            <div class="column is-fluid">
-                                <div style="line-height: 1.5">
-                                    <div class="ts-text is-heavy">Yami Odymel</div>
-                                    <div class="ts-meta is-small is-secondary">
-                                        <div class="item">
-                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                            公開
-                                        </div>
-                                        <a href="#!" class="item">3 分鐘前</a>
-                                    </div>
-                                </div>
-                                <div class="ts-space is-small"></div>
-                                Ken Wong 沒事推什麼 King Exit 的坑，<br>
-                                要是我 TeaMeow 今年寫不出來，<br>
-                                就是你給我的精神攻擊害的
-                                <div class="ts-space is-small"></div>
-                                <div class="ts-image is-rounded">
-                                    <img src="<?=Uri::img('template/16-9.png')?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ts-divider is-section"></div>
-                        <div class="ts-row">
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                    讚
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-comment-icon is-regular"></span>
-                                    留言
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-share-from-square-icon is-regular"></span>
-                                    分享
-                                </button>
-                            </div>
-                        </div>
                     </div>
-                    <div class="ts-space"></div>
-                    <div class="ts-segment">
-                        <div class="ts-row">
-                            <div class="column">
-                                <div class="ts-avatar is-large is-circular">
-                                    <img src="<?=Uri::img('user.png')?>">
-                                </div>
-                            </div>
-                            <div class="column is-fluid">
-                                <div style="line-height: 1.5">
-                                    <div class="ts-text is-heavy">Yami Odymel</div>
-                                    <div class="ts-meta is-small is-secondary">
-                                        <div class="item">
-                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                            公開
-                                        </div>
-                                        <a href="#!" class="item">3 分鐘前</a>
-                                    </div>
-                                </div>
-                                <div class="ts-space is-small"></div>
-                                Ken Wong 沒事推什麼 King Exit 的坑，<br>
-                                要是我 TeaMeow 今年寫不出來，<br>
-                                就是你給我的精神攻擊害的
-                                <div class="ts-space is-small"></div>
-                                <div class="ts-image is-rounded">
-                                    <img src="<?=Uri::img('template/16-9.png')?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ts-divider is-section"></div>
-                        <div class="ts-row">
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                    讚
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-comment-icon is-regular"></span>
-                                    留言
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-share-from-square-icon is-regular"></span>
-                                    分享
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ts-space"></div>
-                    <div class="ts-segment">
-                        <div class="ts-row">
-                            <div class="column">
-                                <div class="ts-avatar is-large is-circular">
-                                    <img src="<?=Uri::img('user.png')?>">
-                                </div>
-                            </div>
-                            <div class="column is-fluid">
-                                <div style="line-height: 1.5">
-                                    <div class="ts-text is-heavy">Yami Odymel</div>
-                                    <div class="ts-meta is-small is-secondary">
-                                        <div class="item">
-                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                            公開
-                                        </div>
-                                        <a href="#!" class="item">3 分鐘前</a>
-                                    </div>
-                                </div>
-                                <div class="ts-space is-small"></div>
-                                Ken Wong 沒事推什麼 King Exit 的坑，<br>
-                                要是我 TeaMeow 今年寫不出來，<br>
-                                就是你給我的精神攻擊害的
-                                <div class="ts-space is-small"></div>
-                                <div class="ts-image is-rounded">
-                                    <img src="<?=Uri::img('template/16-9.png')?>">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ts-divider is-section"></div>
-                        <div class="ts-row">
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                    讚
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-comment-icon is-regular"></span>
-                                    留言
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-share-from-square-icon is-regular"></span>
-                                    分享
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ts-space"></div>
+                    <!-- posts end -->
+
                     <div class="ts-segment">
                         <div class="ts-row">
                             <div class="column">
@@ -408,6 +266,88 @@ Inc::clas('user');
         <div class="ts-space is-large"></div>
     </div>
 </div>
+
+<script type="module">
+    import { createApp, reactive, onMounted } from '<?=Uri::js('vue')?>';
+    import '<?=Uri::js('ajax')?>';
+    import * as Resp from '<?=Uri::js('resp')?>';
+    // 
+    const Forum = createApp({setup(){
+        let refs = reactive({});
+        let setRef = (el) => { refs[el.id] = el; }
+        // 
+        let user = reactive({
+            username: '<?=User::get('username','Guest')?>',
+            avatarDefault: '<?=Uri::img('user.png')?>',
+            avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
+        });
+        let posts = reactive([]);
+        // 
+        let is = reactive({
+            // posts
+            gettingPosts: false,
+            noMorePosts: false,
+            // 
+        });
+        let info = reactive({
+            type: null,
+            title: null,
+            msg: null,
+        });
+        // 
+        const getPosts = () => {
+            if(is.gettingPosts || is.noMorePosts){ return; }
+            is.gettingPosts = true;
+            let datas = { limit: 12 };
+            if(posts.length > 0){ datas.before = posts.slice(-1)[0].id ; }
+            // 
+            $.ajax({
+                type: "GET",
+                url: '<?=Uri::api('forum/posts')?>',
+                data: datas,
+                dataType: 'json',
+            }).always(()=>{
+                info.type = 'error';
+                info.title = 'Error';
+                info.msg = 'Unexpected Error';
+            }).fail((xhr, status, error) => {
+                console.error(xhr.responseText);
+            }).done((resp) => {
+                try {
+                    console.log(resp);
+                    // check response format is correct
+                    if(!Resp.object(resp)){ return false; }
+                    // get msg
+                    info.type = resp.type;
+                    info.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                    info.msg = resp.message;
+                    // if warning
+                    // check if success
+                    if(resp.type==='success'){
+                        if(resp.data === null || resp.data.length < 1){ is.noMorePosts = true; }
+                        else{ posts.push(...resp.data); }
+                    }
+                } catch (error) { console.error(error); }
+            }).always(() => {
+                is.gettingPosts = false;
+            });
+        }
+        // 
+        onMounted(() => {
+            getPosts();
+            // 
+            document.documentElement.onwheel = (event) => {
+                let scrollTop = document.documentElement.scrollTop;
+                let clientHeight = document.documentElement.clientHeight;
+                let scrollHeight = document.documentElement.scrollHeight;
+                if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
+            }
+            // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
+        });
+        // 
+        return { user, posts, setRef };
+    }}).mount('#Forum');
+</script>
 
 <?php
 Inc::component('footer');
