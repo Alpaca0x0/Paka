@@ -73,56 +73,75 @@ Inc::clas('user');
 
                     <!-- posts -->
                     <div id="Posts" :ref="setRef" v-for="post in posts">
-                    <div class="ts-segment">
-                        <div class="ts-row">
-                            <div class="column">
-                                <div class="ts-avatar is-large is-circular">
-                                    <img :src="post.poster.avatar ? 'data:image/jpeg;base64,'+post.poster.avatar : user.avatarDefault">
-                                </div>
-                            </div>
-                            <div class="column is-fluid">
-                                <div style="line-height: 1.5">
-                                    <div class="ts-text is-heavy">
-                                        {{ post.poster.nickname ? post.poster.nickname+' ('+post.poster.username+')' : post.poster.username }}
-                                    </div>
-                                    <div class="ts-meta is-small is-secondary">
-                                        <div class="item">
-                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                            公開
+                        <template v-if="!post.isRemoved">
+                            <div class="ts-segment" v-click-away="()=>postActions.menuActiver=false">
+                                <div class="ts-row">
+                                    <div class="column">
+                                        <div class="ts-avatar is-large is-circular">
+                                            <img :src="post.poster.avatar ? 'data:image/jpeg;base64,'+post.poster.avatar : user.avatarDefault">
                                         </div>
-                                        <a href="#!" class="item">3 分鐘前</a>
+                                    </div>
+                                    <div class="column is-fluid">
+                                        <div style="line-height: 1.5">
+                                            <div class="ts-text is-heavy">
+                                                {{ post.poster.nickname ? post.poster.nickname+' ('+post.poster.username+')' : post.poster.username }}
+                                            </div>
+                                            <div class="ts-meta is-small is-secondary">
+                                                <div class="item">
+                                                    <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
+                                                    公開
+                                                </div>
+                                                <a href="#!" class="item">3 分鐘前</a>
+                                                <?php if(DEV){ ?>
+                                                    <div class="item">#{{post.id}}</div>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
+                                        <div class="ts-space is-small"></div>
+                                        {{ post.title }}
+                                        <br>
+                                        {{ post.content }}
+                                        <div class="ts-space is-small"></div>
+                                    </div>
+                                    <!-- functions -->
+                                    <div class="column">
+                                        <div>
+                                            <button @click="postActions.menuActiver=post.id" class="ts-button is-secondary is-icon">
+                                                <span class="ts-icon is-ellipsis-icon"></span>
+                                            </button>
+                                            <div :class="{ 'is-visible': postActions.menuActiver===post.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                <button class="item" @click="postActions.edit(post)">編輯</button>
+                                                <div class="ts-divider"></div>
+                                                <button class="item" @click="postActions.delete(post)">刪除</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- functions end -->
+                                </div>
+                                <div class="ts-divider is-section"></div>
+                                <div class="ts-row">
+                                    <div class="column is-fluid">
+                                        <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                            <span class="ts-icon is-thumbs-up-icon is-regular"></span>
+                                            讚
+                                        </button>
+                                    </div>
+                                    <div class="column is-fluid">
+                                        <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                            <span class="ts-icon is-comment-icon is-regular"></span>
+                                            留言
+                                        </button>
+                                    </div>
+                                    <div class="column is-fluid">
+                                        <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                            <span class="ts-icon is-share-from-square-icon is-regular"></span>
+                                            分享
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="ts-space is-small"></div>
-                                {{ post.title }}
-                                <br>
-                                {{ post.content }}
-                                <div class="ts-space is-small"></div>
                             </div>
-                        </div>
-                        <div class="ts-divider is-section"></div>
-                        <div class="ts-row">
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                    讚
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-comment-icon is-regular"></span>
-                                    留言
-                                </button>
-                            </div>
-                            <div class="column is-fluid">
-                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-share-from-square-icon is-regular"></span>
-                                    分享
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ts-space"></div>
+                            <div class="ts-space"></div>
+                        </template>
                     </div>
                     <!-- posts end -->
 
@@ -271,6 +290,7 @@ Inc::clas('user');
     import { createApp, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
+    import * as diravtives from '<?=Uri::js('vue/directives/click-away')?>';
     // 
     const Forum = createApp({setup(){
         let refs = reactive({});
@@ -282,6 +302,14 @@ Inc::clas('user');
             avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
         });
         let posts = reactive([]);
+        // 
+        let postActions = reactive({
+            menuActiver: false, // pid
+            edit: (post) => {},
+            delete: (post) => {
+                post.isRemoved = true;
+            }
+        });
         // 
         let is = reactive({
             // posts
@@ -345,8 +373,10 @@ Inc::clas('user');
             // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
         });
         // 
-        return { user, posts, setRef };
-    }}).mount('#Forum');
+        return { user, posts, setRef, postActions };
+    }}).directive("clickAway",
+        diravtives.clickAway
+    ).mount('#Forum');
 </script>
 
 <?php
