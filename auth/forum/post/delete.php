@@ -4,8 +4,6 @@ Inc::clas('resp');
 Inc::clas('user');
 User::isLogin() or Resp::warning('is_logout', '尚未登入');
 
-$_POST['pid'] = 14;
-
 # needed datas
 Arr::every($_POST, 'pid') or Resp::warning('data_missing', '資料缺失');
 

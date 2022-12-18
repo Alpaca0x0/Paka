@@ -72,8 +72,11 @@ Inc::clas('user');
                     <!-- write post end -->
 
                     <!-- posts -->
-                    <div id="Posts" :ref="setRef" v-for="post in posts">
-                        <template v-if="!post.isRemoved">
+                    <div id="Posts" :ref="setRef" v-for="post in posts" v-cloak>
+                        <div v-if="post.isRemoved" class="ts-segment is-tertiary">
+                            這裡曾有過一篇文章，但已不復存在。
+                        </div>
+                        <template v-else>
                             <div class="ts-segment" v-click-away="()=>postActions.menuActiver=false">
                                 <div class="ts-row">
                                     <div class="column">
@@ -140,12 +143,38 @@ Inc::clas('user');
                                     </div>
                                 </div>
                             </div>
-                            <div class="ts-space"></div>
                         </template>
+                        <div class="ts-space"></div>
                     </div>
                     <!-- posts end -->
 
-                    <div class="ts-segment">
+                    <!-- posts loading -->
+                    <div v-show="is.gettingPosts" class="ts-placeholder is-loading">
+                        <div class="ts-segment">
+                            <div class="ts-row">
+                                <div class="column">
+                                    <div class="ts-avatar is-large is-circular">
+                                        <div class="image is-header"></div>
+                                    </div>
+                                </div>
+                                <div class="column is-fluid">
+                                    <div class="text is-header"></div>
+                                    <div class="text"></div>
+                                    <div class="text"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ts-space"></div>
+                    </div>
+                    <!-- posts loading end -->
+
+                    <!-- no more post -->
+                    <div v-show="is.noMorePost" class="ts-segment is-very-elevated is-dense is-center-aligned">
+                        到底部了，已經沒有更多文章囉！
+                    </div>
+                    <!-- no more post end -->
+
+                    <!-- <div class="ts-segment">
                         <div class="ts-row">
                             <div class="column">
                                 <div class="ts-avatar is-large is-circular">
@@ -194,7 +223,8 @@ Inc::clas('user');
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
+
                 </div>
                 <div class="column is-4-wide">
                     <div style="position: sticky; top: 4rem">
@@ -307,14 +337,59 @@ Inc::clas('user');
             menuActiver: false, // pid
             edit: (post) => {},
             delete: (post) => {
-                post.isRemoved = true;
+                if(post.isRemoving){ return; }
+                post.isDeleting = true;
+                // 
+                let msg = {
+                    icon: 'error',
+                    title: '非預期錯誤',
+                    text: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                Swal.fire({
+                    icon: 'warning',
+                    title: '你確定嗎？',
+                    text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: '是，刪除！',
+                    cancelButtonText: '取消',
+                    focusCancel: true,
+                }).then((result) => {
+                    if(!result.isConfirmed){ return; }
+                    $.ajax({
+                        type: "POST",
+                        url: '<?=Uri::auth('forum/post/delete')?>',
+                        data: { pid: post.id },
+                        dataType: 'json',
+                    }).fail((xhr, status, error) => {
+                        console.error(xhr.responseText);
+                    }).done((resp) => {
+                        console.log(resp);
+                        if(!Resp.object(resp)){ return false; }
+                        // 
+                        if(resp.type === 'success'){
+                            msg.icon = 'success';
+                            msg.title = '成功刪除';
+                            msg.text = '文章已經被刪除囉！';
+                            post.isRemoved = true;
+                        }else{
+                            msg.icon = resp.type;
+                            msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                            msg.text = resp.message;
+                        }
+                    }).always(() => {
+                        post.isDeleting = false;
+                        Swal.fire(msg);
+                    });
+                });
             }
         });
         // 
         let is = reactive({
             // posts
             gettingPosts: false,
-            noMorePosts: false,
+            noMorePost: false,
             // 
         });
         let info = reactive({
@@ -324,7 +399,7 @@ Inc::clas('user');
         });
         // 
         const getPosts = () => {
-            if(is.gettingPosts || is.noMorePosts){ return; }
+            if(is.gettingPosts || is.noMorePost){ return; }
             is.gettingPosts = true;
             let datas = { limit: 12 };
             if(posts.length > 0){ datas.before = posts.slice(-1)[0].id ; }
@@ -352,7 +427,7 @@ Inc::clas('user');
                     // if warning
                     // check if success
                     if(resp.type==='success'){
-                        if(resp.data === null || resp.data.length < 1){ is.noMorePosts = true; }
+                        if(resp.data === null || resp.data.length < 1){ is.noMorePost = true; }
                         else{ posts.push(...resp.data); }
                     }
                 } catch (error) { console.error(error); }
@@ -373,7 +448,7 @@ Inc::clas('user');
             // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
         });
         // 
-        return { user, posts, setRef, postActions };
+        return { user, posts, setRef, postActions, is };
     }}).directive("clickAway",
         diravtives.clickAway
     ).mount('#Forum');
