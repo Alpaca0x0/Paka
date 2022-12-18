@@ -23,6 +23,13 @@ vim configs/email.php
 ```
 
 ```bash
+# Set database
+# Import the sql file
+# Need to rename by yourself
+src/alpacatech.sql
+```
+
+```bash
 # Setting router in web server
 # For example, nginx:
 vim /etc/nginx/conf.d/default.conf
@@ -63,6 +70,7 @@ location ^~ /paka/ {
 - [ ] register 與 login 時，界面 Loading 應該明顯一點。
 - [ ] login page 驗證碼不正確時，其欄位 status 外觀不會反應。
 - [ ] 在登入後，navbar 上 account 選項的下拉式選單，其關閉事件改為由 `vue-click-away` 觸發。
+- [ ] class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
 
 ### :memo: Todo list
 
