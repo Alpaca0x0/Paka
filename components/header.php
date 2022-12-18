@@ -21,6 +21,9 @@
 
     <!-- Hide Scroll -->
     <link rel=stylesheet type="text/css" href="<?=Uri::css('scroll')?>">
+
+    <!-- Vue v-cloak -->
+    <style>[v-cloak] { display: none; } </style>
 </head>
 <body>
 <!-- Header -->
