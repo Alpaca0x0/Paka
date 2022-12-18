@@ -87,7 +87,7 @@ location ^~ /paka/ {
 - Forum
   - [x] posts api & view post
   - [ ] create post
-  - [ ] delete post
+  - [X] delete post
   - [ ] comment post
   - [ ] delete comment
   - [ ] reply comment
