@@ -5,7 +5,8 @@ Inc::clas('user');
 User::isLogin() or Resp::warning('is_logout', '尚未登入');
 
 # needed datas
-Arr::every($_POST, 'pid') or Resp::warning('data_missing', '資料缺失');
+$needs = ['pid'];
+Arr::every($_POST, ...$needs) or Resp::warning('data_missing', $needs, '資料缺失');
 
 # convert
 $uid = User::get('id', false);

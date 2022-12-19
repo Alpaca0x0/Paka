@@ -202,7 +202,7 @@ Inc::clas('user');
         return { is, items, ritems, subItems, currentPageId, onMouseItem, logout }
     }}).directive("clickAway",
         diravtives.clickAway
-    ).mount('div#Navbar');
+    ).mount('#Navbar');
 </script>
 
 <style>
