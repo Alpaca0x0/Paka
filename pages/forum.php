@@ -42,11 +42,27 @@ Inc::clas('user');
                             </div>
                             <div class="column is-fluid">
                                 <div class="ts-input is-fluid">
-                                    <textarea rows="5"></textarea>
+                                    <textarea rows="4"></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="ts-divider is-section"></div>
+                        <!-- submit button -->
+                        <div class="ts-space is-small"></div>
+                        <div class="ts-row">
+                            <div class="column is-fluid">
+                                <!-- <div class="ts-input is-fluid">
+                                    <input type="text" class="input" placeholder="搜尋文章…" />
+                                </div> -->
+                            </div>
+                            <div class="column">
+                                <button class="ts-button is-start-labeled-icon is-outlined">
+                                    <span class="ts-icon is-paper-plane-icon"></span>
+                                    送出
+                                </button>
+                            </div>
+                        </div>
+                        <!-- submit button end -->
+                        <!-- <div class="ts-divider is-section"></div>
                         <div class="ts-row">
                             <div class="column is-fluid">
                                 <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
@@ -66,28 +82,28 @@ Inc::clas('user');
                                     感受 / 活動
                                 </button>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="ts-space"></div>
                     <!-- write post end -->
 
                     <!-- posts -->
-                    <div id="Posts" :ref="setRef" v-for="post in posts.data" v-cloak>
-                        <div v-if="post.isRemoved" class="ts-segment is-tertiary">
+                    <div id="Posts" :ref="setRef" v-for="thePost in posts.data" v-cloak>
+                        <div v-if="thePost.isRemoved" class="ts-segment is-tertiary">
                             這裡曾有過一篇文章，但已不復存在。
                         </div>
                         <template v-else>
-                            <div class="ts-segment" v-click-away="()=>postActions.menuActiver=false">
+                            <div class="ts-segment" v-click-away="()=>post.action.menuActiver=false">
                                 <div class="ts-row">
                                     <div class="column">
                                         <div class="ts-avatar is-large is-circular">
-                                            <img :src="post.poster.avatar ? 'data:image/jpeg;base64,'+post.poster.avatar : user.avatarDefault">
+                                            <img :src="thePost.poster.avatar ? 'data:image/jpeg;base64,'+thePost.poster.avatar : user.avatarDefault">
                                         </div>
                                     </div>
                                     <div class="column is-fluid">
                                         <div style="line-height: 1.5">
                                             <div class="ts-text is-heavy">
-                                                {{ post.poster.nickname ? post.poster.nickname+' ('+post.poster.username+')' : post.poster.username }}
+                                                {{ thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username }}
                                             </div>
                                             <div class="ts-meta is-small is-secondary">
                                                 <div class="item">
@@ -96,24 +112,24 @@ Inc::clas('user');
                                                 </div>
                                                 <a href="#!" class="item">3 分鐘前</a>
                                                 <?php if(DEV){ ?>
-                                                    <div class="item">#{{post.id}}</div>
+                                                    <div class="item">#{{thePost.id}}</div>
                                                 <?php } ?>
                                             </div>
                                         </div>
                                         <div class="ts-space is-small"></div>
-                                        {{ post.content }}
+                                        {{ thePost.content }}
                                         <div class="ts-space is-small"></div>
                                     </div>
                                     <!-- post actions -->
-                                    <div v-if="user.id===post.poster.id" class="column">
+                                    <div v-if="user.id===thePost.poster.id" class="column">
                                         <div>
-                                            <button @click="postActions.menuActiver=post.id" class="ts-button is-secondary is-icon">
+                                            <button @click="post.action.menuActiver=thePost.id" class="ts-button is-secondary is-icon">
                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                             </button>
-                                            <div :class="{ 'is-visible': postActions.menuActiver===post.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                <button class="item" @click="postActions.edit(post)">編輯</button>
+                                            <div :class="{ 'is-visible': post.action.menuActiver===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                <button class="item" @click="post.action.edit(thePost)">編輯</button>
                                                 <div class="ts-divider"></div>
-                                                <button class="item" @click="postActions.delete(post)">刪除</button>
+                                                <button class="item" @click="post.action.delete(thePost)">刪除</button>
                                             </div>
                                         </div>
                                     </div>
@@ -343,6 +359,7 @@ Inc::clas('user');
             avatarDefault: '<?=Uri::img('user.png')?>',
             avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
         });
+        // 
         let posts = reactive({
             type: 'error',
             status: 'Unexpected',
@@ -352,60 +369,110 @@ Inc::clas('user');
                 getting: false,
                 noMore: false,
                 getError: false,
-            }
+            },
         });
         // 
-        let postActions = reactive({
-            menuActiver: false, // pid
-            edit: (post) => {},
-            delete: (post) => {
-                if(post.isRemoving){ return; }
-                post.isDeleting = true;
-                // 
-                let msg = {
-                    icon: 'error',
-                    title: '非預期錯誤',
-                    text: '很抱歉，發生了非預期的錯誤！',
-                };
-                // 
-                Swal.fire({
-                    icon: 'warning',
-                    title: '你確定嗎？',
-                    text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: '是，刪除！',
-                    cancelButtonText: '取消',
-                    focusCancel: true,
-                }).then((result) => {
-                    if(!result.isConfirmed){ return; }
-                    $.ajax({
-                        type: "POST",
-                        url: '<?=Uri::auth('forum/post/delete')?>',
-                        data: { pid: post.id },
-                        dataType: 'json',
-                    }).fail((xhr, status, error) => {
-                        console.error(xhr.responseText);
-                    }).done((resp) => {
-                        console.log(resp);
-                        if(!Resp.object(resp)){ return false; }
-                        // 
-                        if(resp.type === 'success'){
-                            msg.icon = 'success';
-                            msg.title = '成功刪除';
-                            msg.text = '文章已經被刪除囉！';
-                            post.isRemoved = true;
-                        }else{
-                            msg.icon = resp.type;
-                            msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
-                            msg.text = resp.message;
-                        }
-                    }).always(() => {
-                        post.isDeleting = false;
-                        Swal.fire(msg);
+        let post = reactive({
+            action: {
+                menuActiver: false, // pid
+                create: (content) => {
+                    // if(thePost.isCreating){ return; }
+                    // thePost.isDeleting = true;
+                    // // 
+                    // let msg = {
+                    //     icon: 'error',
+                    //     title: '非預期錯誤',
+                    //     text: '很抱歉，發生了非預期的錯誤！',
+                    // };
+                    // // 
+                    // Swal.fire({
+                    //     icon: 'warning',
+                    //     title: '你確定嗎？',
+                    //     text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
+                    //     showCancelButton: true,
+                    //     confirmButtonColor: '#d33',
+                    //     confirmButtonText: '是，刪除！',
+                    //     cancelButtonText: '取消',
+                    //     focusCancel: true,
+                    // }).then((result) => {
+                    //     if(!result.isConfirmed){ return; }
+                    //     $.ajax({
+                    //         type: "POST",
+                    //         url: '<?=Uri::auth('forum/post/delete')?>',
+                    //         data: { pid: thePost.id },
+                    //         dataType: 'json',
+                    //     }).fail((xhr, status, error) => {
+                    //         console.error(xhr.responseText);
+                    //     }).done((resp) => {
+                    //         console.log(resp);
+                    //         if(!Resp.object(resp)){ return false; }
+                    //         // 
+                    //         if(resp.type === 'success'){
+                    //             msg.icon = 'success';
+                    //             msg.title = '成功刪除';
+                    //             msg.text = '文章已經被刪除囉！';
+                    //             thePost.isRemoved = true;
+                    //         }else{
+                    //             msg.icon = resp.type;
+                    //             msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                    //             msg.text = resp.message;
+                    //         }
+                    //     }).always(() => {
+                    //         thePost.isDeleting = false;
+                    //         Swal.fire(msg);
+                    //     });
+                    // });
+                },
+                edit: (thePost) => {},
+                delete: (thePost) => {
+                    if(thePost.isRemoving){ return; }
+                    thePost.isDeleting = true;
+                    // 
+                    let msg = {
+                        icon: 'error',
+                        title: '非預期錯誤',
+                        text: '很抱歉，發生了非預期的錯誤！',
+                    };
+                    // 
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '你確定嗎？',
+                        text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: '是，刪除！',
+                        cancelButtonText: '取消',
+                        focusCancel: true,
+                    }).then((result) => {
+                        if(!result.isConfirmed){ return; }
+                        $.ajax({
+                            type: "POST",
+                            url: '<?=Uri::auth('forum/post/delete')?>',
+                            data: { pid: thePost.id },
+                            dataType: 'json',
+                        }).fail((xhr, status, error) => {
+                            console.error(xhr.responseText);
+                        }).done((resp) => {
+                            console.log(resp);
+                            if(!Resp.object(resp)){ return false; }
+                            // 
+                            if(resp.type === 'success'){
+                                msg.icon = 'success';
+                                msg.title = '成功刪除';
+                                msg.text = '文章已經被刪除囉！';
+                                thePost.isRemoved = true;
+                            }else{
+                                msg.icon = resp.type;
+                                msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                                msg.text = resp.message;
+                            }
+                        }).always(() => {
+                            thePost.isDeleting = false;
+                            Swal.fire(msg);
+                        });
                     });
-                });
-            }
+                },
+            },
         });
         // 
         const getPosts = () => {
@@ -457,7 +524,7 @@ Inc::clas('user');
             // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
         });
         // 
-        return { user, posts, setRef, postActions, getPosts };
+        return { user, posts, post, setRef, getPosts };
     }}).directive("clickAway",
         diravtives.clickAway
     ).mount('#Forum');
