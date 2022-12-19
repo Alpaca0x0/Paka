@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 19, 2022 at 08:02 PM
+-- Generation Time: Dec 19, 2022 at 08:01 PM
 -- Server version: 8.0.17
 -- PHP Version: 8.1.13
 
@@ -24,15 +24,15 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `post`
+-- Table structure for table `post_edited`
 --
 
-CREATE TABLE `post` (
+CREATE TABLE `post_edited` (
   `id` int(11) NOT NULL,
-  `poster` int(11) NOT NULL,
+  `editor` int(11) NOT NULL,
+  `pid` int(11) NOT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
-  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
+  `datetime` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
@@ -40,9 +40,9 @@ CREATE TABLE `post` (
 --
 
 --
--- Indexes for table `post`
+-- Indexes for table `post_edited`
 --
-ALTER TABLE `post`
+ALTER TABLE `post_edited`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -50,9 +50,9 @@ ALTER TABLE `post`
 --
 
 --
--- AUTO_INCREMENT for table `post`
+-- AUTO_INCREMENT for table `post_edited`
 --
-ALTER TABLE `post`
+ALTER TABLE `post_edited`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
