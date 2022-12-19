@@ -72,7 +72,7 @@ Inc::clas('user');
                     <!-- write post end -->
 
                     <!-- posts -->
-                    <div id="Posts" :ref="setRef" v-for="post in posts" v-cloak>
+                    <div id="Posts" :ref="setRef" v-for="post in posts.data" v-cloak>
                         <div v-if="post.isRemoved" class="ts-segment is-tertiary">
                             這裡曾有過一篇文章，但已不復存在。
                         </div>
@@ -101,13 +101,11 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                         <div class="ts-space is-small"></div>
-                                        {{ post.title }}
-                                        <br>
                                         {{ post.content }}
                                         <div class="ts-space is-small"></div>
                                     </div>
-                                    <!-- functions -->
-                                    <div class="column">
+                                    <!-- post actions -->
+                                    <div v-if="user.id===post.poster.id" class="column">
                                         <div>
                                             <button @click="postActions.menuActiver=post.id" class="ts-button is-secondary is-icon">
                                                 <span class="ts-icon is-ellipsis-icon"></span>
@@ -119,7 +117,7 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- functions end -->
+                                    <!-- post actions end -->
                                 </div>
                                 <div class="ts-divider is-section"></div>
                                 <div class="ts-row">
@@ -148,8 +146,15 @@ Inc::clas('user');
                     </div>
                     <!-- posts end -->
 
+                    <!-- if no auto load -->
+                    <button v-show="!posts.is.getting && !posts.is.noMore && !posts.is.getError" @click="getPosts()" class="ts-button is-fluid is-start-icon is-circular" v-cloak>
+                        <span class="ts-icon is-hand-pointer-icon"></span>
+                        若文章無法自動加載，可以按下按鈕手動加載唷！
+                    </button>
+                    <!-- if no auto load end -->
+
                     <!-- posts loading -->
-                    <div v-show="is.gettingPosts" class="ts-placeholder is-loading">
+                    <div v-show="posts.is.getting" class="ts-placeholder is-loading" v-cloak>
                         <div class="ts-segment">
                             <div class="ts-row">
                                 <div class="column">
@@ -169,10 +174,16 @@ Inc::clas('user');
                     <!-- posts loading end -->
 
                     <!-- no more post -->
-                    <div v-show="is.noMorePost" class="ts-segment is-very-elevated is-dense is-center-aligned">
+                    <div v-show="posts.is.noMore" class="ts-segment is-very-elevated is-dense is-center-aligned" v-cloak>
                         到底部了，已經沒有更多文章囉！
                     </div>
                     <!-- no more post end -->
+
+                    <!-- get posts error -->
+                    <div v-show="posts.is.getError" class="ts-segment is-negative is-top-indicated is-very-elevated is-dense is-center-aligned" v-cloak>
+                        很抱歉，在獲取文章時發生錯誤！({{ posts.type }}: {{ posts.status }})
+                    </div>
+                    <!-- get posts error end -->
 
                     <!-- <div class="ts-segment">
                         <div class="ts-row">
@@ -327,11 +338,22 @@ Inc::clas('user');
         let setRef = (el) => { refs[el.id] = el; }
         // 
         let user = reactive({
+            id: <?=User::get('id','false')?>,
             username: '<?=User::get('username','Guest')?>',
             avatarDefault: '<?=Uri::img('user.png')?>',
             avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
         });
-        let posts = reactive([]);
+        let posts = reactive({
+            type: 'error',
+            status: 'Unexpected',
+            data: [],
+            message: '發生非預期的錯誤',
+            is: {
+                getting: false,
+                noMore: false,
+                getError: false,
+            }
+        });
         // 
         let postActions = reactive({
             menuActiver: false, // pid
@@ -386,23 +408,11 @@ Inc::clas('user');
             }
         });
         // 
-        let is = reactive({
-            // posts
-            gettingPosts: false,
-            noMorePost: false,
-            // 
-        });
-        let info = reactive({
-            type: null,
-            title: null,
-            msg: null,
-        });
-        // 
         const getPosts = () => {
-            if(is.gettingPosts || is.noMorePost){ return; }
-            is.gettingPosts = true;
+            if(posts.is.getting || posts.is.noMore || posts.is.getError){ return; }
+            posts.is.getting = true;
             let datas = { limit: 12 };
-            if(posts.length > 0){ datas.before = posts.slice(-1)[0].id ; }
+            if(posts.data.length > 0){ datas.before = posts.data.slice(-1)[0].id ; }
             // 
             $.ajax({
                 type: "GET",
@@ -410,9 +420,9 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                info.type = 'error';
-                info.title = 'Error';
-                info.msg = 'Unexpected Error';
+                posts.type = 'error';
+                posts.status = 'unexpected';
+                posts.message = '發生非預期的錯誤';
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
             }).done((resp) => {
@@ -421,18 +431,17 @@ Inc::clas('user');
                     // check response format is correct
                     if(!Resp.object(resp)){ return false; }
                     // get msg
-                    info.type = resp.type;
-                    info.title = resp.type[0].toUpperCase() + resp.type.slice(1);
-                    info.msg = resp.message;
-                    // if warning
+                    posts.type = resp.type;
+                    posts.status = resp.status;
+                    posts.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
-                        if(resp.data === null || resp.data.length < 1){ is.noMorePost = true; }
-                        else{ posts.push(...resp.data); }
-                    }
+                        if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
+                        else{ posts.data.push(...resp.data); }
+                    }else{ posts.is.getError = true; }
                 } catch (error) { console.error(error); }
             }).always(() => {
-                is.gettingPosts = false;
+                posts.is.getting = false;
             });
         }
         // 
@@ -448,7 +457,7 @@ Inc::clas('user');
             // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
         });
         // 
-        return { user, posts, setRef, postActions, is };
+        return { user, posts, setRef, postActions, getPosts };
     }}).directive("clickAway",
         diravtives.clickAway
     ).mount('#Forum');

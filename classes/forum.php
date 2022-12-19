@@ -31,7 +31,7 @@ class Forum{
         $orderBy = self::$orderBy;
         self::reset();
         // 
-        $sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
+        $sql = "SELECT `post`.`id`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
                 `account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
                 `profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
                 COUNT(`post_edited`.`id`)as`post_edited_times`, MAX(`post_edited`.`datetime`)as`post_edited_datetime` 
@@ -58,7 +58,6 @@ class Forum{
         foreach ($row as $key => $val) {
             array_push($ret, [
                 'id' => (int)$val['id'],
-                'title' => $val['title'],
                 'content' => $val['content'],
                 'datetime' => $val['datetime'],
                 'poster' => [
@@ -79,7 +78,7 @@ class Forum{
     }
 
     static function getPost($pid){
-        $sql = "SELECT `post`.`id`,`post`.`title`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
+        $sql = "SELECT `post`.`id`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
                 `account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
                 `profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
                 COUNT(`post_edited`.`id`)as`post_edited_times`, MAX(`post_edited`.`datetime`)as`post_edited_datetime` 
@@ -101,7 +100,6 @@ class Forum{
         // 
         $ret = [
             'id' => (int)$post['id'],
-            'title' => $post['title'],
             'content' => $post['content'],
             'datetime' => $post['datetime'],
             'poster' => [
