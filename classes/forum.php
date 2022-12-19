@@ -3,44 +3,88 @@ Inc::clas('db');
 
 class Forum{
     static private $infinity = 2147483647;
-    static $fields, $limit, $before, $after, $orderBy;
+    static private $fields, $limit, $before, $after, $orderBy;
+    static private $init = false;
  
-    static function init(){
+    static function init($force=false){
+        if(self::$init && !$force){ return true; }
         self::reset();
-        return DB::connect();
+        self::$init = DB::connect();
+        return self::$init;
     }
 
+    static function isInit(){ return self::$init; }
+
     static function reset(){
-        self::$fields = '*';
+        self::$fields = [
+            '' => [
+                'id' => 'post.id', 
+                'content' => 'post.content', 
+                'datetime' => 'post.datetime', 
+            ],
+            'poster' => [
+                'id' => 'account.id',
+                'username' => 'account.username',
+                'identity' => 'account.identity',
+                'nickname' => 'profile.nickname',
+                'gender' => 'profile.gender',
+                'avatar' => 'profile.avatar',
+            ],
+            'edited' => [
+                'last_datetime' => 'MAX(post_edited.datetime)',
+                'times' => 'COUNT(post_edited.id)',
+            ],
+        ];
         self::$limit = 16;
         self::$before = self::$infinity;
         self::$after = 0;
         self::$orderBy = null;
     }
 
-    static function select(){ self::$fields = implode(',', func_get_args()); return self::class; }
-    static function limit(){ self::$limit = implode(',', func_get_args()); return self::class; }
-    static function before($num){ self::$before = $num; return self::class; }
-    static function after($num){ self::$after = $num; return self::class; }
-    static function orderBy($field, $type){ self::$orderBy = [$field, $type]; return self::class; }
+    static function select($fields){ self::init(); self::$fields = $fields; return self::class; }
+    static function limit(){ self::init(); self::$limit = implode(',', func_get_args()); return self::class; }
+    static function before($num){ self::init(); self::$before = $num; return self::class; }
+    static function after($num){ self::init(); self::$after = $num; return self::class; }
+    static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
 
     static function getPosts(){
+        if(!self::isInit()){ return false; };
+        $fields = self::$fields;
         $limit = self::$limit;
         $before = self::$before;
         $after = self::$after;
         $orderBy = self::$orderBy;
         self::reset();
         // 
-        $sql = "SELECT `post`.`id`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
-                `account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
-                `profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
-                COUNT(`post_edited`.`id`)as`post_edited_times`, MAX(`post_edited`.`datetime`)as`post_edited_datetime` 
-                FROM `post` 
-                JOIN `account` ON (`post`.`poster`=`account`.`id`) 
-                JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
-                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
-                WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before
-                GROUP BY `post`.`id`";
+        $sql = '';
+        # select fields
+        $tableNeed2Join = [];
+        $fieldsString = '';
+        foreach($fields as $gather => $junction){
+            foreach($junction as $key => $val){
+                $fieldsString .= ", ${val} AS `".($gather!==''?"${gather}.":'')."${key}`";
+                $table = explode('.',$val)[0];
+                $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
+                if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
+            }
+        } $fieldsString = trim($fieldsString, ',');
+        // 
+        $sql .= "SELECT ${fieldsString}"; 
+        # join the table if using it
+        $joinTable = [
+            'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",
+            'profile' => "JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
+            'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
+        ];
+        $joinString = ' FROM `post`';
+        foreach($tableNeed2Join as $table){
+            if(isset($joinTable[$table])){
+                $joinString .= " $joinTable[$table]";
+            }
+        }
+        $sql .= $joinString;
+        # where
+        $sql .= " WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before GROUP BY `post`.`id`";
         $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
         $sql .= " LIMIT {$limit}";
         $sql .= ';';
@@ -51,45 +95,62 @@ class Forum{
             ':after' => $after,
         ]);
         if(DB::error()){ return false; }
-        $row = DB::fetchAll();
-        if(!$row){ return null; }
+        $posts = DB::fetchAll();
+        if(!$posts){ return null; }
         // 
-        $ret = [];
-        foreach ($row as $key => $val) {
-            array_push($ret, [
-                'id' => (int)$val['id'],
-                'content' => $val['content'],
-                'datetime' => $val['datetime'],
-                'poster' => [
-                    'id' => $val['poster'],
-                    'username' => $val['poster_username'],
-                    'identity' => $val['poster_identity'],
-                    'nickname' => $val['profile_nickname'],
-                    'gender' => $val['profile_gender'],
-                    'avatar' => !is_null($val['profile_avatar'])?base64_encode($val['profile_avatar']):null,
-                ],
-                'edited' => [
-                    'times' => $val['post_edited_times'],
-                    'last_time' => $val['post_edited_datetime'],
-                ],
-            ]);
+        $rets = [];
+        foreach ($posts as $post) {
+            $ret = [];
+            foreach($fields as $key => $nameAndVal){
+                if($key !== '') { $ret[$key] = []; }
+                foreach(array_keys($nameAndVal) as $name){
+                    if($key === ''){ $ret[$name] = $post[$name]; }
+                    else{ $ret[$key][$name] = $post["$key.$name"]; }
+                }
+            }
+            // 
+            if(isset($ret['poster'], $ret['poster']['avatar'])){ 
+                $ret['poster']['avatar'] = !is_null($ret['poster']['avatar'])?base64_encode($ret['poster']['avatar']):null;
+            }
+            array_push($rets, $ret);
         }
-        return $ret;
+        return $rets;
     }
 
     static function getPost($pid){
-        $sql = "SELECT `post`.`id`,`post`.`content`,`post`.`poster`,`post`.`datetime`,
-                `account`.`username`as`poster_username`, `account`.`identity`as`poster_identity`,
-                `profile`.`nickname`as`profile_nickname`, `profile`.`gender`as`profile_gender`, `profile`.`avatar`as`profile_avatar`,
-                COUNT(`post_edited`.`id`)as`post_edited_times`, MAX(`post_edited`.`datetime`)as`post_edited_datetime` 
-                FROM `post` 
-                JOIN `account` ON (`post`.`poster`=`account`.`id`) 
-                JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
-                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
-                WHERE `post`.`status`=:status AND `post`.`id` = :pid
-                GROUP BY `post`.`id`
-                LIMIT 1;";
+        if(!self::isInit()){ return false; };
+        $fields = self::$fields;
+        self::reset();
         // 
+        $sql = '';
+        # select fields
+        $tableNeed2Join = [];
+        $fieldsString = '';
+        foreach($fields as $gather => $junction){
+            foreach($junction as $key => $val){
+                $fieldsString .= ", ${val} AS `".($gather!==''?"${gather}.":'')."${key}`";
+                $table = explode('.',$val)[0];
+                $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
+                if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
+            }
+        } $fieldsString = trim($fieldsString, ',');
+        // 
+        $sql .= "SELECT ${fieldsString}"; 
+        # join the table if using it
+        $joinTable = [
+            'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",
+            'profile' => "JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
+            'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
+        ];
+        $joinString = ' FROM `post`';
+        foreach($tableNeed2Join as $table){
+            if(isset($joinTable[$table])){
+                $joinString .= " $joinTable[$table]";
+            }
+        }
+        $sql .= $joinString;
+        # where
+        $sql .= " WHERE `post`.`status`=:status AND `post`.`id` = :pid GROUP BY `post`.`id` LIMIT 1;";
         DB::query($sql)::execute([
             ':status' => "alive",
             ':pid' => $pid,
@@ -98,27 +159,23 @@ class Forum{
         $post = DB::fetch();
         if(!$post){ return null; }
         // 
-        $ret = [
-            'id' => (int)$post['id'],
-            'content' => $post['content'],
-            'datetime' => $post['datetime'],
-            'poster' => [
-                'id' => $post['poster'],
-                'username' => $post['poster_username'],
-                'identity' => $post['poster_identity'],
-                'nickname' => $post['profile_nickname'],
-                'gender' => $post['profile_gender'],
-                'avatar' => !is_null($post['profile_avatar'])?base64_encode($post['profile_avatar']):null,
-            ],
-            'edited' => [
-                'times' => $post['post_edited_times'],
-                'last_time' => $post['post_edited_datetime'],
-            ],
-        ];
+        foreach($fields as $key => $nameAndVal){
+            if($key !== '') { $ret[$key] = []; }
+            foreach(array_keys($nameAndVal) as $name){
+                if($key === ''){ $ret[$name] = $post[$name]; }
+                else{ $ret[$key][$name] = $post["$key.$name"]; }
+            }
+        }
+        // 
+        if(isset($ret['poster'], $ret['poster']['avatar'])){ 
+            $ret['poster']['avatar'] = !is_null($ret['poster']['avatar'])?base64_encode($ret['poster']['avatar']):null;
+        }
+        // 
         return $ret;
     }
 
     static function deletePost($pid){
+        if(!self::isInit()){ return false; };
         DB::beginTransaction();
         // delete post
 		$sql = "UPDATE `post` SET `status`=:status WHERE `id`=:pid;";
@@ -141,6 +198,7 @@ class Forum{
     }
 
     static function createPost($poster, $content){
+        if(!self::init()){ return false; };
         $datetime = time();
         // create post
         $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :content, :datetime);";

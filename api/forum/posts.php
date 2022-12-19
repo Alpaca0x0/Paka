@@ -44,10 +44,10 @@ Inc::clas('forum');
 // 
 Forum::init() or Resp::error('forum_cannot_init', '發生非預期錯，Forum 資料無法被初始化');
 $posts = Forum::before($before)
-			::after($after)
-			::orderBy('post.datetime', $orderBy)
-			::limit($limit)
-			::getPosts();
+::after($after)
+::orderBy('post.datetime', $orderBy)
+::limit($limit)
+::getPosts();
 
 if($posts === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($posts)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }

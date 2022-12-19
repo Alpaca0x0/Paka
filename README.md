@@ -70,7 +70,7 @@ location ^~ /paka/ {
 - [ ] register 與 login 時，界面 Loading 應該明顯一點。
 - [ ] login page 驗證碼不正確時，其欄位 status 外觀不會反應。
 - [x] 在登入後，navbar 上 account 選項的下拉式選單，其關閉事件改為由 `vue-click-away` 觸發。
-- [ ] class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
+- [x] class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
 - [x] forum 當中的文章若非使用者所有，則不應該出現 `postActions` 按鈕。
 
 ### :memo: Todo list
@@ -85,7 +85,7 @@ location ^~ /paka/ {
   - [ ] edit avatar
   - [ ] events note
 - Forum
-  - [x] posts api & view post
+  - [x] posts api & view post `(UI not all)`
   - [x] create post
   - [X] delete post
   - [ ] comment post
@@ -93,6 +93,7 @@ location ^~ /paka/ {
   - [ ] reply comment
   - [ ] like post
   - [ ] share post
+  - [ ] popular posts
 - RWD
   - [x] login & register pages
   - [x] profile
