@@ -1,44 +1,37 @@
-<?php require('../../init.php'); ?>
-<?php header('Content-Type: application/json; charset=utf-8'); ?>
-<?php class_exists('Roger') or require_once(Local::Clas('roger')); ?>
-<?php 
-    class_exists('User') or require_once(Local::Clas('user'));
-    User::is('login') or Roger::warning('is_logout');
-?>
-
 <?php
+header('Content-Type: application/json; charset=utf-8');
+Inc::clas('resp');
+Inc::clas('user');
+User::isLogin() or Resp::warning('is_logout', '尚未登入');
+
 # needed datas
-$needed_datas = ['title','content','columns'];
-foreach ($needed_datas as $data) {
-    if(!isset($_POST[$data])){ Roger::push('data_missing',$data); }
-} Roger::warning();
+$needs = ['content'];
+Arr::every($_POST, ...$needs) or Resp::warning('data_missing', $needs, '資料缺失');
 
 # convert
-class_exists('Format') or require_once(Local::Clas('format'));
-$userId = User::get('id',0);
-$title = Format::convert('string',$_POST['title'],null);
-$content = Format::convert('string',$_POST['content'],null);
-$columns = Format::convert('object',$_POST['columns'],[]);
+$uid = User::get('id', false);
+$content = Type::string($_POST['content'], '');
 
-# convert format
-$title = preg_replace('/[\n\r\t]/', ' ', trim($title)); 
-$content = preg_replace('/[\n\r\t]/', ' ', trim($content));
-# remove multiple spaces
-$title = preg_replace('/\s(?=\s)/', '', $title);
-$content = preg_replace('/\s(?=\s)/', '', $content);
+# check format
+if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳戶資訊'); }
+// 
+$config = Inc::config('forum/post');
+$content = preg_replace('/[\f\r\t]+/', ' ', $content);
+$content = preg_replace('/\n[\s+]*\n+/', "\n", $content);
+$content = trim($content);
+# count chinese as one length
+$PreContent = preg_replace("#[^\x{00}-\x{ff}]#u", '?', $content);
+// 
+if(!preg_match($config['content'], $PreContent)){ Resp::warning('content_format', '內文的格式錯誤'); }
 
-# check
-if($userId < 1){ Roger::error('error'); }
-$rules = require(Local::config('post'));
-if(mb_strlen($title) < $rules['title']['min']){ Roger::push('title_too_short'); }
-else if(mb_strlen($title) > $rules['title']['max']){ Roger::push('title_too_long'); }
-if(mb_strlen($content) < $rules['content']['min']){ Roger::push('content_too_short'); }
-else if(mb_strlen($content) > $rules['content']['max']){ Roger::push('content_too_long'); }
-Roger::warning();
+# create the post
+Inc::clas('forum');
+$pid = Forum::createPost($uid, $content);
+if($pid === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
 
-# sql
-class_exists('Forum') or require_once(Local::Clas('forum'));
-$result = Forum::createPost($userId, $title, $content, $columns);
-if(!is_array($result)){ Roger::error('error'); }
-if($result[0] !== true){ Roger::warning($result[1]); }
-else{ Roger::success($result[1]); }
+# return new post
+$post = Forum::getPost($pid);
+$post['content'] = htmlentities($post['content']);
+$post['content'] = nl2br($post['content']);
+
+Resp::success('successfully', $post, '已成功發表貼文');

@@ -139,4 +139,18 @@ class Forum{
         DB::commit();
         return $rowCount;
     }
+
+    static function createPost($poster, $content){
+        $datetime = time();
+        // create post
+        $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :content, :datetime);";
+        DB::query($sql)::execute([
+            ':poster' => $poster,
+            ':content' => $content,
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ return false; }
+        // done
+        return DB::lastInsertId();
+    }
 }

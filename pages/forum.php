@@ -32,6 +32,7 @@ Inc::clas('user');
                 </div>
                 <!-- main -->
                 <div class="column is-9-wide">
+
                     <!-- write post -->
                     <div class="ts-segment">
                         <div class="ts-row">
@@ -42,7 +43,7 @@ Inc::clas('user');
                             </div>
                             <div class="column is-fluid">
                                 <div class="ts-input is-fluid">
-                                    <textarea rows="4"></textarea>
+                                    <textarea v-model="post.creating.content" rows="4"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -55,9 +56,9 @@ Inc::clas('user');
                                 </div> -->
                             </div>
                             <div class="column">
-                                <button class="ts-button is-start-labeled-icon is-outlined">
+                                <button @click="post.create()" class="ts-button is-start-labeled-icon is-outlined">
                                     <span class="ts-icon is-paper-plane-icon"></span>
-                                    送出
+                                    發文
                                 </button>
                             </div>
                         </div>
@@ -93,7 +94,7 @@ Inc::clas('user');
                             這裡曾有過一篇文章，但已不復存在。
                         </div>
                         <template v-else>
-                            <div class="ts-segment" v-click-away="()=>post.action.menuActiver=false">
+                            <div class="ts-segment" v-click-away="()=>post.menuActiver=false">
                                 <div class="ts-row">
                                     <div class="column">
                                         <div class="ts-avatar is-large is-circular">
@@ -112,24 +113,24 @@ Inc::clas('user');
                                                 </div>
                                                 <a href="#!" class="item">3 分鐘前</a>
                                                 <?php if(DEV){ ?>
-                                                    <div class="item">#{{thePost.id}}</div>
+                                                    <div class="item">#{{ thePost.id }}</div>
                                                 <?php } ?>
                                             </div>
                                         </div>
                                         <div class="ts-space is-small"></div>
-                                        {{ thePost.content }}
+                                        <div v-html="thePost.content"></div>
                                         <div class="ts-space is-small"></div>
                                     </div>
                                     <!-- post actions -->
                                     <div v-if="user.id===thePost.poster.id" class="column">
                                         <div>
-                                            <button @click="post.action.menuActiver=thePost.id" class="ts-button is-secondary is-icon">
+                                            <button @click="post.menuActiver=thePost.id" class="ts-button is-secondary is-icon">
                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                             </button>
-                                            <div :class="{ 'is-visible': post.action.menuActiver===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                <button class="item" @click="post.action.edit(thePost)">編輯</button>
+                                            <div :class="{ 'is-visible': post.menuActiver===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                <button class="item" @click="post.edit(thePost)">編輯</button>
                                                 <div class="ts-divider"></div>
-                                                <button class="item" @click="post.action.delete(thePost)">刪除</button>
+                                                <button class="item" @click="post.delete(thePost)">刪除</button>
                                             </div>
                                         </div>
                                     </div>
@@ -373,105 +374,131 @@ Inc::clas('user');
         });
         // 
         let post = reactive({
-            action: {
-                menuActiver: false, // pid
-                create: (content) => {
-                    // if(thePost.isCreating){ return; }
-                    // thePost.isDeleting = true;
-                    // // 
-                    // let msg = {
-                    //     icon: 'error',
-                    //     title: '非預期錯誤',
-                    //     text: '很抱歉，發生了非預期的錯誤！',
-                    // };
-                    // // 
-                    // Swal.fire({
-                    //     icon: 'warning',
-                    //     title: '你確定嗎？',
-                    //     text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
-                    //     showCancelButton: true,
-                    //     confirmButtonColor: '#d33',
-                    //     confirmButtonText: '是，刪除！',
-                    //     cancelButtonText: '取消',
-                    //     focusCancel: true,
-                    // }).then((result) => {
-                    //     if(!result.isConfirmed){ return; }
-                    //     $.ajax({
-                    //         type: "POST",
-                    //         url: '<?=Uri::auth('forum/post/delete')?>',
-                    //         data: { pid: thePost.id },
-                    //         dataType: 'json',
-                    //     }).fail((xhr, status, error) => {
-                    //         console.error(xhr.responseText);
-                    //     }).done((resp) => {
-                    //         console.log(resp);
-                    //         if(!Resp.object(resp)){ return false; }
-                    //         // 
-                    //         if(resp.type === 'success'){
-                    //             msg.icon = 'success';
-                    //             msg.title = '成功刪除';
-                    //             msg.text = '文章已經被刪除囉！';
-                    //             thePost.isRemoved = true;
-                    //         }else{
-                    //             msg.icon = resp.type;
-                    //             msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
-                    //             msg.text = resp.message;
-                    //         }
-                    //     }).always(() => {
-                    //         thePost.isDeleting = false;
-                    //         Swal.fire(msg);
-                    //     });
-                    // });
-                },
-                edit: (thePost) => {},
-                delete: (thePost) => {
-                    if(thePost.isRemoving){ return; }
-                    thePost.isDeleting = true;
+            menuActiver: false, // pid
+            is: {
+                creating: false,
+                editing: false, 
+            },
+            // datas using on create()
+            creating: {
+                info: {},
+                content: '',
+            },
+            // datas using on edit()
+            editing: {
+                info: {},
+                content: '',
+            },
+            create: () => {
+                if(post.is.creating){ return; }
+                post.is.creating = true;
+                // check data format
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/post/create')?>',
+                    data: { content: post.creating.content },
+                    dataType: 'json',
+                }).always(() => {
+                    post.creating.info = {
+                        type: 'error',
+                        status: 'unexpected',
+                        message: '很抱歉，發生了非預期的錯誤！',
+                    };
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
                     // 
-                    let msg = {
-                        icon: 'error',
-                        title: '非預期錯誤',
-                        text: '很抱歉，發生了非預期的錯誤！',
+                    post.creating.info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
                     };
                     // 
+                    if(resp.type === 'success'){
+                        post.creating.content = '';
+                        posts.data.unshift(resp.data);
+                    }
+                }).always(() => {
+                    post.is.creating = false;
                     Swal.fire({
-                        icon: 'warning',
-                        title: '你確定嗎？',
-                        text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: '是，刪除！',
-                        cancelButtonText: '取消',
-                        focusCancel: true,
-                    }).then((result) => {
-                        if(!result.isConfirmed){ return; }
-                        $.ajax({
-                            type: "POST",
-                            url: '<?=Uri::auth('forum/post/delete')?>',
-                            data: { pid: thePost.id },
-                            dataType: 'json',
-                        }).fail((xhr, status, error) => {
-                            console.error(xhr.responseText);
-                        }).done((resp) => {
-                            console.log(resp);
-                            if(!Resp.object(resp)){ return false; }
-                            // 
-                            if(resp.type === 'success'){
-                                msg.icon = 'success';
-                                msg.title = '成功刪除';
-                                msg.text = '文章已經被刪除囉！';
-                                thePost.isRemoved = true;
-                            }else{
-                                msg.icon = resp.type;
-                                msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
-                                msg.text = resp.message;
+                        position: 'bottom-start',
+                        icon: post.creating.info.type,
+                        title: post.creating.info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: post.creating.info.type==='success' ? 2000 : false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
+            edit: (thePost) => {},
+            delete: (thePost) => {
+                if(thePost.isRemoving){ return; }
+                thePost.isDeleting = true;
+                // 
+                let msg = {
+                    icon: 'error',
+                    title: '非預期錯誤',
+                    text: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                Swal.fire({
+                    icon: 'warning',
+                    title: '你確定嗎？',
+                    text: "即便刪除，文章內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: '是，刪除！',
+                    cancelButtonText: '取消',
+                    focusCancel: true,
+                }).then((result) => {
+                    if(!result.isConfirmed){ return; }
+                    $.ajax({
+                        type: "POST",
+                        url: '<?=Uri::auth('forum/post/delete')?>',
+                        data: { pid: thePost.id },
+                        dataType: 'json',
+                    }).fail((xhr, status, error) => {
+                        console.error(xhr.responseText);
+                    }).done((resp) => {
+                        console.log(resp);
+                        if(!Resp.object(resp)){ return false; }
+                        // 
+                        if(resp.type === 'success'){
+                            msg.icon = 'success';
+                            msg.title = '成功刪除';
+                            msg.text = false;
+                            thePost.isRemoved = true;
+                        }else{
+                            msg.icon = resp.type;
+                            msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                            msg.text = resp.message;
+                        }
+                    }).always(() => {
+                        thePost.isDeleting = false;
+                        Swal.fire({
+                            ...msg,
+                            position: 'bottom-start',
+                            toast: true,
+                            time: 2500,
+                            showConfirmButton: false,
+                            timer: post.creating.info.type==='success' ? 2000 : false,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
                             }
-                        }).always(() => {
-                            thePost.isDeleting = false;
-                            Swal.fire(msg);
                         });
                     });
-                },
+                });
             },
         });
         // 
@@ -492,6 +519,7 @@ Inc::clas('user');
                 posts.message = '發生非預期的錯誤';
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
+                posts.is.getError = true;
             }).done((resp) => {
                 try {
                     console.log(resp);
