@@ -27,7 +27,7 @@ Inc::clas('user');
                         </a>
                     </template>
                     <!-- if login -->
-                    <a v-if="is.login" href="#!" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" @click="ritems.account.isDropdown=true;" class="item">
+                    <a v-if="is.login" href="#!" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" @click="ritems.account.isDropdown=true;" v-click-away="()=>ritems.account.isDropdown=false" class="item">
                         <div class="label">
                             <div class="content">
                                 <span class="ts-avatar is-small is-circular">
@@ -45,21 +45,19 @@ Inc::clas('user');
     </div>
     <!-- dropdown -->
 
-    <div @mouseleave="ritems.account.isDropdown=false;">
-        <div :class="{'is-visible': ritems.account.isDropdown}" class="ts-dropdown is-separated is-bottom-right is-end-icon" style="margin-right: 1rem;">
-            <!-- sub items -->
-            <template v-for="(item, nmae) in subItems.account">
-                <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="{'is-selected':item.isActive, 'is-disabled':item.isDisabled}" class="item">
-                    {{ item.text }} <span class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']">
-                </button>
-            </template>
-            <!-- bottom items -->
-            <div class="ts-divider"></div>
-            <!-- logout -->
-            <button @click="logout()" class="item">
-                登出 <span class="ts-icon is-right-from-bracket-icon"></span>
+    <div :class="{'is-visible': ritems.account.isDropdown}" class="ts-dropdown is-separated is-bottom-right is-end-icon" style="margin-right: 1rem;">
+        <!-- sub items -->
+        <template v-for="(item, nmae) in subItems.account">
+            <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="{'is-selected':item.isActive, 'is-disabled':item.isDisabled}" class="item">
+                {{ item.text }} <span class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']">
             </button>
-        </div>
+        </template>
+        <!-- bottom items -->
+        <div class="ts-divider"></div>
+        <!-- logout -->
+        <button @click="logout()" class="item">
+            登出 <span class="ts-icon is-right-from-bracket-icon"></span>
+        </button>
     </div>
     <!--  -->
 </div>
@@ -71,6 +69,7 @@ Inc::clas('user');
     import { createApp, ref, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
+    import * as diravtives from '<?=Uri::js('vue/directives/click-away')?>';
 
     const Navbar = createApp({setup(){
         let is = reactive({
@@ -170,7 +169,7 @@ Inc::clas('user');
                         if(!Resp.object(resp)){ return false; }
                         // 
                         let isSuccess = resp.type==='success';
-                        if(isSuccess){ window.location.replace('<?=Root?>'); }
+                        if(isSuccess){ window.location.replace('<?=Uri::page('account/login')?>'); }
                         else{
                             Swal.fire({
                                 icon: resp.type,
@@ -201,7 +200,9 @@ Inc::clas('user');
         })
         //
         return { is, items, ritems, subItems, currentPageId, onMouseItem, logout }
-    }}).mount('div#Navbar');
+    }}).directive("clickAway",
+        diravtives.clickAway
+    ).mount('div#Navbar');
 </script>
 
 <style>
