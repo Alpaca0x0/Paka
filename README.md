@@ -188,7 +188,6 @@ location ^~ /paka/ {
 ### :art: CSS
 
 - [`Tocas-UI`](https://tocas-ui.com) (v4)
-- [`Sweetalert2`](https://github.com/sweetalert2/sweetalert2-themes) (Dark-Theme)
 
 ### :magic_wand: JS
 
