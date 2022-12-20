@@ -189,6 +189,7 @@ location ^~ /paka/ {
 ### :art: CSS
 
 - [`Tocas-UI`](https://tocas-ui.com) (v4)
+- [`Animate.css`](https://animate.style/)
 
 ### :magic_wand: JS
 
