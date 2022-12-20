@@ -23,4 +23,5 @@ class Type{
     static function bool(){ return self::convert('bool', ...func_get_args()); }
     static function json(){ return self::convert('json', ...func_get_args()); }
     static function object(){ return self::convert('object', ...func_get_args()); }
+    static function array(){ return self::convert('array', ...func_get_args()); }
 }
