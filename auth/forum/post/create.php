@@ -30,8 +30,10 @@ $pid = Forum::createPost($uid, $content);
 if($pid === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
 
 # return new post
-$post = Forum::getPost($pid);
+$post = Forum::setFieldsAll()::getPost($pid);
 if(!$post){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的文章'); }
+
+# sort
 $post['content'] = htmlentities($post['content']);
 $post['content'] = nl2br($post['content']);
 

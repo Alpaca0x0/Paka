@@ -488,9 +488,8 @@ Inc::clas('user');
                             ...msg,
                             position: 'bottom-start',
                             toast: true,
-                            time: 2500,
                             showConfirmButton: false,
-                            timer: post.creating.info.type==='success' ? 2000 : false,
+                            timer: msg.icon==='success' ? 2000 : false,
                             timerProgressBar: true,
                             didOpen: (toast) => {
                                 toast.addEventListener('mouseenter', Swal.stopTimer)
@@ -505,7 +504,15 @@ Inc::clas('user');
         const getPosts = () => {
             if(posts.is.getting || posts.is.noMore || posts.is.getError){ return; }
             posts.is.getting = true;
-            let datas = { limit: 12 };
+            let datas = {
+                fields: {
+                    post: [ 'id', 'content', 'datetime' ],
+                    poster: ['id', 'username', 'nickname', 'avatar'],
+                    post_edit: [],
+
+                },
+                limit: 12,
+            };
             if(posts.data.length > 0){ datas.before = posts.data.slice(-1)[0].id ; }
             // 
             $.ajax({
@@ -532,7 +539,10 @@ Inc::clas('user');
                     // check if success
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
-                        else{ posts.data.push(...resp.data); }
+                        else{
+                            posts.data.push(...resp.data);
+                            if(!resp.data[0]['id']){ posts.is.getError = true; }
+                        }
                     }else{ posts.is.getError = true; }
                 } catch (error) { console.error(error); }
             }).always(() => {

@@ -5,9 +5,29 @@ class Forum{
     static private $infinity = 2147483647;
     static private $fields, $limit, $before, $after, $orderBy;
     static private $init = false;
+    static private $whitelist = [
+        'post' => [
+            'id' => 'post.id',
+            'content' => 'post.content', 
+            'datetime' => 'post.datetime', 
+        ],
+        'poster' => [
+            'id' => 'account.id',
+            'username' => 'account.username',
+            'identity' => 'account.identity',
+            'nickname' => 'profile.nickname',
+            'gender' => 'profile.gender',
+            'avatar' => 'profile.avatar',
+        ],
+        'edited' => [
+            'last_datetime' => 'MAX(post_edited.datetime)',
+            'times' => 'COUNT(post_edited.id)',
+        ],
+    ];
  
     static function init($force=false){
         if(self::$init && !$force){ return true; }
+        self::$whitelist[''] = self::$whitelist['post'];
         self::reset();
         self::$init = DB::connect();
         return self::$init;
@@ -16,36 +36,28 @@ class Forum{
     static function isInit(){ return self::$init; }
 
     static function reset(){
-        self::$fields = [
-            '' => [
-                'id' => 'post.id', 
-                'content' => 'post.content', 
-                'datetime' => 'post.datetime', 
-            ],
-            'poster' => [
-                'id' => 'account.id',
-                'username' => 'account.username',
-                'identity' => 'account.identity',
-                'nickname' => 'profile.nickname',
-                'gender' => 'profile.gender',
-                'avatar' => 'profile.avatar',
-            ],
-            'edited' => [
-                'last_datetime' => 'MAX(post_edited.datetime)',
-                'times' => 'COUNT(post_edited.id)',
-            ],
-        ];
+        self::$fields = [];
         self::$limit = 16;
         self::$before = self::$infinity;
         self::$after = 0;
         self::$orderBy = null;
     }
 
-    static function select($fields){ self::init(); self::$fields = $fields; return self::class; }
+    static function setFieldsAll(){
+        self::$fields = self::getWhitelist();
+        return self::class;
+    }
+    static function setFields($fields){ self::init(); self::$fields = $fields; return self::class; }
+    static function addField($key, $val){ self::$fields[$key] = $val; return self::class; }
+    static function delField($key){ unset(self::$fields[$key]); return self::class; }
+
     static function limit(){ self::init(); self::$limit = implode(',', func_get_args()); return self::class; }
     static function before($num){ self::init(); self::$before = $num; return self::class; }
     static function after($num){ self::init(); self::$after = $num; return self::class; }
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
+
+    static function getWhitelist(){ return self::$whitelist; }
+    static function getWhiteValue($table, $column){ return self::$whitelist[$table][$column]; }
 
     static function getPosts(){
         if(!self::isInit()){ return false; };
@@ -57,7 +69,7 @@ class Forum{
         self::reset();
         // 
         $sql = '';
-        # select fields
+        # setFields fields
         $tableNeed2Join = [];
         $fieldsString = '';
         foreach($fields as $gather => $junction){
@@ -72,8 +84,8 @@ class Forum{
         $sql .= "SELECT {$fieldsString}"; 
         # join the table if using it
         $joinTable = [
-            'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",
-            'profile' => "JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
+            'account' => "LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`)",
+            'profile' => "LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
             'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
         ];
         $joinString = ' FROM `post`';
@@ -123,7 +135,7 @@ class Forum{
         self::reset();
         // 
         $sql = '';
-        # select fields
+        # setFields fields
         $tableNeed2Join = [];
         $fieldsString = '';
         foreach($fields as $gather => $junction){
@@ -138,8 +150,8 @@ class Forum{
         $sql .= "SELECT {$fieldsString}"; 
         # join the table if using it
         $joinTable = [
-            'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",
-            'profile' => "JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
+            'account' => "LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`)",
+            'profile' => "LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
             'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
         ];
         $joinString = ' FROM `post`';

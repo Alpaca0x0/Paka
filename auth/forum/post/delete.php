@@ -18,7 +18,7 @@ if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳
 
 # check permission
 Inc::clas('forum');
-$post = Forum::select([
+$post = Forum::setFields([
     '' => [
         'id' => 'post.id'
     ],
