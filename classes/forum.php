@@ -2,10 +2,11 @@
 Inc::clas('db');
 
 class Forum{
-    static private $infinity = 2147483647;
-    static private $fields, $limit, $before, $after, $orderBy;
-    static private $init = false;
-    static private $whitelist = [
+    static private $init = false; // it's will mark true when inited
+    static private $infinity = 2147483647; // prevent out of range
+    static private $fields, $limit, $before, $after, $orderBy, $joinTables, $isHtml; // query args
+    // fields white-list
+    static private $allowedFields = [
         'post' => [
             'id' => 'post.id',
             'content' => 'post.content', 
@@ -27,75 +28,156 @@ class Forum{
  
     static function init($force=false){
         if(self::$init && !$force){ return true; }
-        self::$whitelist[''] = self::$whitelist['post'];
-        self::reset();
+        // self::reset(); // do not reset on here
         self::$init = DB::connect();
         return self::$init;
     }
-
     static function isInit(){ return self::$init; }
 
     static function reset(){
         self::$fields = [];
-        self::$limit = 16;
+        self::$limit = 4;
         self::$before = self::$infinity;
         self::$after = 0;
         self::$orderBy = null;
+        self::$joinTables = [];
+        self::$isHtml = false;
     }
 
-    static function setFieldsAll(){
-        self::$fields = self::getWhitelist();
+    // setting fields for querying
+    static function allFields(){
+        self::$fields = [];
+        foreach(self::$allowedFields as $table => $columnsAndSql){
+            if(!array_key_exists($table, self::$fields)){ self::$fields[$table] = []; }
+            array_push(self::$fields[$table], ...array_keys(self::$allowedFields[$table]));
+        }
         return self::class;
     }
-    static function setFields($fields){ self::init(); self::$fields = $fields; return self::class; }
+    // check if fields are allowed
+    static function toAllowedFields($fields){
+        $ret = [];
+        foreach ($fields as $table => $columns) {
+            // table
+            $table = Type::string($table, null);
+            if(is_null($table)){ return false; }
+            if(!array_key_exists($table, self::$allowedFields)){ return false; }
+            if(!array_key_exists($table, $ret)){ $ret[$table] = []; }
+            // columns
+            $columns = Type::array($columns, null);
+            if(is_null($columns)){ return false; }
+            if(!is_array($columns)){ $columns = [$columns]; }
+            // column
+            foreach($columns as $column) {
+                $column = Type::string($column, null);
+                if(is_null($column)){ return false; }
+                if(!array_key_exists($column, self::$allowedFields[$table])){ return false; }
+                // pass
+                if(!array_key_exists($column, $ret[$table])){ array_push($ret[$table], $column); }  
+            }
+        }
+        // pass
+        return $ret;
+    }
+    static function fields($fields){ self::$fields = $fields; return self::class; }
     static function addField($key, $val){ self::$fields[$key] = $val; return self::class; }
-    static function delField($key){ unset(self::$fields[$key]); return self::class; }
-
+    static function delField($table, $column=false){
+        if($column){ unset(self::$fields[$table][$column]); }
+        else{ unset(self::$fields[$table]); }
+        return self::class;
+    }
+    // setting other args of querying
     static function limit(){ self::init(); self::$limit = implode(',', func_get_args()); return self::class; }
     static function before($num){ self::init(); self::$before = $num; return self::class; }
     static function after($num){ self::init(); self::$after = $num; return self::class; }
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
+    static function isHtml($val=true){ self::$isHtml = $val; return self::class; }
+    // get fields
+    static function getFields(){ return self::$fields; }
+    static function getAllFields(){ return self::$allowedFields; }
+    static function getFieldValue($table, $column){ return isset(self::$allowedFields[$table][$column]) ? self::$allowedFields[$table][$column] : false; }
 
-    static function getWhitelist(){ return self::$whitelist; }
-    static function getWhiteValue($table, $column){ return self::$whitelist[$table][$column]; }
-
-    static function getPosts(){
-        if(!self::isInit()){ return false; };
-        $fields = self::$fields;
-        $limit = self::$limit;
-        $before = self::$before;
-        $after = self::$after;
-        $orderBy = self::$orderBy;
-        self::reset();
-        // 
+    // select fields sentence convertor, it will return sql sentence
+    static private function selectFields($fields){
         $sql = '';
-        # setFields fields
-        $tableNeed2Join = [];
+        self::$joinTables = [];
         $fieldsString = '';
-        foreach($fields as $gather => $junction){
-            foreach($junction as $key => $val){
-                $fieldsString .= ", {$val} AS `".($gather!==''?"{$gather}.":'')."{$key}`";
-                $table = explode('.',$val)[0];
-                $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
-                if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
+        foreach($fields as $table => $columns){
+            if(!is_array($columns)){ $columns = [$columns]; }
+            foreach($columns as $column){
+                $tableColumnString = self::getFieldValue($table, $column);
+                if(!$tableColumnString){ continue; }
+                $fieldsString .= ", {$tableColumnString} AS `{$table}.{$column}`";
+                $joinTable = explode('.',$tableColumnString)[0];
+                $joinTable = strripos($joinTable, '(') ? substr($joinTable, strripos($joinTable, '(')+1) : $joinTable;
+                if(!in_array($joinTable, self::$joinTables)){ array_push(self::$joinTables, $joinTable); }
             }
         } $fieldsString = trim($fieldsString, ',');
-        // 
-        $sql .= "SELECT {$fieldsString}"; 
-        # join the table if using it
+        $sql .= "SELECT {$fieldsString} "; 
+        return $sql;
+    }
+    // join table sentence convertor, it will return sql sentence
+    static private function joinTable($fields){
+        $sql = '';
         $joinTable = [
             'account' => "LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`)",
             'profile' => "LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
             'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
         ];
         $joinString = ' FROM `post`';
-        foreach($tableNeed2Join as $table){
+        foreach(self::$joinTables as $table){
             if(isset($joinTable[$table])){
                 $joinString .= " $joinTable[$table]";
             }
         }
-        $sql .= $joinString;
-        # where
+        $sql .= $joinString.' ';
+        return $sql;
+    }
+    // return format convertor
+    static private function returnFormat($post){
+        $ret = [];
+        foreach($post as $keys => $val){
+            $key = explode('.', $keys);
+            if(count($key)<2){ continue; }
+            $ret[$key[0]][$key[1]] = $val;
+        }
+        // base64 avatar
+        if(isset($ret['poster']['avatar'])){ 
+            $ret['poster']['avatar'] = !is_null($ret['poster']['avatar'])?base64_encode($ret['poster']['avatar']):null;
+        }
+        // return html format content
+        if(self::$isHtml && isset($ret['post']['content'])){
+            $ret['post']['content'] = htmlentities($ret['post']['content']);
+            $ret['post']['content'] = nl2br($ret['post']['content']);
+        }
+        // *****************************************
+        // extract key "post"
+        if(isset($ret['post'])){
+            foreach($ret['post'] as $key => $val){
+                $ret[$key] = $val;
+            } unset($ret['post']);
+        }
+        // return
+        return $ret;
+    }
+
+    static function getPosts(){
+        if(!self::init()){ return false; };
+        // get args
+        $fields = self::$fields;
+        $limit = self::$limit;
+        $before = self::$before;
+        $after = self::$after;
+        $orderBy = self::$orderBy;
+        // reset args after execute the function
+        self::reset();
+        $sql = '';
+        // must have post id
+        $fields['post']['id'] = self::getFieldValue('post', 'id');
+        // select fields
+        $sql .= self::selectFields($fields);
+        // join table
+        $sql .= self::joinTable($fields);
+        // where
         $sql .= " WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before GROUP BY `post`.`id`";
         $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
         $sql .= " LIMIT {$limit}";
@@ -112,55 +194,25 @@ class Forum{
         // 
         $rets = [];
         foreach ($posts as $post) {
-            $ret = [];
-            foreach($fields as $key => $nameAndVal){
-                if($key !== '') { $ret[$key] = []; }
-                foreach(array_keys($nameAndVal) as $name){
-                    if($key === ''){ $ret[$name] = $post[$name]; }
-                    else{ $ret[$key][$name] = $post["$key.$name"]; }
-                }
-            }
-            // 
-            if(isset($ret['poster'], $ret['poster']['avatar'])){ 
-                $ret['poster']['avatar'] = !is_null($ret['poster']['avatar'])?base64_encode($ret['poster']['avatar']):null;
-            }
+            $ret = self::returnFormat($post);
             array_push($rets, $ret);
         }
         return $rets;
     }
 
     static function getPost($pid){
-        if(!self::isInit()){ return false; };
+        if(!self::init()){ return false; }
+        if(!DB::connect()){ return false; }
+        // get args
         $fields = self::$fields;
         self::reset();
-        // 
         $sql = '';
-        # setFields fields
-        $tableNeed2Join = [];
-        $fieldsString = '';
-        foreach($fields as $gather => $junction){
-            foreach($junction as $key => $val){
-                $fieldsString .= ", {$val} AS `".($gather!==''?"{$gather}.":'')."{$key}`";
-                $table = explode('.',$val)[0];
-                $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
-                if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
-            }
-        } $fieldsString = trim($fieldsString, ',');
-        // 
-        $sql .= "SELECT {$fieldsString}"; 
-        # join the table if using it
-        $joinTable = [
-            'account' => "LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`)",
-            'profile' => "LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
-            'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
-        ];
-        $joinString = ' FROM `post`';
-        foreach($tableNeed2Join as $table){
-            if(isset($joinTable[$table])){
-                $joinString .= " $joinTable[$table]";
-            }
-        }
-        $sql .= $joinString;
+        // must have post id
+        $fields['post']['id'] = self::getFieldValue('post', 'id');
+        // select fields
+        $sql .= self::selectFields($fields);
+        // join table
+        $sql .= self::joinTable($fields);
         # where
         $sql .= " WHERE `post`.`status`=:status AND `post`.`id` = :pid GROUP BY `post`.`id` LIMIT 1;";
         DB::query($sql)::execute([
@@ -171,23 +223,13 @@ class Forum{
         $post = DB::fetch();
         if(!$post){ return null; }
         // 
-        foreach($fields as $key => $nameAndVal){
-            if($key !== '') { $ret[$key] = []; }
-            foreach(array_keys($nameAndVal) as $name){
-                if($key === ''){ $ret[$name] = $post[$name]; }
-                else{ $ret[$key][$name] = $post["$key.$name"]; }
-            }
-        }
-        // 
-        if(isset($ret['poster'], $ret['poster']['avatar'])){ 
-            $ret['poster']['avatar'] = !is_null($ret['poster']['avatar'])?base64_encode($ret['poster']['avatar']):null;
-        }
-        // 
+        $ret = self::returnFormat($post);
         return $ret;
     }
 
     static function deletePost($pid){
-        if(!self::isInit()){ return false; };
+        if(!self::init()){ return false; }
+        if(!DB::connect()){ return false; }
         DB::beginTransaction();
         // delete post
 		$sql = "UPDATE `post` SET `status`=:status WHERE `id`=:pid;";

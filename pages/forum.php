@@ -508,7 +508,7 @@ Inc::clas('user');
                 fields: {
                     post: [ 'id', 'content', 'datetime' ],
                     poster: ['id', 'username', 'nickname', 'avatar'],
-                    post_edit: [],
+                    edited: [],
 
                 },
                 limit: 12,
