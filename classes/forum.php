@@ -62,14 +62,14 @@ class Forum{
         $fieldsString = '';
         foreach($fields as $gather => $junction){
             foreach($junction as $key => $val){
-                $fieldsString .= ", ${val} AS `".($gather!==''?"${gather}.":'')."${key}`";
+                $fieldsString .= ", {$val} AS `".($gather!==''?"{$gather}.":'')."{$key}`";
                 $table = explode('.',$val)[0];
                 $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
                 if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
             }
         } $fieldsString = trim($fieldsString, ',');
         // 
-        $sql .= "SELECT ${fieldsString}"; 
+        $sql .= "SELECT {$fieldsString}"; 
         # join the table if using it
         $joinTable = [
             'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",
@@ -128,14 +128,14 @@ class Forum{
         $fieldsString = '';
         foreach($fields as $gather => $junction){
             foreach($junction as $key => $val){
-                $fieldsString .= ", ${val} AS `".($gather!==''?"${gather}.":'')."${key}`";
+                $fieldsString .= ", {$val} AS `".($gather!==''?"{$gather}.":'')."{$key}`";
                 $table = explode('.',$val)[0];
                 $table = strripos($table, '(') ? substr($table, strripos($table, '(')+1) : $table;
                 if(!in_array($table, $tableNeed2Join)){ array_push($tableNeed2Join, $table); }
             }
         } $fieldsString = trim($fieldsString, ',');
         // 
-        $sql .= "SELECT ${fieldsString}"; 
+        $sql .= "SELECT {$fieldsString}"; 
         # join the table if using it
         $joinTable = [
             'account' => "JOIN `account` ON (`post`.`poster`=`account`.`id`)",

@@ -204,8 +204,8 @@ $config = Inc::config('account');
         let dd = String(today.getDate()).padStart(2, '0');
         let mm = String(today.getMonth() + 1).padStart(2, '0');
         fields.birthday.range = [
-            String(today.getFullYear() - <?=$config['birthday'][1]?>) + `-${mm}-${dd}`,
-            String(today.getFullYear() - <?=$config['birthday'][0]?> + `-${mm}-${dd}`),
+            String(today.getFullYear() - <?=$config['birthday'][1]?>) + `-{$mm}-{$dd}`,
+            String(today.getFullYear() - <?=$config['birthday'][0]?> + `-{$mm}-{$dd}`),
         ];}
         // 
         const classObjects = (key) => {
