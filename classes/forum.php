@@ -4,7 +4,7 @@ Inc::clas('db');
 class Forum{
     static private $init = false; // it's will mark true when inited
     static private $infinity = 2147483647; // prevent out of range
-    static private $fields, $limit, $before, $after, $orderBy, $joinTables, $isHtml; // query args
+    static private $fields, $limit, $before, $after, $orderBy, $joinTables, $isHtml, $nl2br; // query args
     // fields white-list
     static private $allowedFields = [
         'post' => [
@@ -41,7 +41,7 @@ class Forum{
         self::$after = 0;
         self::$orderBy = null;
         self::$joinTables = [];
-        self::$isHtml = false;
+        // self::$isHtml = false;
     }
 
     // setting fields for querying
@@ -91,6 +91,7 @@ class Forum{
     static function after($num){ self::init(); self::$after = $num; return self::class; }
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
     static function isHtml($val=true){ self::$isHtml = $val; return self::class; }
+    static function nl2br($val=true){ self::$nl2br = $val; return self::class; }
     // get fields
     static function getFields(){ return self::$fields; }
     static function getAllFields(){ return self::$allowedFields; }
@@ -147,6 +148,9 @@ class Forum{
         // return html format content
         if(self::$isHtml && isset($ret['post']['content'])){
             $ret['post']['content'] = htmlentities($ret['post']['content']);
+        }
+        // return html format content
+        if(self::$nl2br && isset($ret['post']['content'])){
             $ret['post']['content'] = nl2br($ret['post']['content']);
         }
         // *****************************************

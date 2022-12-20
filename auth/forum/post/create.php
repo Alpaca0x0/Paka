@@ -34,7 +34,5 @@ $post = Forum::allFields()::isHtml()::getPost($pid);
 if(!$post){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的文章'); }
 
 # sort
-$post['content'] = htmlentities($post['content']);
-$post['content'] = nl2br($post['content']);
 
 Resp::success('successfully', $post, '已成功發表貼文');
