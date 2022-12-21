@@ -119,7 +119,7 @@ class User{
 		if(!$token){ return true; }
 
 		$datetime = time();
-        setcookie('token',false,$datetime-1, Root);
+        setcookie('token', false, $datetime-1, Root, Domain, false, true);
 
 		# must connect database
 		if(!DB::connect()){ return false; }
