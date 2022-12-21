@@ -184,17 +184,21 @@ location ^~ /paka/ {
 
 ---
 
-## :sparkles: Frameworks
+## :sparkles: Frameworks && Libraries
 
 ### :art: CSS
 
 - [`Tocas-UI`](https://tocas-ui.com) (v4)
 - [`Animate.css`](https://animate.style/)
+- [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/)
 
 ### :magic_wand: JS
 
 - [`Vue3`](https://vuejs.org)
 - [`Sweetalert2`](https://sweetalert2.github.io/)
+- [`Moment.js`](https://momentjs.com/)
+- `Jquery.Ajax (Ajax Only)` from [`jquery-builder`](https://projects.jga.me/jquery-builder/)
+- [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/)
 
 ---
 
