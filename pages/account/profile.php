@@ -29,7 +29,7 @@ $config = Inc::config('account');
                 <div class="ts-text is-label">E-Mail</div>
                 <div class="ts-space is-small"></div>
                 <div :class="classObjects('email')" class="ts-input">
-                    <input @input="checkDatas()" :readonly="is.submitting" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
+                    <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
                 </div>
             </div>
             <div class="column is-8-wide">
