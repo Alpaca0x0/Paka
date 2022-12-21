@@ -61,7 +61,7 @@ class User{
 			ORDER BY `account_event`.`id` DESC
 			LIMIT 1;'
 		)::execute([':token' => $token]);
-		if(!$result){ return false; }
+		if($result::error()){ return false; }
 		$user = DB::fetch();
 		if(!$user){ self::logout(); return true; }
 		
@@ -76,7 +76,7 @@ class User{
 		$result = DB::query(
 			'UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;'
 		)::execute([':expire'=>$expire, ':event_id'=>$user['event_id'], ]);
-		if(!$result){ return false; }
+		if($result::error()){ return false; }
 		
 		# current datas
 		$id = Type::int($user['id'], -1);
@@ -91,7 +91,7 @@ class User{
 			'SELECT `nickname`,`gender`,`birthday`,`avatar` FROM `profile` 
 			WHERE `id`=:id;'
 		)::execute([':id' => $id])::fetch();
-		if(!$profile){ self::logout(); return false; }
+		if(DB::error()){ self::logout(); return false; }
 
 		# get profile
 		self::$user = [
@@ -134,6 +134,6 @@ class User{
 			':datetime2' => $datetime,
 			':commit' => 'login',
 		]);
-		return (!$result) ? false : true;
+		return (DB::error()) ? false : true;
 	}
 }
