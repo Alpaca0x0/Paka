@@ -4,7 +4,7 @@ Inc::component('navbar');
 Inc::clas('user');
 ?>
 
-<style> @import url('<?=Uri::css('animate')?>'); </style>
+<style>@import url('<?=Uri::css('animate')?>');</style>
 
 <div id="Forum" class="ts-app-layout is-full is-vertical">
     <div class="cell is-secondary is-fluid">
@@ -116,11 +116,11 @@ Inc::clas('user');
                                                         {{ thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username }}
                                                     </div>
                                                     <div class="ts-meta is-small is-secondary">
-                                                        <div class="item">
+                                                        <!-- <div class="item">
                                                             <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
                                                             公開
-                                                        </div>
-                                                        <a href="#!" class="item">3 分鐘前</a>
+                                                        </div> -->
+                                                        <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')">{{ moment(thePost.datetime*1000).fromNow() }}</a>
                                                         <?php if(DEV){ ?>
                                                             <div class="item">#{{ thePost.id }}</div>
                                                         <?php } ?>
@@ -368,7 +368,11 @@ Inc::clas('user');
     import { createApp, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
-    import * as diravtives from '<?=Uri::js('vue/directives/click-away')?>';
+    import * as Directives from '<?=Uri::js('vue/directives/click-away')?>';
+    // moment.js to set datetime format
+    import moment from '<?=Uri::js('moment')?>';
+    // dynamically load current locale package of moment.js
+    await import('<?=Uri::js('moment/locale/','')?>'+(window.navigator.userLanguage || window.navigator.language)+'.js');
     // 
     const Forum = createApp({setup(){
         let refs = reactive({});
@@ -543,12 +547,8 @@ Inc::clas('user');
                                     ${thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username}
                                     </div>
                                     <div class="ts-meta is-small is-secondary">
-                                        <div class="item">
-                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                            公開
-                                        </div>
-                                        <a href="#!" class="item">3 分鐘前</a>
-                                        <div class="item">#${thePost.id}</div>
+                                        <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')}">${ moment(thePost.datetime*1000).fromNow() }</a>
+                                        <div class="item">#${ thePost.id }</div>
                                     </div>
                                 </div>
                                 <div class="ts-space is-small"></div>
@@ -613,20 +613,23 @@ Inc::clas('user');
         }
         // 
         onMounted(() => {
+            // moment.js locale
+            let locale = (window.navigator.userLanguage || window.navigator.language);
+            moment.updateLocale(locale);
+            // get posts when beginning
             getPosts();
-            // 
+            // scroll event
             document.documentElement.onwheel = (event) => {
                 let scrollTop = document.documentElement.scrollTop;
                 let clientHeight = document.documentElement.clientHeight;
                 let scrollHeight = document.documentElement.scrollHeight;
                 if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
-            }
-            // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
+            } // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
         });
         // 
-        return { user, posts, post, setRef, getPosts };
+        return { user, posts, post, setRef, getPosts, moment };
     }}).directive("clickAway",
-        diravtives.clickAway
+        Directives.clickAway
     ).mount('#Forum');
 </script>
 
