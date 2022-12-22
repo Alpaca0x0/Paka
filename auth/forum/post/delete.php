@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 Inc::clas('resp');
 Inc::clas('user');
-User::isLogin() or Resp::warning('is_logout', '尚未登入');
+User::isLogin() or Resp::warning('is_logout', '當前尚未登入任何帳戶，可能是 Token 過期了，請重新登入');
 
 # needed datas
 $needs = ['pid'];
