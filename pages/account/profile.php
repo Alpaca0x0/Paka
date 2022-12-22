@@ -15,54 +15,56 @@ $config = Inc::config('account');
         <div class="ts-text is-secondary">關於您帳戶的基本資訊。</div>
         <div class="ts-space is-large"></div>
         <!--  -->
-        <div class="ts-grid is-stackable">
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Username</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('username')" class="ts-input is-start-labeled">
-                    <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
-                    <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+        <form @submit.prevent="submit()">
+            <div class="ts-grid is-stackable">
+                <div class="column is-8-wide">
+                    <div class="ts-text is-label">Username</div>
+                    <div class="ts-space is-small"></div>
+                    <div :class="classObjects('username')" class="ts-input is-start-labeled">
+                        <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
+                        <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+                    </div>
+                </div>
+                <!--  -->
+                <div class="column is-8-wide">
+                    <div class="ts-text is-label">E-Mail</div>
+                    <div class="ts-space is-small"></div>
+                    <div :class="classObjects('email')" class="ts-input">
+                        <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" data-ref-id="email" :ref="setRef" readonly>
+                    </div>
+                </div>
+                <div class="column is-8-wide">
+                    <div class="ts-text is-label">Nickname</div>
+                    <div class="ts-space is-small"></div>
+                    <div :class="classObjects('nickname')" class="ts-input">
+                        <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" data-ref-id="nickname" :ref="setRef">
+                    </div>
+                </div>
+                <div class="column is-8-wide">
+                    <div class="ts-text is-label">Birthday</div>
+                    <div class="ts-space is-small"></div>
+                    <div :class="classObjects('birthday')" class="ts-input">
+                        <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" data-ref-id="birthday" :ref="setRef">
+                    </div>
                 </div>
             </div>
             <!--  -->
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">E-Mail</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('email')" class="ts-input">
-                    <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
+            <div class="ts-space is-small"></div>
+            <!--  -->
+            <div class="ts-row">
+                <div class="column is-end-aligned is-fluid">
+                    <button type="button" @click="reset()" :class="classObjects('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
+                        <span class="ts-icon is-rotate-left-icon"></span>
+                    </button>
+                </div>
+                <div class="column is-end-aligned">
+                    <button type="submit" :class="classObjects('submit')" :disabled="is.submitting" data-ref-id="submit" :ref="setRef" class="ts-button is-end-icon is-dense is-small">
+                        保存設定
+                        <span class="ts-icon is-check-icon"></span>
+                    </button>
                 </div>
             </div>
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Nickname</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('nickname')" class="ts-input">
-                    <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" :ref="setRef" id="nickname">
-                </div>
-            </div>
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Birthday</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('birthday')" class="ts-input">
-                    <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
-                </div>
-            </div>
-        </div>
-        <!--  -->
-        <div class="ts-space is-small"></div>
-        <!--  -->
-        <div class="ts-row">
-            <div class="column is-end-aligned is-fluid">
-                <button @click="reset()" :class="classObjects('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
-                    <span class="ts-icon is-rotate-left-icon"></span>
-                </button>
-            </div>
-            <div class="column is-end-aligned">
-                <button @click="submit()" :class="classObjects('submit')" :disabled="is.submitting" class="ts-button is-end-icon is-dense is-small">
-                    保存設定
-                    <span class="ts-icon is-check-icon"></span>
-                </button>
-            </div>
-        </div>
+        </form>
         <!--  -->
 
         <div class="ts-space is-small"></div>
@@ -176,10 +178,10 @@ $config = Inc::config('account');
         });
         // 
         let refs = reactive({});
-        let setRef = (el) => { refs[el.id] = el; }
+        let setRef = (el) => { refs[el.getAttribute('data-ref-id')] = el; }
         // 
         let is = reactive({
-            submit: false,
+            submitting: false,
         });
         // 
         let fields = reactive({
@@ -260,9 +262,11 @@ $config = Inc::config('account');
         }
         // 
         const submit = () => {
-            if(is.submitting){ return; }
-            if(!checkDatas()){ return; }
+            if(is.submitting || !checkDatas()){ return; }
             is.submitting = true;
+            // make no element be focused
+            refs.submit.focus();
+            refs.submit.blur();
             // 
             let datas = {
                 email: fields.email.value,
