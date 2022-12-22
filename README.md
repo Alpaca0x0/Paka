@@ -190,16 +190,19 @@ location ^~ /paka/ {
 ### :art: CSS
 
 - [`Tocas-UI`](https://tocas-ui.com) (v4)
-- [`Animate.css`](https://animate.style/)
-- [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/)
+- [`Animate.css`](https://animate.style/) (v4.1.1)
 
 ### :magic_wand: JS
 
 - [`Vue3`](https://vuejs.org)
 - [`Sweetalert2`](https://sweetalert2.github.io/)
-- [`Moment.js`](https://momentjs.com/)
-- `Jquery.Ajax (Ajax Only)` from [`jquery-builder`](https://projects.jga.me/jquery-builder/)
-- [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/)
+- [`Moment.js`](https://momentjs.com/) (v2.29.4)
+- [`Ajax`](https://projects.jga.me/jquery-builder/) (`Jquery-ajax-only` from [`jquery-builder`](https://projects.jga.me/jquery-builder/))
+- [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/) (v1.5.13)
+
+### :link: Libraries
+
+- [`PHPMailer`](https://github.com/PHPMailer/PHPMailer) (v6.7.1)
 
 ---
 
