@@ -296,8 +296,10 @@ $config = Inc::config('account');
                 }else{
                     if(['nickname_format'].includes(resp.status)){
                         fields.nickname.status = 'warning';
+                        refs.nickname.focus();
                     }else if(['birthday_format','too_young','too_old'].includes(resp.status)){
                         fields.birthday.status = 'warning';
+                        refs.birthday.focus();
                     }
                 }
             }).always(() => {
