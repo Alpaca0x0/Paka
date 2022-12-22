@@ -123,14 +123,18 @@ Inc::clas('user');
                                                         {{ thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username }}
                                                     </div>
                                                     <div class="ts-meta is-small is-secondary">
-                                                        <!-- <div class="item">
-                                                            <div class="ts-icon is-earth-asia-icon is-end-spaced"></div>
-                                                            公開
-                                                        </div> -->
-                                                        <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')">{{ moment(thePost.datetime*1000).fromNow() }}</a>
-                                                        <?php if(DEV){ ?>
-                                                            <div class="item">#{{ thePost.id }}</div>
-                                                        <?php } ?>
+                                                        <div class="item">
+                                                            <div class="ts-icon is-earth-asia-icon"></div>
+                                                            Public
+                                                        </div>
+                                                        <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                            <div class="ts-icon is-clock-icon"></div>
+                                                            {{ moment(thePost.datetime*1000).fromNow() }}
+                                                        </a>
+                                                        <div class="item">
+                                                            <div class="ts-icon is-hashtag-icon"></div>
+                                                            {{ thePost.id }}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="ts-space is-small"></div>
@@ -564,11 +568,21 @@ Inc::clas('user');
                             <div class="column is-fluid">
                                 <div style="line-height: 1.5; text-align: left;">
                                     <div class="ts-text is-heavy">
-                                    ${thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username}
+                                        ${thePost.poster.nickname ? thePost.poster.nickname+' ('+thePost.poster.username+')' : thePost.poster.username}
                                     </div>
                                     <div class="ts-meta is-small is-secondary">
-                                        <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')}">${ moment(thePost.datetime*1000).fromNow() }</a>
-                                        <div class="item">#${ thePost.id }</div>
+                                        <div class="item">
+                                            <div class="ts-icon is-earth-asia-icon"></div>
+                                            Public
+                                        </div>
+                                        <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')}">
+                                            <div class="ts-icon is-clock-icon"></div>
+                                            ${ moment(thePost.datetime*1000).fromNow() }
+                                        </a>
+                                        <div class="item">
+                                            <div class="ts-icon is-hashtag-icon"></div>
+                                            ${ thePost.id }
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="ts-space is-small"></div>
