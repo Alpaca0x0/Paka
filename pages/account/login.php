@@ -35,7 +35,8 @@ $config = Inc::config('account');
                     <div class="item" :class="classObjects('info')" v-text="info.msg"></div>
                 </div>
             </div>
-            <!--  -->
+
+            <!-- main -->
             <div class="ts-segment" style="width: 320px">
                 <div class="ts-wrap is-vertical">
 
@@ -61,11 +62,15 @@ $config = Inc::config('account');
                         <input type="text" data-ref-id="captcha" :ref="setRef" v-model="fields.captcha.value" :readonly="is.submitting" maxlength="6">
                     </div>
 
-                    <button type="submit" data-ref-id="submit" :ref="setRef" :class="{'is-loading': is.submitting}" :disabled="is.submitting" class="ts-button is-fluid">登入</button>
+                    <button v-show="!is.submitting" v-cloak type="submit" data-ref-id="submit" :ref="setRef" :disabled="is.submitting" class="ts-button is-fluid">登入</button>
+                    <div v-show="is.submitting" v-cloak class="ts-progress is-indeterminate is-large">
+                        <div class="bar" style="--value: 50;"></div>
+                    </div>
                     
-
                 </div>
             </div>
+            <!-- main end -->
+            
         </form>
         
     </div>
@@ -226,30 +231,23 @@ $config = Inc::config('account');
                 if(['needs_captcha', 'captcha_not_match'].includes(resp.status)
                     || (['password_not_match'].includes(resp.status) && resp.data < 1) ){
                     fields.captcha.change();
-                    // show dom first
-                    (async ()=>{
-                        is.need.verified = true;
-                        await nextTick();
-                        refs.captcha.focus();
-                    })();
+                    is.need.verified = true;
+                    refs.captcha.focus();
                 }else{ is.need.verified = false; }
                 fields.captcha.optional = !is.need.verified;
                 // other fields status
                 if(['password_not_match'].includes(resp.status)){
-                    (async ()=>{
-                        fields.password.value = '';
-                        await nextTick();
-                        refs.password.focus();
-                    })();
-                }
-                // update fields status
-                checkDatas();
-                // other fields status, dont update status
-                if(['not_found_user'].includes(resp.status)){
-                    fields.username.status = 'warning';
+                    fields.password.value = '';
+                    refs.password.focus();
+                }else if(['not_found_user'].includes(resp.status)){
                     fields.username.value = '';
                     refs.username.focus();
                 }
+                // update fields status
+                (async ()=>{
+                    await nextTick();
+                    checkDatas();
+                })();
                 // submitting off
                 is.submitting = false;
             });

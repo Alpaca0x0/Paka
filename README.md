@@ -68,8 +68,8 @@ location ^~ /paka/ {
 - [x] 將 `account/login.php` 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
 - [ ] `Register` 驗證信內容排版不好看QQ
 - [ ] `Edit profile` 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
-- [ ] `Register` 與 login 時，界面 Loading 應該明顯一點。
-- [ ] `Login page` 驗證碼不正確時，其欄位 status 外觀不會反應。
+- [x] `Register` 與 `login` 時，界面 loading 應該明顯一點。
+- [x] `Login page` 驗證碼不正確時，其欄位 status 外觀不會反應。
 - [x] 在登入後，`navbar` 上 `account` 選項的下拉式選單，其關閉事件改為由 `vue-click-away` 觸發。
 - [x] Class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
 - [X] 當前 `forum` 指定返回欄位的功能在後端程式邏輯十分雜亂，可讀性不高，難以維護。(已模組化)
