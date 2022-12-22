@@ -64,7 +64,7 @@ location ^~ /paka/ {
 ### :seedling: Optimization, Beautify
 
 - [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
-- [ ] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
+- [x] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
 - [ ] register 驗證信內容排版不好看QQ
 - [ ] edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
 - [ ] register 與 login 時，界面 Loading 應該明顯一點。
