@@ -372,7 +372,9 @@ Inc::clas('user');
     // moment.js to set datetime format
     import moment from '<?=Uri::js('moment')?>';
     // dynamically load current locale package of moment.js
-    await import('<?=Uri::js('moment/locale/','')?>'+(window.navigator.userLanguage || window.navigator.language)+'.js');
+    try{
+        await import('<?=Uri::js('moment/locale/','')?>'+(window.navigator.userLanguage || window.navigator.language).toLowerCase()+'.js');
+    }catch(e){}
     // 
     const Forum = createApp({setup(){
         let refs = reactive({});
