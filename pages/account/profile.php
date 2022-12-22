@@ -9,14 +9,62 @@ $config = Inc::config('account');
 <div id="Profile" class="cell is-fluid is-secondary">
     <div class="ts-space is-large"></div>
     <div class="ts-container is-narrow">
-
+        
         <!-- Profile -->
         <div class="ts-header is-large is-heavy">帳戶資料</div>
         <div class="ts-text is-secondary">關於您帳戶的基本資訊。</div>
         <div class="ts-space is-large"></div>
         <!--  -->
         <form @submit.prevent="submit()">
+
+            <!-- avatar -->
+            <div class="ts-image is-circular is-small is-centered">
+                <label for="avatarFile" stype="padding:1px">
+                    <img :src="fields.avatar.value" data-ref-id="avatar" :ref="setRef">
+                    <input id="avatarFile" data-ref-id="avatarFile" :ref="setRef" type="file" accept="image/*" style="display: none;">
+                </label>
+            </div>
+            <!-- avatar view modal -->
+            <div :class="{'is-visible': fields.avatar.is.cropping}" class="ts-modal is-big" v-cloak>
+                <div class="content">
+                    <div class="ts-content is-dense">
+                        <div class="ts-row">
+                            <div class="column is-fluid">
+                                <!-- <div class="ts-header">裁剪您的頭貼</div> -->
+                            </div>
+                            <div class="column">
+                                <button @click="fields.avatar.is.cropping=false" type="button" class="ts-close"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ts-divider"></div>
+                    <!--  -->
+                    <div class="ts-image is-circular">
+                        <div class="ts-image is-1-by-1 is-covered">
+                            <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 200px; height: 200px;"></div>
+                        </div>
+                    </div>
+                    <!-- <div class="ts-content"> -->
+                        <!-- <div class="ts-image is-circular" style="overflow: hidden; width: 240px; height: 240px;">
+                            <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 240px; height: 240px;"></div>
+                        </div> -->
+                        <!-- <div class="ts-image is-circular" data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; height: 240px;"></div> -->
+                    <!-- </div> -->
+                    <div class="ts-divider"></div>
+                    <div class="ts-content">
+                        <div class="ts-image is-small is-centered" style="height: 480px;">
+                            <img :src="fields.avatar.view" data-ref-id="avatarView" :ref="setRef">
+                            <div class="ts-space is-small"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- avatar view modal end -->
+            <div class="ts-space is-small"></div>
+            <!-- avatar end -->
+
             <div class="ts-grid is-stackable">
+                <!--  -->
                 <div class="column is-8-wide">
                     <div class="ts-text is-label">Username</div>
                     <div class="ts-space is-small"></div>
@@ -162,19 +210,24 @@ $config = Inc::config('account');
     </div>
 </div>
 
+<style> @import '<?=Uri::css('cropper')?>'; </style>
+
 <script type="module">
-    import { createApp, ref, reactive, onMounted, } from '<?=Uri::js('vue')?>';
+    import { createApp, ref, reactive, onMounted, nextTick, } from '<?=Uri::js('vue')?>';
     import * as directives from '<?=Uri::js('vue/directives')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
+    import Cropper from '<?=Uri::js('cropper')?>';
 
     const Profile = createApp({setup(){
         let user = reactive({
-            'id': <?=User::get('id', 0)?>,
-            'username': '<?=User::get('username', '-')?>',
-            'email': '<?=User::get('email', '')?>',
-            'nickname': '<?=User::get('nickname', '')?>',
-            'birthday': '<?=User::get('birthday', '')?>',
+            id: <?=User::get('id', 0)?>,
+            avatarDefault: '<?=Uri::img('user.png')?>',
+            avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
+            username: '<?=User::get('username', '-')?>',
+            email: '<?=User::get('email', '')?>',
+            nickname: '<?=User::get('nickname', '')?>',
+            birthday: '<?=User::get('birthday', '')?>',
         });
         // 
         let refs = reactive({});
@@ -199,6 +252,13 @@ $config = Inc::config('account');
                 status: 'success',
                 value: user.birthday,
                 range: [null, null]
+            },
+            avatar: {
+                is: {
+                    cropping: false,
+                },
+                value: user.avatar || user.avatarDefault,
+                view: user.avatar || user.avatarDefault,
             },
         });
         // set birthday range
@@ -332,17 +392,34 @@ $config = Inc::config('account');
         }
         // 
         onMounted(() => {
-            // 
+            refs.avatarFile.onchange = () => {
+                let newAvatar = refs.avatarFile.files[0];
+                if(!newAvatar){ return; }
+                (async ()=>{
+                    fields.avatar.view = URL.createObjectURL(newAvatar);
+                    await nextTick();
+                    const cropper = new Cropper(refs.avatarView, {
+                        viewMode: 1,
+                        aspectRatio: 1 / 1,
+                        initialAspectRatio: 1 / 1,
+                        preview: refs.avatarPreview,
+                    });
+                    cropper.crop();
+                    fields.avatar.is.cropping = true;
+                })();
+            };
         });
         // 
-        return { user, refs, setRef, checkDatas, submit, fields, classObjects, is, reset }
+        return {
+            user, refs, setRef, checkDatas, submit, fields, classObjects, is, reset,
+        }
     }}).directive('focus',
         directives.focus
-    );
-
-
-    Profile.mount('#Profile');
+    ).mount('#Profile');
 </script>
+
+
+
 
 
 <?php

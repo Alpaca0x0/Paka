@@ -10,6 +10,7 @@ return [
     'avatar' => [
         'width' => 320,
         'height' => 320,
+        'size' => 1024*1024*5, // 5mb
         'formats' => ['image/jpeg', 'image/png'],
     ],
     'timeout' => [
