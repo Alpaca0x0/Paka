@@ -195,7 +195,7 @@ location ^~ /paka/ {
 ### :magic_wand: JS
 
 - [`Vue3`](https://vuejs.org)
-- [`Sweetalert2`](https://sweetalert2.github.io/)
+- [`Sweetalert2`](https://sweetalert2.github.io/) (v11.6.16)
 - [`Moment.js`](https://momentjs.com/) (v2.29.4)
 - [`Ajax`](https://projects.jga.me/jquery-builder/) (`Jquery-ajax-only` from [`jquery-builder`](https://projects.jga.me/jquery-builder/))
 - [`Cropper.js`](https://fengyuanchen.github.io/cropperjs/) (v1.5.13)
