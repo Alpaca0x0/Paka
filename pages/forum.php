@@ -103,7 +103,7 @@ Inc::clas('user');
                             <!-- post -->
                             <transition leave-active-class="animate__fast animate__hinge">
                                 <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated">
-                                    <div class="ts-segment is-very-elevated" v-click-away="()=>post.menuActiver=false">
+                                    <div class="ts-segment is-very-elevated">
                                         <div class="ts-row">
                                             <div class="column">
                                                 <div class="ts-avatar is-large is-circular">
@@ -133,7 +133,7 @@ Inc::clas('user');
                                             <!-- post actions -->
                                             <div v-if="user.id===thePost.poster.id" class="column">
                                                 <div>
-                                                    <button @click="post.menuActiver=thePost.id" class="ts-button is-secondary is-icon">
+                                                    <button @click="errlog(post.menuActiver);post.menuActiver=thePost.id" v-click-away="()=>post.menuActiver=false" class="ts-button is-secondary is-icon">
                                                         <span class="ts-icon is-ellipsis-icon"></span>
                                                     </button>
                                                     <div :class="{ 'is-visible': post.menuActiver===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
@@ -179,10 +179,12 @@ Inc::clas('user');
                     <!-- posts end -->
 
                     <!-- if no auto load -->
-                    <button v-show="!posts.is.getting && !posts.is.noMore && !posts.is.getError" @click="getPosts()" class="ts-button is-fluid is-start-icon is-circular" v-cloak>
-                        <span class="ts-icon is-hand-pointer-icon"></span>
-                        若文章無法自動加載，可以按下按鈕手動加載唷！
-                    </button>
+                    <transition enter-active-class="animate__animated animate__flipInX">
+                        <button v-show="!posts.is.getting && !posts.is.noMore && !posts.is.getError" @click="getPosts()" class="ts-button is-fluid is-start-icon is-circular" v-cloak>
+                            <span class="ts-icon is-hand-pointer-icon"></span>
+                            若文章無法自動加載，可以按下按鈕手動加載唷！
+                        </button>
+                    </transition>
                     <!-- if no auto load end -->
 
                     <!-- posts loading -->
@@ -206,15 +208,19 @@ Inc::clas('user');
                     <!-- posts loading end -->
 
                     <!-- no more post -->
-                    <div v-show="posts.is.noMore" class="ts-segment is-very-elevated is-dense is-center-aligned" v-cloak>
-                        到底部了，已經沒有更多文章囉！
-                    </div>
+                    <transition enter-active-class="animate__animated animate__flipInX">
+                        <div v-show="posts.is.noMore" class="ts-segment is-very-elevated is-dense is-center-aligned" v-cloak>
+                            到底部了，已經沒有更多文章囉！
+                        </div>
+                    </transition>
                     <!-- no more post end -->
 
                     <!-- get posts error -->
-                    <div v-show="posts.is.getError" class="ts-segment is-negative is-top-indicated is-very-elevated is-dense is-center-aligned" v-cloak>
-                        很抱歉，在獲取文章時發生錯誤！({{ posts.type }}: {{ posts.status }})
-                    </div>
+                    <transition enter-active-class="animate__animated animate__flipInX">
+                        <div v-show="posts.is.getError" class="ts-segment is-negative is-top-indicated is-very-elevated is-dense is-center-aligned" v-cloak>
+                            很抱歉，在獲取文章時發生錯誤！({{ posts.type }}: {{ posts.status }})
+                        </div>
+                    </transition>
                     <!-- get posts error end -->
 
                     <!-- <div class="ts-segment">
@@ -373,7 +379,8 @@ Inc::clas('user');
     import moment from '<?=Uri::js('moment')?>';
     // dynamically load current locale package of moment.js
     try{
-        await import('<?=Uri::js('moment/locale/','')?>'+(window.navigator.userLanguage || window.navigator.language).toLowerCase()+'.js');
+        let locale = (window.navigator.userLanguage || window.navigator.language);
+        await import('<?=Uri::js('moment/locale/','')?>'+locale.toLowerCase()+'.js');
     }catch(e){}
     // 
     const Forum = createApp({setup(){
@@ -393,7 +400,7 @@ Inc::clas('user');
             data: [],
             message: '發生非預期的錯誤',
             is: {
-                getting: false,
+                getting: true, // init
                 noMore: false,
                 getError: false,
             },
@@ -619,17 +626,24 @@ Inc::clas('user');
             let locale = (window.navigator.userLanguage || window.navigator.language);
             moment.updateLocale(locale);
             // get posts when beginning
-            getPosts();
+            getPosts(true);
             // scroll event
-            document.documentElement.onwheel = (event) => {
+            addEventListener("scroll", (e) => {
                 let scrollTop = document.documentElement.scrollTop;
                 let clientHeight = document.documentElement.clientHeight;
                 let scrollHeight = document.documentElement.scrollHeight;
                 if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
-            } // refs.Posts.onwheel = () => { refs.Posts.onscroll(); }
+            });
+            // document.documentElement.onscroll = (event) => {
+            //     let scrollTop = document.documentElement.scrollTop;
+            //     let clientHeight = document.documentElement.clientHeight;
+            //     let scrollHeight = document.documentElement.scrollHeight;
+            //     if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
+            // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment };
+        let errlog = (msg)=>{ console.log(msg); }
+        return { user, posts, post, setRef, getPosts, moment, errlog };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');

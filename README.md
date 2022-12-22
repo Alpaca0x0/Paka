@@ -55,25 +55,26 @@ location ^~ /paka/ {
 
 ### :bug: Bugs
 
-- [X] Profile 中的 nickname 輸入中文時，前端與後端判斷其長度不相同(後端判斷中文並非 1 長度)。
-- [X] Profile 中的 nickname 輸入空值後，後端回傳新的資料為 `null`，而前端在字串處理上，將會報錯「`fields.nickname.value is null`」。
-- [X] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
+- [x] `Profile` 中的 nickname 輸入中文時，前端與後端判斷其長度不相同(後端判斷中文並非 1 長度)。
+- [x] `Profile` 中的 nickname 輸入空值後，後端回傳新的資料為 `null`，而前端在字串處理上，將會報錯「`fields.nickname.value is null`」。
+- [x] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
+- [x] `Forum` 中的 `post action` 失效，原因是 `vue-click-alway` 觸發點錯誤。
 
 <!-- ### :wrench: Issues -->
 
 ### :seedling: Optimization, Beautify
 
-- [x] Sweetalert2 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
-- [x] 將 account/login.php 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
-- [ ] register 驗證信內容排版不好看QQ
-- [ ] edit profile 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
-- [ ] register 與 login 時，界面 Loading 應該明顯一點。
-- [ ] login page 驗證碼不正確時，其欄位 status 外觀不會反應。
-- [x] 在登入後，navbar 上 account 選項的下拉式選單，其關閉事件改為由 `vue-click-away` 觸發。
-- [x] class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
+- [x] `Sweetalert2` 因使用了 dark theme，與 Tocas-UI dark mode 色調相近，視覺上難以直覺區分。(暫時關閉 sweetalert2 dark theme)
+- [x] 將 `account/login.php` 中的變數 `refUsername`, `refPassword`, `refCaptcha`, `refSubmit` 作為陣列存放於變數 `refs` 中。
+- [ ] `Register` 驗證信內容排版不好看QQ
+- [ ] `Edit profile` 時，若收到欄位資料的 warning 回應，應該自動 focus 欄位
+- [ ] `Register` 與 login 時，界面 Loading 應該明顯一點。
+- [ ] `Login page` 驗證碼不正確時，其欄位 status 外觀不會反應。
+- [x] 在登入後，`navbar` 上 `account` 選項的下拉式選單，其關閉事件改為由 `vue-click-away` 觸發。
+- [x] Class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
 - [X] 當前 `forum` 指定返回欄位的功能在後端程式邏輯十分雜亂，可讀性不高，難以維護。(已模組化)
-- [x] forum 當中的文章若非使用者所有，則不應該出現 `postActions` 按鈕。
-- [ ] forum 在發出 `create` 或 `delete` 請求後，UI 應呈現 loading 狀態。
+- [x] `Forum` 當中的文章若非使用者所有，則不應該出現 `postActions` 按鈕。
+- [ ] `Forum` 在發出 `create` 或 `delete` 請求後，UI 應呈現 loading 狀態。
 
 ### :memo: Todo list
 
