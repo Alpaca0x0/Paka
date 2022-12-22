@@ -74,7 +74,7 @@ location ^~ /paka/ {
 - [x] Class `Forum` 中，獲取文章的 `getPosts` 或 `getPost`，不應該每次都返回全部資料，這對 sql server 負擔很大。
 - [X] 當前 `forum` 指定返回欄位的功能在後端程式邏輯十分雜亂，可讀性不高，難以維護。(已模組化)
 - [x] `Forum` 當中的文章若非使用者所有，則不應該出現 `postActions` 按鈕。
-- [ ] `Forum` 在發出 `create` 或 `delete` 請求後，UI 應呈現 loading 狀態。
+- [x] `Forum` 在發出 `create` 或 `delete` 請求後，UI 應呈現 loading 狀態。
 
 ### :memo: Todo list
 

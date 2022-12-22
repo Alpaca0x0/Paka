@@ -5,7 +5,6 @@ Inc::clas('user');
 ?>
 
 <style>@import url('<?=Uri::css('animate')?>');</style>
-
 <div id="Forum" class="ts-app-layout is-full is-vertical">
     <div class="cell is-secondary is-fluid">
         <div class="ts-space is-large"></div>
@@ -37,6 +36,8 @@ Inc::clas('user');
 
                     <!-- write post -->
                     <div class="ts-segment">
+
+                        <!-- create post -->
                         <div class="ts-row">
                             <div class="column">
                                 <div class="ts-avatar is-large is-circular">
@@ -44,11 +45,13 @@ Inc::clas('user');
                                 </div>
                             </div>
                             <div class="column is-fluid">
-                                <div class="ts-input is-fluid">
-                                    <textarea v-model="post.creating.content" rows="4" placeholder="今天想說點什麼？"></textarea>
+                                <div :class="{'is-disabled': post.is.creating}" class="ts-input is-fluid">
+                                    <textarea :readonly="post.is.creating" v-model="post.creating.content" rows="4" placeholder="今天想說點什麼？"></textarea>
                                 </div>
                             </div>
                         </div>
+                        <!-- create post end -->
+
                         <!-- submit button -->
                         <div class="ts-space is-small"></div>
                         <div class="ts-row">
@@ -58,13 +61,17 @@ Inc::clas('user');
                                 </div> -->
                             </div>
                             <div class="column">
-                                <button @click="post.create()" class="ts-button is-start-labeled-icon is-outlined">
-                                    <span class="ts-icon is-paper-plane-icon"></span>
-                                    發文
+                                <button @click="post.create()" :class="{'is-disabled': post.is.creating}" class="ts-button is-start-labeled-icon is-outlined" v-cloak>
+                                    <span v-show="!post.is.creating" class="ts-icon is-paper-plane-icon"></span>
+                                    <div v-show="post.is.creating" class="ts-icon">
+                                        <div class="ts-loading is-small"></div>
+                                    </div>
+                                    {{ post.is.creating ? '正在發文...' : '發文' }}
                                 </button>
                             </div>
                         </div>
                         <!-- submit button end -->
+                        
                         <!-- <div class="ts-divider is-section"></div>
                         <div class="ts-row">
                             <div class="column is-fluid">
@@ -102,7 +109,7 @@ Inc::clas('user');
                             <!-- when post is removed end -->
                             <!-- post -->
                             <transition leave-active-class="animate__fast animate__hinge">
-                                <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated">
+                                <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated" v-cloak>
                                     <div class="ts-segment is-very-elevated">
                                         <div class="ts-row">
                                             <div class="column">
@@ -133,7 +140,7 @@ Inc::clas('user');
                                             <!-- post actions -->
                                             <div v-if="user.id===thePost.poster.id" class="column">
                                                 <div>
-                                                    <button @click="errlog(post.menuActiver);post.menuActiver=thePost.id" v-click-away="()=>post.menuActiver=false" class="ts-button is-secondary is-icon">
+                                                    <button @click="post.menuActiver=thePost.id" v-click-away="()=>post.menuActiver=false" class="ts-button is-secondary is-icon">
                                                         <span class="ts-icon is-ellipsis-icon"></span>
                                                     </button>
                                                     <div :class="{ 'is-visible': post.menuActiver===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
@@ -168,7 +175,14 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                         <!-- post interactive end -->
-
+                                        <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
+                                            <div class="ts-center">
+                                                <div class="ts-content" style="color: #FFF">
+                                                    <div class="ts-loading is-large"></div>
+                                                    <br>刪除中
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </transition>
@@ -410,7 +424,6 @@ Inc::clas('user');
             menuActiver: false, // pid
             is: {
                 creating: false,
-                editing: false, 
             },
             // datas using on create()
             creating: {
@@ -474,9 +487,6 @@ Inc::clas('user');
             },
             edit: (thePost) => {},
             delete: (thePost) => {
-                if(thePost.isRemoving){ return; }
-                thePost.isDeleting = true;
-                // 
                 let msg = {
                     icon: 'error',
                     title: '非預期錯誤',
@@ -493,7 +503,8 @@ Inc::clas('user');
                     cancelButtonText: '取消',
                     focusCancel: true,
                 }).then((result) => {
-                    if(!result.isConfirmed){ return; }
+                    if(!result.isConfirmed || thePost.isDeleting){ return; }
+                    thePost.isDeleting = true;
                     $.ajax({
                         type: "POST",
                         url: '<?=Uri::auth('forum/post/delete')?>',
@@ -642,8 +653,7 @@ Inc::clas('user');
             // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
-        let errlog = (msg)=>{ console.log(msg); }
-        return { user, posts, post, setRef, getPosts, moment, errlog };
+        return { user, posts, post, setRef, getPosts, moment };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');
