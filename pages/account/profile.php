@@ -60,8 +60,8 @@ $config = Inc::config('account');
                 </div>
             </div>
             <!-- avatar view modal end -->
-            <div class="ts-space is-small"></div>
             <!-- avatar end -->
+            <div class="ts-divider is-section"></div>
 
             <div class="ts-grid is-stackable">
                 <!--  -->
