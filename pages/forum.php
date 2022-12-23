@@ -603,7 +603,7 @@ Inc::clas('user');
             let datas = {
                 fields: {
                     post: [ 'id', 'content', 'datetime' ],
-                    poster: ['id', 'username', 'nickname', 'avatar'],
+                    poster: [ 'id', 'username', 'nickname', 'avatar' ],
                     edited: [],
 
                 },

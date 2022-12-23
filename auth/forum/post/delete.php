@@ -18,10 +18,7 @@ if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳
 
 # check permission
 Inc::clas('forum');
-$post = Forum::fields([
-    'post' => ['id'],
-    'poster' => ['id'],
-])::isHtml()::getPost($pid);
+$post = Forum::getPost($pid);
 if($post === false){ Resp::error('sql_query', 'SQL 查詢時發生錯誤'); }
 if(is_null($post)){ Resp::warning('post_not_found', '找不到該文章'); }
 if($post['poster']['id'] !== $uid){ Resp::warning('permission_denied', '您沒有權限刪除此文章'); }

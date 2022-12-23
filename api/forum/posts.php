@@ -34,14 +34,8 @@ $before = isset($_GET['before']) ? Type::int($_GET['before'], $def['before']) : 
 $after = isset($_GET['after']) ? Type::int($_GET['after'], $def['after']) : $def['after']; 
 $orderBy = isset($_GET['orderBy']) ? strtoupper(Type::string($_GET['orderBy'], $def['orderBy'])) : $def['orderBy']; 
 $limit = isset($_GET['limit']) ? Type::int($_GET['limit'], $def['limit']) : $def['limit'];
-$fields = isset($_GET['fields']) ? Type::array($_GET['fields'], $def['fields']) : $def['fields'];
-if(!isset($fields['post']) || !is_array($fields['post'])){ $fields['post'] = []; }
-if(!in_array('id', $fields['post'])){ array_push($fields['post'], 'id'); }
 
 // filter
-$fields = Forum::toAllowedFields($fields);
-if(!$fields){ Resp::warning('fields_format', '欄位格式錯誤'); }
-
 if($after){ $after = ($after<$min['after']||$after>$max['after']) ? $def['after'] : $after; }
 else if($before){ $before = ($before<$min['before']||$before>$max['before']) ? $def['before'] : $before; }
 else{ $before=false; $after=$def['after']; }
@@ -50,16 +44,14 @@ if(!Arr::includes([$orderBy], 'DESC', 'ASC')){ $orderBy = $def['orderBy']; }
 
 if($limit<$min['limit'] || $limit>$max['limit']){ $limit = $def['limit']; }
 
+// sql query
 $posts = Forum::before($before)
-::fields($fields)
-::after($after)
-::orderBy('post.datetime', $orderBy)
-::limit($limit)
-::isHtml()
-::getPosts();
+				::after($after)
+				::orderBy('post.datetime', $orderBy)
+				::limit($limit)
+				::getPosts();
 
 if($posts === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($posts)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
 if(!is_array($posts)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }
-
 Resp::success('successfully', $posts, '成功獲取文章');
