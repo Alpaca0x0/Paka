@@ -24,6 +24,10 @@ class Forum{
             'last_datetime' => 'MAX(post_edited.datetime)',
             'times' => 'COUNT(post_edited.id)',
         ],
+        'comments' => [
+            'id' => 'comment.id',
+            'content' => 'comment.content',
+        ]
     ];
  
     static function init($force=false){
@@ -123,6 +127,7 @@ class Forum{
             'account' => "LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`)",
             'profile' => "LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`)",
             'post_edited' => "LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`)",
+            'comments' => "LEFT JOIN `comment` ON (`post`.`id`=`comment`.`pid`)",
         ];
         $joinString = ' FROM `post`';
         foreach(self::$joinTables as $table){
@@ -231,6 +236,50 @@ class Forum{
         return $ret;
     }
 
+    static function getComments($pids){
+        if(!self::init()){ return false; };
+        // get args
+        $pids = is_array($pids) ? $pids : [$pids];
+        $fields = self::$fields;
+        $limit = self::$limit;
+        $before = self::$before;
+        $after = self::$after;
+        $orderBy = self::$orderBy;
+        // reset args after execute the function
+        self::reset();
+        $sql = '';
+        // must have post and comment id
+        $fields['post']['id'] = self::getFieldValue('post', 'id');
+        $fields['comment']['id'] = self::getFieldValue('comment', 'id');
+        // select fields
+        $sql .= self::selectFields($fields);
+        // join table
+        $sql .= self::joinTable($fields);
+        // where
+        $sql .= " WHERE `post`.`status`=:status AND `comment`.`status`=:status2 AND `comment`.`id` > :after AND `comment`.`id` < :before GROUP BY `post`.`id`";
+        $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
+        $sql .= " LIMIT {$limit}";
+        $sql .= ';';
+        return $sql;
+        // 
+        DB::query($sql)::execute([
+            ':status' => "alive",
+            ':status2' => "alive",
+            ':before' => $before,
+            ':after' => $after,
+        ]);
+        if(DB::error()){ return false; }
+        $posts = DB::fetchAll();
+        if(!$posts){ return null; }
+        // 
+        $rets = [];
+        foreach ($posts as $post) {
+            $ret = self::returnFormat($post);
+            array_push($rets, $ret);
+        }
+        return $rets;
+    }
+
     static function deletePost($pid){
         if(!self::init()){ return false; }
         if(!DB::connect()){ return false; }
@@ -262,6 +311,22 @@ class Forum{
         $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :content, :datetime);";
         DB::query($sql)::execute([
             ':poster' => $poster,
+            ':content' => $content,
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ return false; }
+        // done
+        return DB::lastInsertId();
+    }
+
+    static function createComment($poster, $pid, $content){
+        if(!self::init()){ return false; };
+        $datetime = time();
+        // create post
+        $sql = "INSERT INTO `post` (`poster`, `pid`, `content`, `datetime`) VALUES(:poster, :pid, :content, :datetime);";
+        DB::query($sql)::execute([
+            ':poster' => $poster,
+            ':pid' => $pid,
             ':content' => $content,
             ':datetime' => $datetime,
         ]);
