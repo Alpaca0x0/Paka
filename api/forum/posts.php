@@ -54,4 +54,10 @@ $posts = Forum::before($before)
 if($posts === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($posts)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
 if(!is_array($posts)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }
+
+foreach ($posts as $key => $post){
+	$posts[$key] = Arr::nd($post);
+	$posts[$key]['content'] = htmlentities($post['content']);
+}
+
 Resp::success('successfully', $posts, '成功獲取文章');

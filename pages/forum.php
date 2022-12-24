@@ -600,15 +600,7 @@ Inc::clas('user');
             posts.is.getting = true;
             posts.is.getError = false;
             // 
-            let datas = {
-                fields: {
-                    post: [ 'id', 'content', 'datetime' ],
-                    poster: [ 'id', 'username', 'nickname', 'avatar' ],
-                    edited: [],
-
-                },
-                limit: 12,
-            };
+            let datas = { limit: 12, };
             if(posts.data.length > 0){ datas.before = posts.data.slice(-1)[0].id ; }
             // 
             $.ajax({
