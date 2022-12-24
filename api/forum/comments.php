@@ -62,10 +62,7 @@ $comments = Forum::before($before)
 				::orderBy('`comment`.`datetime`', $orderBy)
 				::limit($limit)
 				::getComments($pids);
-
-
-Resp::warning('sadsad',[$comments]);
-
+// 
 if($comments === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($comments)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
 if(!is_array($comments)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }

@@ -105,29 +105,29 @@ class Forum{
         // reset args
         self::resetArgs();
         $pids = is_array($pids) ? $pids : [$pids];
+        $pids = implode(", ", $pids);
 
         $sql = 'SELECT `comment`.`id`, `comment`.`content`, `comment`.`datetime` 
                 , `post`.`id` as `post.id`
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
-                , (SELECT COUNT(`id`) FROM `comment` WHERE `status`="alive" AND `reply`=`id`)as`reply_times`
+                , (SELECT COUNT(`reply`.`id`) FROM `comment` as `reply` WHERE `reply`.`status`="alive" AND `reply`.`reply`=`comment`.`id`)as`reply_times`
                 , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
-                WHERE `comment`.`reply` IS NULL AND `comment`.`status`="alive" AND `comment`.`id` > :after AND `comment`.`id` < :before AND `comment`.`post` IN (:pids)
+                WHERE `comment`.`reply` IS NULL AND `comment`.`status`="alive" AND `comment`.`id` > :after AND `comment`.`id` < :before AND `comment`.`post` IN ('.$pids.')
                 GROUP BY `comment`.`id`
         ';
-        // $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
-        // $sql .= " LIMIT {$limit}";
+        $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
+        $sql .= " LIMIT {$limit}";
         $sql .= ';';
         // 
         DB::query($sql)::execute([
             ':before' => $before,
             ':after' => $after,
-            ':pids' => [$pids] #implode(', ', ),
         ]);
         if(DB::error()){ return false; }
         $comments = DB::fetchAll();
