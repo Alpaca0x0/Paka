@@ -30,7 +30,7 @@ class Forum{
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
 
     // get data
-    static function getPosts($options=[]){
+    static function getPosts(){
         if(!self::isInit()){ return false; };
         // get args
         $limit = self::$limit;
@@ -47,7 +47,7 @@ class Forum{
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
-                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`) 
+                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
                 WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before
                 GROUP BY `post`.`id`
         ";
@@ -63,10 +63,6 @@ class Forum{
         if(DB::error()){ return false; }
         $posts = DB::fetchAll();
         if(!$posts){ return null; }
-        foreach ($posts as $key => $post){
-            $posts[$key] = Arr::nd($post);
-            $posts[$key]['content'] = htmlentities($post['content']);
-        }
         return $posts;
     }
 
@@ -81,8 +77,8 @@ class Forum{
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
-                JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
-                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`) 
+                LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
+                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
                 WHERE `post`.`status`=:status AND `post`.`id`=:pid
                 GROUP BY `post`.`id`
                 LIMIT 1;
@@ -95,9 +91,48 @@ class Forum{
         if(DB::error()){ return false; }
         $post = DB::fetch();
         if(!$post){ return null; }
-        $post = Arr::nd($post);
-        $post['content'] = htmlentities($post['content']);
         return $post;
+    }
+
+    // get data
+    static function getComments($pids){
+        if(!self::isInit()){ return false; };
+        // get args
+        $limit = self::$limit;
+        $before = self::$before;
+        $after = self::$after;
+        $orderBy = self::$orderBy;
+        // reset args
+        self::resetArgs();
+        $pids = is_array($pids) ? $pids : [$pids];
+
+        $sql = 'SELECT `comment`.`id`, `comment`.`content`, `comment`.`datetime` 
+                , `post`.`id` as `post.id`
+                , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
+                , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
+                , (SELECT COUNT(`id`) FROM `comment` WHERE `status`="alive" AND `reply`=`id`)as`reply_times`
+                , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
+                FROM `comment` 
+                LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
+                LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
+                LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
+                LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
+                WHERE `comment`.`reply` IS NULL AND `comment`.`status`="alive" AND `comment`.`id` > :after AND `comment`.`id` < :before AND `comment`.`post` IN (:pids)
+                GROUP BY `comment`.`id`
+        ';
+        // $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
+        // $sql .= " LIMIT {$limit}";
+        $sql .= ';';
+        // 
+        DB::query($sql)::execute([
+            ':before' => $before,
+            ':after' => $after,
+            ':pids' => [$pids] #implode(', ', ),
+        ]);
+        if(DB::error()){ return false; }
+        $comments = DB::fetchAll();
+        if(!$comments){ return null; }
+        return $comments;
     }
 
     // add data
@@ -120,7 +155,7 @@ class Forum{
         if(!self::init()){ return false; };
         $datetime = time();
         // create post
-        $sql = "INSERT INTO `post` (`poster`, `pid`, `content`, `datetime`) VALUES(:poster, :pid, :content, :datetime);";
+        $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :pid, :content, :datetime);";
         DB::query($sql)::execute([
             ':poster' => $poster,
             ':pid' => $pid,
@@ -145,7 +180,7 @@ class Forum{
 		if(DB::error()){ DB::rollback(); return false; }
         $rowCount = DB::rowCount();
         // delete comment
-        $sql = "UPDATE `comment` SET `status`=:status WHERE `pid`=:pid;";
+        $sql = "UPDATE `comment` SET `status`=:status WHERE `post`=:pid;";
         DB::query($sql)::execute([
             ':status' => 'removed',
             ':pid' => $pid,
