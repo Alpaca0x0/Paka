@@ -59,6 +59,7 @@ location ^~ /paka/ {
 - [x] `Profile` 中的 nickname 輸入空值後，後端回傳新的資料為 `null`，而前端在字串處理上，將會報錯「`fields.nickname.value is null`」。
 - [x] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
 - [x] `Forum` 中的 `post action` 失效，原因是 `vue-click-alway` 觸發點錯誤。
+- [x] 用戶`token`憑證更新時，cookie 不會更新。
 
 <!-- ### :wrench: Issues -->
 
