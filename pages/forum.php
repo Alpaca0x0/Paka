@@ -108,8 +108,8 @@ Inc::clas('user');
                             </transition>
                             <!-- when post is removed end -->
                             <!-- post -->
-                            <transition leave-active-class="animate__fast animate__hinge">
-                                <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated" v-cloak>
+                            <transition leave-active-class="animate__hinge">
+                                <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated" :style="{'animation-duration': '900ms'}" v-cloak>
                                     <div class="ts-segment is-very-elevated">
                                         <div class="ts-row">
                                             <div class="column">
@@ -166,9 +166,10 @@ Inc::clas('user');
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
-                                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                                <button @click="thePost.comments.is.visible=!thePost.comments.is.visible; thePost.comments.is.init || getComments(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span class="ts-icon is-comment-icon is-regular"></span>
                                                     留言
+                                                    <span v-show="thePost.comment_times" class="ts-badge is-outlined is-start-spaced">{{ thePost.comment_times }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
@@ -179,6 +180,7 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                         <!-- post interactive end -->
+                                        <!-- deleting load -->
                                         <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
                                             <div class="ts-center">
                                                 <div class="ts-content" style="color: #FFF">
@@ -187,6 +189,34 @@ Inc::clas('user');
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- deleting load end -->
+                                        <!-- comments -->
+                                        <div class="ts-space"></div>
+                                        <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
+                                            <div v-show="thePost.comments.is.visible" v-for="theComment in thePost.comments.data" :key="theComment" class="ts-segment is-very-elevated animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
+                                                <!-- comment -->
+                                                <transition enter-active-class="animate__faster animate__flipInX">
+                                                    <div class="ts-conversation">
+                                                        <div class="avatar">
+                                                            <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
+                                                        </div>
+                                                        <div class="content">
+                                                            <div class="bubble">
+                                                                <div class="author">{{ theComment.commenter.username }}</div>
+                                                                <div v-html="theComment.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;" class="text"></div>
+                                                            </div>
+                                                            <div class="ts-meta is-small is-secondary">
+                                                                <a class="item">讚</a>
+                                                                <a class="item">回覆</a>
+                                                                <a class="item">3 分前</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </transition>
+                                                <!-- comment end -->
+                                            </div>
+                                        </transition-group>
+                                        <!-- comments end -->
                                     </div>
                                 </div>
                             </transition>
@@ -423,7 +453,6 @@ Inc::clas('user');
                 getError: false,
             },
         });
-        // 
         let post = reactive({
             menuActiver: false, // pid
             is: {
@@ -595,8 +624,8 @@ Inc::clas('user');
             },
         });
         // 
-        const getPosts = ($force=false) => {
-            if((posts.is.getting || posts.is.noMore || posts.is.getError) && !$force){ return; }
+        const getPosts = (force=false) => {
+            if((posts.is.getting || posts.is.noMore || posts.is.getError) && !force){ return; }
             posts.is.getting = true;
             posts.is.getError = false;
             // 
@@ -628,6 +657,16 @@ Inc::clas('user');
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
                         else{
+                            resp.data = resp.data.map(item => ({ ...item,
+                                comments:{
+                                    is:{
+                                        visible: false,
+                                        noMore: false,
+                                        init: false,
+                                    },
+                                    data: [],
+                                }
+                            }));
                             posts.data.push(...resp.data);
                             if(!resp.data[0]['id']){ posts.is.getError = true; }
                         }
@@ -635,6 +674,54 @@ Inc::clas('user');
                 } catch (error) { console.error(error); }
             }).always(() => {
                 posts.is.getting = false;
+            });
+        }
+        // 
+        const getComments = (thePost) => {
+            if((thePost.comments.is.getting || thePost.comments.is.noMore || posts.is.getError)){ return; }
+            thePost.comments.is.init = true;
+            thePost.comments.is.getting = true;
+            thePost.comments.is.getError = false;
+            // 
+            let datas = {
+                pid: thePost.id,
+                limit: 12,
+                orderBy: 'ASC',
+            };
+            if(thePost.comments.data.length > 0){ datas.before = thePost.comments.data[0].id ; }
+            // 
+            $.ajax({
+                type: "GET",
+                url: '<?=Uri::api('forum/comments')?>',
+                data: datas,
+                dataType: 'json',
+            }).always(()=>{
+                // posts.type = 'error';
+                // posts.status = 'unexpected';
+                // posts.message = '發生非預期的錯誤';
+            }).fail((xhr, status, error) => {
+                console.error(xhr.responseText);
+                thePost.comments.is.getError = true;
+            }).done((resp) => {
+                try {
+                    console.log(resp);
+                    // check response format is correct
+                    if(!Resp.object(resp)){ return false; }
+                    // get msg
+                    // posts.type = resp.type;
+                    // posts.status = resp.status;
+                    // posts.message = resp.message;
+                    // check if success
+                    if(resp.type==='success'){
+                        if(resp.data === null || resp.data.length < 1){ thePost.comments.is.noMore = true; }
+                        else{
+                            thePost.comments.data.unshift(...resp.data);
+                            if(!resp.data[0]['id']){ thePost.comments.is.getError = true; }
+                        }
+                    }else{ thePost.comments.is.getError = true; }
+                } catch (error){ console.error(error); }
+            }).always(() => {
+                thePost.comments.is.getting = false;
             });
         }
         // 
@@ -659,7 +746,7 @@ Inc::clas('user');
             // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment };
+        return { user, posts, post, setRef, getPosts, moment, getComments };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');

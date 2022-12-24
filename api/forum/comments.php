@@ -2,7 +2,6 @@
 header('Content-Type: application/json; charset=utf-8');
 
 Inc::clas('resp');
-$_GET['pid'] = ['1','2',['3','11'], '54,', '53','2','3'];
 
 // define
 $infinity = 2147483647;
@@ -53,8 +52,7 @@ if($after){ $after = ($after<$min['after']||$after>$max['after']) ? $def['after'
 else if($before){ $before = ($before<$min['before']||$before>$max['before']) ? $def['before'] : $before; }
 else{ $before=false; $after=$def['after']; }
 
-if(!Arr::includes([$orderBy], 'DESC', 'ASC')){ $orderBy = $def['orderBy']; }
-
+if(!in_array($orderBy, ['DESC', 'ASC'])){ $orderBy = $def['orderBy']; }
 if($limit<$min['limit'] || $limit>$max['limit']){ $limit = $def['limit']; }
 
 $comments = Forum::before($before)
@@ -67,6 +65,9 @@ if($comments === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($comments)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
 if(!is_array($comments)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }
 
-foreach($comments as $idx => $comment){ $comments[$idx] = Arr::nd($comment); }
+foreach($comments as $idx => $comment){
+	$comments[$idx] = Arr::nd($comment);
+	$comments[$idx]['content'] = htmlentities($comment['content']);
+}
 
 Resp::success('successfully', $comments, '成功獲取留言');

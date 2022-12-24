@@ -40,17 +40,18 @@ class Forum{
         // reset args
         self::resetArgs();
 
-        $sql = "SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
+        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
-                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),'\n',''), NULL)as`poster.avatar`
+                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
+                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comment_times`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
                 WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before
                 GROUP BY `post`.`id`
-        ";
+        ';
         $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
         $sql .= " LIMIT {$limit}";
         $sql .= ';';
@@ -71,10 +72,11 @@ class Forum{
         // reset args
         self::resetArgs();
 
-        $sql = "SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
+        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
-                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),'\n',''), NULL)as`poster.avatar`
+                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
+                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comment_times`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
@@ -82,7 +84,7 @@ class Forum{
                 WHERE `post`.`status`=:status AND `post`.`id`=:pid
                 GROUP BY `post`.`id`
                 LIMIT 1;
-        ";
+        ';
         // 
         DB::query($sql)::execute([
             ':status' => "alive",
