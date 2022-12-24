@@ -543,6 +543,14 @@ Inc::clas('user');
                     // 
                     if(resp.type === 'success'){
                         post.creating.content = '';
+                        resp.data['comments'] = resp.data['comments'] ? resp.data['comments'] : {
+                            is:{
+                                visible: false,
+                                noMore: false,
+                                init: false,
+                            },
+                            data: [],
+                        };
                         posts.data.unshift(resp.data);
                     }
                 }).always(() => {
