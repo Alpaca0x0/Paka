@@ -125,7 +125,7 @@ Inc::clas('user');
                                                     <div class="ts-meta is-small is-secondary">
                                                         <div class="item">
                                                             <div class="ts-icon is-earth-asia-icon"></div>
-                                                            Public
+                                                            public
                                                         </div>
                                                         <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')">
                                                             <div class="ts-icon is-clock-icon"></div>
@@ -190,25 +190,47 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                         <!-- deleting load end -->
+
                                         <!-- comments -->
                                         <div class="ts-space"></div>
+
+                                        <!-- comments loading -->
+                                        <div v-show="thePost.comments.is.getting" v-show="thePost.comments.is.visible" class="ts-placeholder is-loading" v-cloak>
+                                            <div class="ts-row">
+                                                <div class="column">
+                                                    <div class="ts-avatar is-large">
+                                                        <div class="image is-header"></div>
+                                                    </div>
+                                                </div>
+                                                <div class="column is-fluid">
+                                                    <div class="text is-header"></div>
+                                                    <div class="text"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- comments loading end -->
+
                                         <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
-                                            <div v-show="thePost.comments.is.visible" v-for="theComment in thePost.comments.data" :key="theComment" class="ts-segment is-very-elevated animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
+                                            <div v-for="theComment in thePost.comments.data" :key="theComment" v-show="thePost.comments.is.visible" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
                                                 <!-- comment -->
                                                 <transition enter-active-class="animate__faster animate__flipInX">
                                                     <div class="ts-conversation">
-                                                        <div class="avatar">
+                                                        <div class="avatar ts-image">
                                                             <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                         </div>
                                                         <div class="content">
                                                             <div class="bubble">
-                                                                <div class="author">{{ theComment.commenter.username }}</div>
+                                                                <div class="author">
+                                                                    <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
+                                                                </div>
                                                                 <div v-html="theComment.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;" class="text"></div>
                                                             </div>
                                                             <div class="ts-meta is-small is-secondary">
                                                                 <a class="item">讚</a>
                                                                 <a class="item">回覆</a>
-                                                                <a class="item">3 分前</a>
+                                                                <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                    {{ moment(theComment.datetime*1000).fromNow() }}
+                                                                </a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -216,7 +238,29 @@ Inc::clas('user');
                                                 <!-- comment end -->
                                             </div>
                                         </transition-group>
+
+                                        <transition enter-active-class="animate__slow animate__flipInX" leave-active-class="animate__fadeOut">
+                                            <div v-show="thePost.comments.is.visible" class="animate__animated" :style="{'animation-duration': thePost.comments.is.visible ? '500ms' : '250ms'}">
+
+                                                <!-- create comment -->
+                                                <div class="ts-divider is-section"></div>
+                                                <div class="ts-conversation">
+                                                    <div class="avatar">
+                                                        <img :src="user.avatar || user.avatarDefault">
+                                                    </div>
+                                                    <div class="content" style="width: 100%;">
+                                                        <div class="ts-input is-fluid is-underlined">
+                                                            <textarea placeholder="回覆這則貼文..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- create comment end -->
+                                                
+                                            </div>
+                                        </transition>
+                                        
                                         <!-- comments end -->
+
                                     </div>
                                 </div>
                             </transition>
@@ -240,7 +284,7 @@ Inc::clas('user');
                         <div class="ts-segment">
                             <div class="ts-row">
                                 <div class="column">
-                                    <div class="ts-avatar is-large is-circular">
+                                    <div class="ts-avatar is-large">
                                         <div class="image is-header"></div>
                                     </div>
                                 </div>
@@ -602,7 +646,7 @@ Inc::clas('user');
                                     <div class="ts-meta is-small is-secondary">
                                         <div class="item">
                                             <div class="ts-icon is-earth-asia-icon"></div>
-                                            Public
+                                            public
                                         </div>
                                         <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')}">
                                             <div class="ts-icon is-clock-icon"></div>
@@ -655,7 +699,7 @@ Inc::clas('user');
                     posts.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
-                        if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
+                        if(resp.data === null || resp.data.length < datas.limit){ posts.is.noMore = true; }
                         else{
                             resp.data = resp.data.map(item => ({ ...item,
                                 comments:{
