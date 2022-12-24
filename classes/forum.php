@@ -28,26 +28,9 @@ class Forum{
     static function before($num){ self::init(); self::$before = $num; return self::class; }
     static function after($num){ self::init(); self::$after = $num; return self::class; }
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
-    // set output format
-    static function isHtml($val=true){ self::$isHtml = $val; return self::class; }
-    static function nl2br($val=true){ self::$nl2br = $val; return self::class; }
-
-    // return format convertor
-    static function returnFormat($post){
-        $ret = [];
-        foreach($post as $keys => $val){
-            $key = explode('.', $keys);
-            if(count($key)<2){
-                $ret[$key[0]] = $val;
-                continue;
-            }else{ $ret[$key[0]][$key[1]] = $val; }
-        }
-        // return
-        return $ret;
-    }
 
     // get data
-    static function getPosts(){
+    static function getPosts($options=[]){
         if(!self::isInit()){ return false; };
         // get args
         $limit = self::$limit;
@@ -63,7 +46,7 @@ class Forum{
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
-                JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
+                LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`pid`) 
                 WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before
                 GROUP BY `post`.`id`
@@ -81,7 +64,7 @@ class Forum{
         $posts = DB::fetchAll();
         if(!$posts){ return null; }
         foreach ($posts as $key => $post){
-            $posts[$key] = self::returnFormat($post);
+            $posts[$key] = Arr::nd($post);
             $posts[$key]['content'] = htmlentities($post['content']);
         }
         return $posts;
@@ -112,7 +95,7 @@ class Forum{
         if(DB::error()){ return false; }
         $post = DB::fetch();
         if(!$post){ return null; }
-        $post = self::returnFormat($post);
+        $post = Arr::nd($post);
         $post['content'] = htmlentities($post['content']);
         return $post;
     }
