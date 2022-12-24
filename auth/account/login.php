@@ -96,5 +96,5 @@ $result = DB::query(
     ':datetime' => $datetime, 
 ]);
 if($result::error()){ Resp::error('db_cannot_insert','account_event_login', '資料庫無法寫入資料'); }
-setcookie('token', $token, $expire, Root, Domain, false, true);;
+setcookie('token', $token, $expire, Root, Domain, false, true);
 Resp::success('successfully_login', [$user['id'], $user['username']], "登入成功");

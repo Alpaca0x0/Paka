@@ -77,6 +77,7 @@ class User{
 			'UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;'
 		)::execute([':expire'=>$expire, ':event_id'=>$user['event_id'], ]);
 		if($result::error()){ return false; }
+		setcookie('token', $token, $expire, Root, Domain, false, true);
 		
 		# current datas
 		$id = Type::int($user['id'], -1);
