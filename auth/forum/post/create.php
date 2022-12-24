@@ -33,5 +33,9 @@ if($pid === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
 # return new post
 $post = Forum::getPost($pid);
 if(!$post){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的文章'); }
+
+$post = Arr::nd($post);
+$post['content'] = htmlentities($post['content']);
+
 Resp::success('successfully', $post, '已成功發表貼文');
 
