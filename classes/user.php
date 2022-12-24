@@ -56,7 +56,7 @@ class User{
 			'SELECT `account_event`.`id` AS `event_id`, `account_event`.`expire`, `account_event`.`datetime` AS "spawntime",
 			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
 			FROM `account_event` 
-			JOIN `account` ON(`account`.`id`=`account_event`.`uid`) 
+			LEFT JOIN `account` ON(`account`.`id`=`account_event`.`uid`) 
 			WHERE `account`.`status`<>"removed" AND `account_event`.`token`=:token
 			ORDER BY `account_event`.`id` DESC
 			LIMIT 1;'
