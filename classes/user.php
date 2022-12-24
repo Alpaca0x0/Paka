@@ -88,10 +88,10 @@ class User{
 
 		# try to get profile
 		$profile = DB::query(
-			'SELECT `nickname`,`gender`,`birthday`,`avatar` FROM `profile` 
-			WHERE `id`=:id;'
+			"SELECT `nickname`,`gender`,`birthday`,IFNULL(REPLACE(TO_BASE64(`avatar`),'\n',''), NULL) AS `avatar` FROM `profile` 
+			WHERE `id`=:id;"
 		)::execute([':id' => $id])::fetch();
-		if(DB::error()){ self::logout(); return false; }
+		if(DB::error() || is_null($profile)){ self::logout(); return false; }
 
 		# get profile
 		self::$user = [
@@ -106,7 +106,7 @@ class User{
 			'nickname' => $profile['nickname'],
 			'gender' => $profile['gender'],
 			'birthday' => $profile['birthday'],
-			'avatar' => ( is_null($profile['avatar']) ? null : base64_encode($profile['avatar']) ),
+			'avatar' => $profile['avatar'],
 		];
 		return true;
 	}

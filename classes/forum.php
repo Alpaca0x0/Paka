@@ -42,7 +42,7 @@ class Forum{
 
         $sql = "SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
-                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(TO_BASE64(`profile`.`avatar`), NULL)as`poster.avatar`
+                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),'\n',''), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
@@ -77,7 +77,7 @@ class Forum{
 
         $sql = "SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
-                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(TO_BASE64(`profile`.`avatar`), NULL)as`poster.avatar`
+                , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),'\n',''), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 

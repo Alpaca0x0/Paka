@@ -392,6 +392,7 @@ $config = Inc::config('account');
         }
         // 
         onMounted(() => {
+            console.log(fields.avatar.value);
             refs.avatarFile.onchange = () => {
                 let newAvatar = refs.avatarFile.files[0];
                 if(!newAvatar){ return; }
