@@ -60,6 +60,7 @@ location ^~ /paka/ {
 - [x] 未經過驗證的帳戶(`status` 為 `unverified`)可以被登入。
 - [x] `Forum` 中的 `post action` 失效，原因是 `vue-click-alway` 觸發點錯誤。
 - [x] 用戶`token`憑證更新時，cookie 不會更新。
+- [x] 貼文文字過多時不會自動換行。(add `overflow-wrap: break-word`)
 
 <!-- ### :wrench: Issues -->
 

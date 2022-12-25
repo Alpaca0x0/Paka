@@ -138,7 +138,7 @@ Inc::clas('user');
                                                     </div>
                                                 </div>
                                                 <div class="ts-space is-small"></div>
-                                                <div v-html="thePost.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;"></div>
+                                                <div v-html="thePost.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;"></div>
                                                 <div class="ts-space is-small"></div>
                                             </div>
                                             <!-- post actions -->
@@ -223,7 +223,7 @@ Inc::clas('user');
                                                                 <div class="author">
                                                                     <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                 </div>
-                                                                <div v-html="theComment.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;" class="text"></div>
+                                                                <div v-html="theComment.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;" class="text"></div>
                                                             </div>
                                                             <div class="ts-meta is-small is-secondary">
                                                                 <a class="item">讚</a>
@@ -240,7 +240,7 @@ Inc::clas('user');
                                                             <!-- replies -->
                                                             <template v-if="theComment.replies.times > 0">
                                                                 <div class="ts-divider is-start-text">
-                                                                    <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的回應</a>
+                                                                    <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
                                                                 </div>
 
                                                                 <div v-for="theReply in theComment.replies.data" :key="theReply" v-cloak>
@@ -294,6 +294,9 @@ Inc::clas('user');
                                                     <div class="content" style="width: 100%;">
                                                         <div class="ts-input is-fluid is-underlined">
                                                             <textarea placeholder="回覆這則貼文..."></textarea>
+                                                            <button class="ts-button is-icon">
+                                                                <span class="ts-icon is-magnifying-glass-icon"></span>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -718,6 +721,67 @@ Inc::clas('user');
                 });
             },
         });
+        let comment = reactive({
+            create: (thePost, content) => {
+                console.log(thePost); return;
+                if(post.is.creatingComment){ return; }
+                post.is.creating = true;
+                // check data format
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/post/create')?>',
+                    data: { content: post.creating.content },
+                    dataType: 'json',
+                }).always(() => {
+                    post.creating.info = {
+                        type: 'error',
+                        status: 'unexpected',
+                        message: '很抱歉，發生了非預期的錯誤！',
+                    };
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    // 
+                    post.creating.info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
+                    // 
+                    if(resp.type === 'success'){
+                        post.creating.content = '';
+                        resp.data['comments'] = resp.data['comments'] ? resp.data['comments'] : {
+                            is:{
+                                visible: false,
+                                noMore: false,
+                                init: false,
+                            },
+                            data: [],
+                        };
+                        posts.data.unshift(resp.data);
+                    }
+                }).always(() => {
+                    post.is.creating = false;
+                    Swal.fire({
+                        position: 'bottom-start',
+                        icon: post.creating.info.type,
+                        title: post.creating.info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: post.creating.info.type==='success' ? 2000 : false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
+        });
         // 
         const getPosts = (force=false) => {
             if((posts.is.getting || posts.is.noMore || posts.is.getError) && !force){ return; }
@@ -898,7 +962,7 @@ Inc::clas('user');
             // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies };
+        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');
