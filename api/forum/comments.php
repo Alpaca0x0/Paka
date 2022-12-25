@@ -69,7 +69,6 @@ if(!is_array($comments)){ Resp::error('sql_query_return_format', 'SQL 語法查�
 foreach($comments as $idx => $comment){
 	$comments[$idx] = Arr::nd($comment);
 	$comments[$idx]['content'] = htmlentities($comment['content']);
-	$comments[$idx]['replies']['is'] = [];
 }
 
 Resp::success('successfully', $comments, '成功獲取留言');

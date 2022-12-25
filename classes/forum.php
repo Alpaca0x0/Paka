@@ -117,16 +117,7 @@ class Forum{
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
 
-                , `reply`.`id`as`replies.data.0.id`
-                , `reply`.`content`as`replies.data.0.content`
-                , UNIX_TIMESTAMP(`reply`.`datetime`)as`replies.data.0.datetime`
                 , COUNT(`reply`.`id`)as`replies.times`
-
-                , `reply_account`.`username`as`replies.data.0.replier.username`
-                , `reply_account`.`identity`as`replies.data.0.replier.identity`
-                , `reply_profile`.`nickname`as`replies.data.0.replier.nickname`
-                , `reply_profile`.`gender`as`replies.data.0.replier.gender`
-                , IFNULL(REPLACE(TO_BASE64(`reply_profile`.`avatar`),"\n",""), NULL)as`replies.data.0.replier.avatar`
 
                 , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
 
@@ -137,8 +128,6 @@ class Forum{
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
 
                 LEFT JOIN `comment` as `reply` ON (`comment`.`id`=`reply`.`reply` AND `reply`.`status`="alive") 
-                LEFT JOIN `account` as `reply_account` ON (`reply`.`commenter`=`reply_account`.`id`)
-                LEFT JOIN `profile` as `reply_profile` ON (`reply_account`.`id`=`reply_profile`.`id`)
 
                 WHERE `comment`.`reply` IS NULL 
                 AND `comment`.`status`="alive" 

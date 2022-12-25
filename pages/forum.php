@@ -231,6 +231,10 @@ Inc::clas('user');
                                                                 <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
                                                                     {{ moment(theComment.datetime*1000).fromNow() }}
                                                                 </a>
+                                                                <div class="item">
+                                                                    <div class="ts-icon is-hashtag-icon"></div>
+                                                                    {{ theComment.id }}
+                                                                </div>
                                                             </div>
 
                                                             <!-- replies -->
@@ -240,7 +244,6 @@ Inc::clas('user');
                                                                 </div>
 
                                                                 <div v-for="theReply in theComment.replies.data" :key="theReply" v-cloak>
-                                                                    {{ theComment.replies.is.noMore=theComment.replies.data.length>=theComment.replies.times?true:theComment.replies.is.noMore }}
                                                                     <!-- reply -->
                                                                     <div class="ts-space"></div>
                                                                     <div class="ts-conversation">
@@ -260,6 +263,10 @@ Inc::clas('user');
                                                                                 <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
                                                                                     {{ moment(theReply.datetime*1000).fromNow() }}
                                                                                 </a>
+                                                                                <div class="item">
+                                                                                    <div class="ts-icon is-hashtag-icon"></div>
+                                                                                    {{ theReply.id }}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -805,6 +812,12 @@ Inc::clas('user');
                         if(resp.data === null || resp.data.length < 1){ thePost.comments.is.noMore = true; }
                         else{
                             if(resp.data.length < datas.limit){ thePost.comments.is.noMore = true; }
+                            resp.data.forEach((comment) => {
+                                comment.replies.is = {
+                                    noMore: comment.replies.times ? false : true,
+                                };
+                                comment.replies.data = [];
+                            })
                             thePost.comments.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ thePost.comments.is.getError = true; }
                         }
