@@ -3,7 +3,7 @@ header('Content-Type: application/json; charset=utf-8');
 Inc::clas('resp');
 Inc::clas('user');
 User::isLogin() or Resp::warning('is_logout', '當前尚未登入任何帳戶，可能是 Token 過期了，請重新登入');
-
+sleep(3);
 # needed datas
 $needs = ['pid'];
 Arr::every($_POST, ...$needs) or Resp::warning('data_missing', $needs, '資料缺失');

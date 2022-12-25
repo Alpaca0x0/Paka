@@ -180,16 +180,6 @@ Inc::clas('user');
                                             </div>
                                         </div>
                                         <!-- post interactive end -->
-                                        <!-- deleting load -->
-                                        <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
-                                            <div class="ts-center">
-                                                <div class="ts-content" style="color: #FFF">
-                                                    <div class="ts-loading is-large"></div>
-                                                    <br>刪除中
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- deleting load end -->
 
                                         <!-- comments -->
                                         <!-- comments loading -->
@@ -292,11 +282,18 @@ Inc::clas('user');
                                                         <img :src="user.avatar || user.avatarDefault">
                                                     </div>
                                                     <div class="content" style="width: 100%;">
-                                                        <div class="ts-input is-fluid is-underlined">
-                                                            <textarea placeholder="回覆這則貼文..."></textarea>
-                                                            <button class="ts-button is-icon">
-                                                                <span class="ts-icon is-magnifying-glass-icon"></span>
-                                                            </button>
+                                                        <div class="ts-input is-fluid is-underlined is-small">
+                                                            <textarea 
+                                                                @keydown.enter.exact.prevent="comment.create(thePost)" 
+                                                                @keydown.enter.shift.exact.prevent="thePost.newComment.content += '\n'" 
+                                                                v-model="thePost.newComment.content" 
+                                                                placeholder="回覆這則貼文... (可以使用 Shift + Enter 換行)" 
+                                                                style="height: 2.5rem"
+                                                                oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                                onkeydown="this.oninput()" 
+                                                                onfocus="this.oninput()" 
+                                                                onblur="this.style.height='2.5rem'"
+                                                            ></textarea>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -311,6 +308,19 @@ Inc::clas('user');
                                 </div>
                             </transition>
                             <!-- post -->
+
+                            <!-- post deleting load -->
+                            <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
+                                <div class="ts-center">
+                                    <div class="ts-content" style="color: #FFF">
+                                        <div class="ts-loading is-large"></div>
+                                        <br>刪除中
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- post deleting load end -->
+
+                            
                             <div class="ts-space"></div>
                         </div>
                     </transition-group>
@@ -523,7 +533,7 @@ Inc::clas('user');
     // 
     const Forum = createApp({setup(){
         let refs = reactive({});
-        let setRef = (el) => { refs[el.id] = el; }
+        let setRef = (el) => { refs[el.getAttribute('data-ref-id')] = el; }
         // 
         let user = reactive({
             id: <?=User::get('id','false')?>,
@@ -597,6 +607,12 @@ Inc::clas('user');
                             },
                             data: [],
                         };
+                        resp.data['newComment'] = {
+                            is: {
+                                creating: false,
+                            },
+                            content: '',
+                        }
                         posts.data.unshift(resp.data);
                     }
                 }).always(() => {
@@ -722,63 +738,62 @@ Inc::clas('user');
             },
         });
         let comment = reactive({
-            create: (thePost, content) => {
-                console.log(thePost); return;
-                if(post.is.creatingComment){ return; }
-                post.is.creating = true;
+            create: (thePost) => {
+                if(thePost.newComment.is.creating){ return; }
+                thePost.newComment.is.creating = true;
                 // check data format
                 // 
                 $.ajax({
                     type: "POST",
-                    url: '<?=Uri::auth('forum/post/create')?>',
-                    data: { content: post.creating.content },
+                    url: '<?=Uri::auth('forum/comment/create')?>',
+                    data: {
+                        postId: thePost.id,
+                        content: thePost.newComment.content,
+                    },
                     dataType: 'json',
                 }).always(() => {
-                    post.creating.info = {
-                        type: 'error',
-                        status: 'unexpected',
-                        message: '很抱歉，發生了非預期的錯誤！',
-                    };
+                    // post.creating.info = {
+                    //     type: 'error',
+                    //     status: 'unexpected',
+                    //     message: '很抱歉，發生了非預期的錯誤！',
+                    // };
                 }).fail((xhr, status, error) => {
                     console.error(xhr.responseText);
                 }).done((resp) => {
                     console.log(resp);
                     if(!Resp.object(resp)){ return false; }
                     // 
-                    post.creating.info = {
-                        type: resp.type,
-                        status: resp.type,
-                        data: resp.data,
-                        message: resp.message,
-                    };
+                    // post.creating.info = {
+                    //     type: resp.type,
+                    //     status: resp.type,
+                    //     data: resp.data,
+                    //     message: resp.message,
+                    // };
                     // 
                     if(resp.type === 'success'){
-                        post.creating.content = '';
-                        resp.data['comments'] = resp.data['comments'] ? resp.data['comments'] : {
-                            is:{
-                                visible: false,
-                                noMore: false,
-                                init: false,
-                            },
-                            data: [],
+                        document.activeElement.blur(); // remove focus status
+                        thePost.newComment.content = '';
+                        resp.data.replies.is = {
+                            noMore: true,
                         };
-                        posts.data.unshift(resp.data);
+                        resp.data.replies.data = [],
+                        thePost.comments.data.push(resp.data);
                     }
                 }).always(() => {
-                    post.is.creating = false;
-                    Swal.fire({
-                        position: 'bottom-start',
-                        icon: post.creating.info.type,
-                        title: post.creating.info.message,
-                        toast: true,
-                        showConfirmButton: false,
-                        timer: post.creating.info.type==='success' ? 2000 : false,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                        }
-                    });
+                    thePost.newComment.is.creating = false;
+                    // Swal.fire({
+                    //     position: 'bottom-start',
+                    //     icon: post.creating.info.type,
+                    //     title: post.creating.info.message,
+                    //     toast: true,
+                    //     showConfirmButton: false,
+                    //     timer: post.creating.info.type==='success' ? 2000 : false,
+                    //     timerProgressBar: true,
+                    //     didOpen: (toast) => {
+                    //         toast.addEventListener('mouseenter', Swal.stopTimer)
+                    //         toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    //     }
+                    // });
                 });
             },
         });
@@ -825,6 +840,12 @@ Inc::clas('user');
                                         init: false,
                                     },
                                     data: [],
+                                },
+                                newComment:{
+                                    is: {
+                                        creating: false,
+                                    },
+                                    content: '',
                                 }
                             }));
                             posts.data.push(...resp.data);

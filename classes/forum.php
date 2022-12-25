@@ -149,6 +149,44 @@ class Forum{
         return $comments;
     }
 
+    static function getComment($commentId){
+        if(!self::isInit()){ return false; };
+        // reset args
+        self::resetArgs();
+
+        $sql = 'SELECT `comment`.`id`
+                , `comment`.`content`
+                , UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
+
+                , `post`.`id` as `post`
+
+                , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
+                , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
+
+                , 0 as `replies.times`
+
+                , 0 as`edited.times`, null as `edited.last_datetime` 
+
+                FROM `comment` 
+                LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
+                LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
+                LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
+
+                WHERE `comment`.`id` = :commentId
+                AND `comment`.`reply` IS NULL 
+                AND `comment`.`status`="alive" 
+                LIMIT 1
+        ';
+        // 
+        DB::query($sql)::execute([
+            ':commentId' => $commentId,
+        ]);
+        if(DB::error()){ return false; }
+        $comment = DB::fetch();
+        if(!$comment){ return null; }
+        return $comment;
+    }
+
     static function getReplies($commentIds){
         if(!self::isInit()){ return false; };
         // get args
@@ -214,14 +252,14 @@ class Forum{
         return DB::lastInsertId();
     }
 
-    static function createComment($poster, $pid, $content){
+    static function createComment($commenter, $postId, $content){
         if(!self::init()){ return false; };
         $datetime = date("Y-m-d H:i:s");
         // create post
-        $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :pid, :content, :datetime);";
+        $sql = "INSERT INTO `comment`(`commenter`, `post`, `content`, `datetime`) VALUES (:commenter, :postId, :content, :datetime)";
         DB::query($sql)::execute([
-            ':poster' => $poster,
-            ':pid' => $pid,
+            ':commenter' => $commenter,
+            ':postId' => $postId,
             ':content' => $content,
             ':datetime' => $datetime,
         ]);
