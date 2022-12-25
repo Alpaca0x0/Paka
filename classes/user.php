@@ -77,7 +77,14 @@ class User{
 			'UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;'
 		)::execute([':expire'=>$expire, ':event_id'=>$user['event_id'], ]);
 		if($result::error()){ return false; }
-		setcookie('token', $token, $expire, Root, Domain, false, true);
+		setcookie('token', $token, [
+			'expires' => $expire,
+			'path' => Root,
+			'domain' => Domain,
+			'secure' => false,
+			'httponly' => true,
+			'samesite' => 'Strict',
+		]);
 		
 		# current datas
 		$id = Type::int($user['id'], -1);
@@ -120,7 +127,14 @@ class User{
 		if(!$token){ return true; }
 
 		$datetime = time();
-        setcookie('token', false, $datetime-1, Root, Domain, false, true);
+		setcookie('token', false, [
+			'expires' => $datetime-1,
+			'path' => Root,
+			'domain' => Domain,
+			'secure' => false,
+			'httponly' => true,
+			'samesite' => 'Strict',
+		]);
 
 		# must connect database
 		if(!DB::connect()){ return false; }
