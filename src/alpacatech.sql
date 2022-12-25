@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022-12-25 05:57:36
+-- 產生時間： 2022-12-25 07:13:49
 -- 伺服器版本： 8.0.17
 -- PHP 版本： 8.1.13
 
@@ -48,8 +48,8 @@ CREATE TABLE `account_event` (
   `commit` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `token` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `ip` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `expire` int(11) DEFAULT NULL COMMENT 'token expire time',
-  `datetime` int(11) NOT NULL
+  `expire` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'token expire time',
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
@@ -63,7 +63,7 @@ CREATE TABLE `comment` (
   `commenter` int(11) NOT NULL,
   `post` int(11) NOT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review',
   `reply` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -79,7 +79,7 @@ CREATE TABLE `comment_edited` (
   `editor` int(11) NOT NULL,
   `comment` int(11) NOT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
@@ -93,7 +93,7 @@ CREATE TABLE `post` (
   `id` int(11) NOT NULL,
   `poster` int(11) NOT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
@@ -108,7 +108,7 @@ CREATE TABLE `post_edited` (
   `editor` int(11) NOT NULL,
   `post` int(11) NOT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `datetime` int(11) NOT NULL,
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 

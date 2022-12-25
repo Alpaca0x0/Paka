@@ -8,7 +8,8 @@ if(User::isLogin()){ Resp::success('is_login','當前已經是登入狀態了');
 Arr::every($_POST, 'username','password') or Resp::warning('data_missing', '資料缺失');
 
 // # type
-$datetime = time();
+$timestamp = time();
+$datetime = date("Y-m-d H:i:s", $timestamp);
 $username = Type::string($_POST['username'], '');
 $password = Type::string($_POST['password'], '');
 
@@ -45,7 +46,7 @@ else if($user['status'] !== 'alive'){ Resp::warning('user_status', $username, "�
 $loginMaxTimes = 3;
 $result = DB::query(
     'SELECT COUNT(`id`) AS `count` FROM `account_event` 
-    WHERE `commit`=:commit AND `uid`=:uid AND (:datetime-`datetime`)<15*60  # 15 mins
+    WHERE `commit`=:commit AND `uid`=:uid AND UNIX_TIMESTAMP((:datetime-`datetime`))<15*60  # 15 mins
     LIMIT 1;'
 )::execute([
     ':commit' => "login_failed",
@@ -83,7 +84,8 @@ if($user['password'] !== hash('sha256',$password)){
 # login success
 # write into account event
 $token = hash('sha256',bin2hex(random_bytes(16)));
-$expire = $datetime + $config['timeout']['login'];
+$expireTimestamp = $timestamp + $config['timeout']['login'];
+$expire = date("Y-m-d H:i:s", $expireTimestamp);
 $result = DB::query(
     'INSERT INTO `account_event`(`uid`,`commit`,`token`,`ip`,`expire`,`datetime`) 
     VALUES(:uid, :commit, :token, :ip, :expire, :datetime);'
@@ -97,7 +99,7 @@ $result = DB::query(
 ]);
 if($result::error()){ Resp::error('db_cannot_insert','account_event_login', '資料庫無法寫入資料'); }
 setcookie('token', $token, [
-    'expires' => $expire,
+    'expires' => $expireTimestamp,
     'path' => Root,
     'domain' => Domain,
     'secure' => false,

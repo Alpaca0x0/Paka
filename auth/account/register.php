@@ -12,7 +12,8 @@ $email = Type::string($_POST['email'], '');
 $username = strtolower(trim(Type::string($_POST['username'], '')));
 $password = Type::string($_POST['password'], '');
 $captcha = trim(Type::string($_POST['captcha'], ''));
-$datetime = time();
+$timestamp = time();
+$datetime = date("Y-m-d H:i:s", $timestamp);
 $ip = trim($_SERVER["REMOTE_ADDR"]);
 $token = trim(hash('sha256',bin2hex(random_bytes(16))));
 
@@ -36,7 +37,7 @@ DB::connect() or Resp::error('database_cannot_connect', '無法連接資料庫')
 $result = DB::query(
     'SELECT MAX(IF(`username`=:username, 1, 0)) AS `username_exist`, MAX(IF(`email`=:email, 1,0)) AS `email_exist` 
 	FROM `account` 
-	WHERE (`username`=:username2 OR `email`=:email2) AND `status` NOT IN ("removed","invalid")
+	WHERE (`username`=:username2 OR `email`=:email2) AND `status`="removed"
     LIMIT 1'
 )::execute([':username'=>$username, ':email'=>$email, ':username2'=>$username, ':email2'=>$email, ]);
 if(DB::error()){ Resp::error('sql_query_error', 'SQL 語法查詢錯誤'); }
@@ -79,14 +80,14 @@ if(DB::error()){
 }
 
 # add event and token
-$sql = 'INSERT INTO `account_event`(`uid`, `commit`, `token`, `ip`, `expire`, `datetime`) VALUES(:uid, :commit, :token, :ip, :expire, :t);';
+$sql = 'INSERT INTO `account_event`(`uid`, `commit`, `token`, `ip`, `expire`, `datetime`) VALUES(:uid, :commit, :token, :ip, :expire, :datetime);';
 $result = DB::query($sql)::execute([
     ':uid'  =>  $uid,
     ':commit'   =>  'register',
     ':token'    =>  $token,
     ':ip'       =>  $ip,
-    ':expire'   =>  $datetime+$config['timeout']['verify'],
-    ':t'        =>  $datetime,
+    ':expire'   =>  date("Y-m-d H:i:s", $timestamp+$config['timeout']['verify']),
+    ':datetime' =>  $datetime,
 ]);
 if(DB::error()){
     DB::rollback();

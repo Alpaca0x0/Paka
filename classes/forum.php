@@ -40,7 +40,7 @@ class Forum{
         // reset args
         self::resetArgs();
 
-        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
+        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
@@ -72,7 +72,7 @@ class Forum{
         // reset args
         self::resetArgs();
 
-        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, `post`.`datetime`
+        $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
                 , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
@@ -109,7 +109,7 @@ class Forum{
         $pids = is_array($pids) ? $pids : [$pids];
         $pids = implode(", ", $pids);
 
-        $sql = 'SELECT `comment`.`id`, `comment`.`content`, `comment`.`datetime` 
+        $sql = 'SELECT `comment`.`id`, `comment`.`content`, UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
                 , `post`.`id` as `post.id`
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
@@ -140,7 +140,7 @@ class Forum{
     // add data
     static function createPost($poster, $content){
         if(!self::init()){ return false; };
-        $datetime = time();
+        $datetime = date("Y-m-d H:i:s");
         // create post
         $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :content, :datetime);";
         DB::query($sql)::execute([
@@ -155,7 +155,7 @@ class Forum{
 
     static function createComment($poster, $pid, $content){
         if(!self::init()){ return false; };
-        $datetime = time();
+        $datetime = date("Y-m-d H:i:s");
         // create post
         $sql = "INSERT INTO `post` (`poster`, `content`, `datetime`) VALUES(:poster, :pid, :content, :datetime);";
         DB::query($sql)::execute([

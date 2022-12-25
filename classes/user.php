@@ -18,7 +18,7 @@ class User{
 		# must connect database
 		if(!DB::connect()){ return false; }
 
-		$datetime = time();
+		$datetime = date("Y-m-d H:i:s");
 
 		# update accounts info
 		# register, unverified and expire
@@ -46,39 +46,45 @@ class User{
 		# do nothing if no token
 		$token = isset($_COOKIE['token']) ? $_COOKIE['token'] : false;
 		if(!$token){ return true; }
-		$datetime = time();
+
+		$timestamp = time();
+		$datetime = date("Y-m-d H:i:s", $timestamp);
 
 		# must connect database
 		if(!DB::connect()){ return false; }
 
 		# if user exist
 		$result = DB::query(
-			'SELECT `account_event`.`id` AS `event_id`, `account_event`.`expire`, `account_event`.`datetime` AS "spawntime",
+			'SELECT `account_event`.`id` AS `event_id`, UNIX_TIMESTAMP(`account_event`.`expire`) AS `expire`, UNIX_TIMESTAMP(`account_event`.`datetime`) AS "spawntime",
 			`account`.`id`, `account`.`username`, `account`.`identity`, `account`.`email`, `account`.`status` 
 			FROM `account_event` 
 			LEFT JOIN `account` ON(`account`.`id`=`account_event`.`uid`) 
-			WHERE `account`.`status`<>"removed" AND `account_event`.`token`=:token
+			WHERE `account`.`status`<>"removed" AND `account_event`.`token`=:token AND :datetime < `account_event`.`expire`
 			ORDER BY `account_event`.`id` DESC
 			LIMIT 1;'
-		)::execute([':token' => $token]);
+		)::execute([
+			':token' => $token,
+			':datetime' => $datetime,
+		]);
 		if($result::error()){ return false; }
 		$user = DB::fetch();
 		if(!$user){ self::logout(); return true; }
-		
-		# check if timeout
-		if( $datetime > $user['expire'] ){ self::logout(); return 'timeout'; }
+
 		# check account status
 		if($user['status'] !== 'alive'){ self::logout(); return 'not_alive'; }
 
 		# successfully, update expire
 		$rule = Inc::config('account');
-		$expire = time() + $rule['timeout']['login'];
+		$expireTimestamp = $timestamp + $rule['timeout']['login'];
+		$expire = date("Y-m-d H:i:s", $expireTimestamp);
+
 		$result = DB::query(
 			'UPDATE `account_event` SET `expire`=:expire WHERE `id`=:event_id;'
 		)::execute([':expire'=>$expire, ':event_id'=>$user['event_id'], ]);
 		if($result::error()){ return false; }
+
 		setcookie('token', $token, [
-			'expires' => $expire,
+			'expires' => $expireTimestamp,
 			'path' => Root,
 			'domain' => Domain,
 			'secure' => false,
@@ -126,9 +132,12 @@ class User{
 		$token = self::get('token',false);
 		if(!$token){ return true; }
 
-		$datetime = time();
+		$timestamp = time();
+		$datetime = date("Y-m-d H:i:s", $timestamp);
+		$expire = date("Y-m-d H:i:s", $timestamp-1);
+
 		setcookie('token', false, [
-			'expires' => $datetime-1,
+			'expires' => $expire,
 			'path' => Root,
 			'domain' => Domain,
 			'secure' => false,
@@ -141,12 +150,12 @@ class User{
 
 		# set token expire
 		$result = DB::query(
-			'UPDATE `account_event` SET `expire`=:datetime 
-			WHERE `token`=:token AND `expire`>:datetime2 AND `commit`=:commit;'
+			'UPDATE `account_event` SET `expire`=:expire 
+			WHERE `token`=:token AND `expire`>:datetime AND `commit`=:commit;'
 		)::execute([
-			':datetime' => $datetime,
+			':datetime' => $expire,
 			':token' => $token,
-			':datetime2' => $datetime,
+			':datetime' => $datetime,
 			':commit' => 'login',
 		]);
 		return (DB::error()) ? false : true;

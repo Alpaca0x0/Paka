@@ -192,10 +192,9 @@ Inc::clas('user');
                                         <!-- deleting load end -->
 
                                         <!-- comments -->
-                                        <div class="ts-space"></div>
-
                                         <!-- comments loading -->
                                         <div v-show="thePost.comments.is.getting" v-show="thePost.comments.is.visible" class="ts-placeholder is-loading" v-cloak>
+                                            <div class="ts-space"></div>
                                             <div class="ts-row">
                                                 <div class="column">
                                                     <div class="ts-avatar is-large">
@@ -213,6 +212,7 @@ Inc::clas('user');
                                         <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
                                             <div v-for="theComment in thePost.comments.data" :key="theComment" v-show="thePost.comments.is.visible" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
                                                 <!-- comment -->
+                                                <div class="ts-space"></div>
                                                 <transition enter-active-class="animate__faster animate__flipInX">
                                                     <div class="ts-conversation">
                                                         <div class="avatar ts-image">
@@ -265,11 +265,10 @@ Inc::clas('user');
                                 </div>
                             </transition>
                             <!-- post -->
+                            <div class="ts-space"></div>
                         </div>
                     </transition-group>
                     <!-- posts end -->
-
-                    <div class="ts-space"></div>
 
                     <!-- if no auto load -->
                     <transition enter-active-class="animate__animated animate__flipInX">
