@@ -232,6 +232,42 @@ Inc::clas('user');
                                                                     {{ moment(theComment.datetime*1000).fromNow() }}
                                                                 </a>
                                                             </div>
+
+                                                            <!-- replies -->
+                                                            <template v-if="theComment.replies.times > 0">
+                                                                <div class="ts-divider is-start-text">
+                                                                    <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的回應</a>
+                                                                </div>
+
+                                                                <div v-for="theReply in theComment.replies.data" :key="theReply" v-cloak>
+                                                                    {{ theComment.replies.is.noMore=theComment.replies.data.length>=theComment.replies.times?true:theComment.replies.is.noMore }}
+                                                                    <!-- reply -->
+                                                                    <div class="ts-space"></div>
+                                                                    <div class="ts-conversation">
+                                                                        <div class="avatar ts-image">
+                                                                            <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
+                                                                        </div>
+                                                                        <div class="content">
+                                                                            <div class="bubble">
+                                                                                <div class="author">
+                                                                                    <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
+                                                                                </div>
+                                                                                <div v-html="theReply.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;" class="text"></div>
+                                                                            </div>
+                                                                            <div class="ts-meta is-small is-secondary">
+                                                                                <a class="item">讚</a>
+                                                                                <a class="item">回覆</a>
+                                                                                <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                                    {{ moment(theReply.datetime*1000).fromNow() }}
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- reply end -->
+                                                                </div>
+                                                            </template>
+                                                            <!-- replies end -->
+
                                                         </div>
                                                     </div>
                                                 </transition>
@@ -737,7 +773,7 @@ Inc::clas('user');
             thePost.comments.is.getError = false;
             // 
             let datas = {
-                pid: thePost.id,
+                postId: thePost.id,
                 limit: 6,
                 orderBy: 'ASC',
             };
@@ -779,6 +815,55 @@ Inc::clas('user');
             });
         }
         // 
+        const getReplies = (theComment) => {
+            if((theComment.replies.is.getting || theComment.replies.is.noMore || posts.is.getError)){ return; }
+            theComment.replies.is.init = true;
+            theComment.replies.is.getting = true;
+            theComment.replies.is.getError = false;
+            // 
+            let datas = {
+                commentId: theComment.id,
+                limit: 6,
+                orderBy: 'ASC',
+            };
+            if(theComment.replies.data.length > 0){ datas.before = theComment.replies.data[0].id ; }
+            // 
+            $.ajax({
+                type: "GET",
+                url: '<?=Uri::api('forum/replies')?>',
+                data: datas,
+                dataType: 'json',
+            }).always(()=>{
+                // posts.type = 'error';
+                // posts.status = 'unexpected';
+                // posts.message = '發生非預期的錯誤';
+            }).fail((xhr, status, error) => {
+                console.error(xhr.responseText);
+                theComment.replies.is.getError = true;
+            }).done((resp) => {
+                try {
+                    console.log(resp);
+                    // check response format is correct
+                    if(!Resp.object(resp)){ return false; }
+                    // get msg
+                    // posts.type = resp.type;
+                    // posts.status = resp.status;
+                    // posts.message = resp.message;
+                    // check if success
+                    if(resp.type==='success'){
+                        if(resp.data === null || resp.data.length < 1){ theComment.replies.is.noMore = true; }
+                        else{
+                            if(resp.data.length < datas.limit){ theComment.replies.is.noMore = true; }
+                            theComment.replies.data.unshift(...resp.data);
+                            if(!resp.data[0]['id']){ theComment.replies.is.getError = true; }
+                        }
+                    }else{ theComment.replies.is.getError = true; }
+                } catch (error){ console.error(error); }
+            }).always(() => {
+                theComment.replies.is.getting = false;
+            });
+        }
+        // 
         onMounted(() => {
             // moment.js locale
             let locale = (window.navigator.userLanguage || window.navigator.language);
@@ -800,7 +885,7 @@ Inc::clas('user');
             // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment, getComments };
+        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');

@@ -96,7 +96,6 @@ class Forum{
         return $post;
     }
 
-    // get data
     static function getComments($pids){
         if(!self::isInit()){ return false; };
         // get args
@@ -109,18 +108,42 @@ class Forum{
         $pids = is_array($pids) ? $pids : [$pids];
         $pids = implode(", ", $pids);
 
-        $sql = 'SELECT `comment`.`id`, `comment`.`content`, UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
-                , `post`.`id` as `post.id`
+        $sql = 'SELECT `comment`.`id`
+                , `comment`.`content`
+                , UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
+
+                , `post`.`id` as `post`
+
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
-                , (SELECT COUNT(`reply`.`id`) FROM `comment` as `reply` WHERE `reply`.`status`="alive" AND `reply`.`reply`=`comment`.`id`)as`reply_times`
+
+                , `reply`.`id`as`replies.data.0.id`
+                , `reply`.`content`as`replies.data.0.content`
+                , UNIX_TIMESTAMP(`reply`.`datetime`)as`replies.data.0.datetime`
+                , COUNT(`reply`.`id`)as`replies.times`
+
+                , `reply_account`.`username`as`replies.data.0.replier.username`
+                , `reply_account`.`identity`as`replies.data.0.replier.identity`
+                , `reply_profile`.`nickname`as`replies.data.0.replier.nickname`
+                , `reply_profile`.`gender`as`replies.data.0.replier.gender`
+                , IFNULL(REPLACE(TO_BASE64(`reply_profile`.`avatar`),"\n",""), NULL)as`replies.data.0.replier.avatar`
+
                 , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
+
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
-                WHERE `comment`.`reply` IS NULL AND `comment`.`status`="alive" AND `comment`.`id` > :after AND `comment`.`id` < :before AND `comment`.`post` IN ('.$pids.')
+
+                LEFT JOIN `comment` as `reply` ON (`comment`.`id`=`reply`.`reply` AND `reply`.`status`="alive") 
+                LEFT JOIN `account` as `reply_account` ON (`reply`.`commenter`=`reply_account`.`id`)
+                LEFT JOIN `profile` as `reply_profile` ON (`reply_account`.`id`=`reply_profile`.`id`)
+
+                WHERE `comment`.`reply` IS NULL 
+                AND `comment`.`status`="alive" 
+                AND `comment`.`post` IN ('.$pids.')
+                AND `comment`.`id` > :after AND `comment`.`id` < :before
                 GROUP BY `comment`.`id`
         ';
         $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
@@ -135,6 +158,55 @@ class Forum{
         $comments = DB::fetchAll();
         if(!$comments){ return null; }
         return $comments;
+    }
+
+    static function getReplies($commentIds){
+        if(!self::isInit()){ return false; };
+        // get args
+        $limit = self::$limit;
+        $before = self::$before;
+        $after = self::$after;
+        $orderBy = self::$orderBy;
+        // reset args
+        self::resetArgs();
+        $commentIds = is_array($commentIds) ? $commentIds : [$commentIds];
+        $commentIds = implode(", ", $commentIds);
+
+        $sql = 'SELECT `reply`.`id`
+                , `reply`.`content`
+                , UNIX_TIMESTAMP(`reply`.`datetime`)as`datetime`
+
+                , `post`.`id` as `post` 
+
+                , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
+                , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
+
+                , COUNT(`reply_edited`.`id`)as`edited.times`, MAX(`reply_edited`.`datetime`)as`edited.last_datetime` 
+
+                FROM `comment` as `reply` 
+                LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
+                LEFT JOIN `account` ON (`reply`.`commenter`=`account`.`id`) 
+                LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
+                LEFT JOIN `comment_edited` as `reply_edited` ON (`reply`.`id`=`reply_edited`.`comment`) 
+
+                WHERE `reply`.`reply` IS NOT NULL 
+                AND `reply`.`status`="alive" 
+                AND `reply`.`post` IN ('.$commentIds.')
+                AND `reply`.`id` > :after AND `reply`.`id` < :before
+                GROUP BY `reply`.`id`
+        ';
+        $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
+        $sql .= " LIMIT {$limit}";
+        $sql .= ';';
+        // 
+        DB::query($sql)::execute([
+            ':before' => $before,
+            ':after' => $after,
+        ]);
+        if(DB::error()){ return false; }
+        $replies = DB::fetchAll();
+        if(!$replies){ return null; }
+        return $replies;
     }
 
     // add data

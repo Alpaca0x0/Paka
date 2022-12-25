@@ -25,22 +25,22 @@ $def = [
 	'orderBy' => 'DESC',
 ];
 
-$needs = ['postId'];
+$needs = ['commentId'];
 Arr::every($_GET, ...$needs) or Resp::warning('data_missing', '資料缺失');
 
 //
 Inc::clas('forum');
 Forum::init() or Resp::error('forum_cannot_init', '發生非預期錯，Forum 資料無法被初始化');
 
-// check pids
-$pids = $_GET['postId'];
-if(!is_array($pids)){ $pids = [$pids]; }
-foreach ($pids as $idx => $pid) {
-	$pid = is_numeric($pid) ? Type::int($pid, 0) : false; 
-	if(!$pid){ unset($pids[$idx]); } 
-	else{ $pids[$idx] = $pid; }
-} $pids = array_unique($pids);
-if(count($pids) > 16){ Resp::warning('post_too_many', '請求留言的文章過多'); }
+// check commentIds
+$commentIds = $_GET['commentId'];
+if(!is_array($commentIds)){ $commentIds = [$commentIds]; }
+foreach ($commentIds as $idx => $commentId) {
+	$commentId = is_numeric($commentId) ? Type::int($commentId, 0) : false; 
+	if(!$commentId){ unset($commentIds[$idx]); } 
+	else{ $commentIds[$idx] = $commentId; }
+} $commentIds = array_unique($commentIds);
+if(count($commentIds) > 16){ Resp::warning('comment_too_many', '請求回覆留言的留言過多'); }
 
 // check option
 $before = isset($_GET['before']) ? Type::int($_GET['before'], $def['before']) : $def['before']; 
@@ -56,20 +56,19 @@ else{ $before=false; $after=$def['after']; }
 if(!in_array($orderBy, ['DESC', 'ASC'])){ $orderBy = $def['orderBy']; }
 if($limit<$min['limit'] || $limit>$max['limit']){ $limit = $def['limit']; }
 
-$comments = Forum::before($before)
+$replies = Forum::before($before)
 				::after($after)
-				::orderBy('`comment`.`datetime`', $orderBy)
+				::orderBy('`reply`.`datetime`', $orderBy)
 				::limit($limit)
-				::getComments($pids);
+				::getReplies($commentIds);
 // 
-if($comments === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
-if(is_null($comments)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
-if(!is_array($comments)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }
+if($replies === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
+if(is_null($replies)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
+if(!is_array($replies)){ Resp::error('sql_query_return_format', 'SQL 語法查詢返回錯誤格式'); }
 
-foreach($comments as $idx => $comment){
-	$comments[$idx] = Arr::nd($comment);
-	$comments[$idx]['content'] = htmlentities($comment['content']);
-	$comments[$idx]['replies']['is'] = [];
+foreach($replies as $idx => $reply){
+	$replies[$idx] = Arr::nd($reply);
+	$replies[$idx]['content'] = htmlentities($reply['content']);
 }
 
-Resp::success('successfully', $comments, '成功獲取留言');
+Resp::success('successfully', $replies, '成功獲取留言');
