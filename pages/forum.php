@@ -264,11 +264,12 @@ Inc::clas('user');
                                     </div>
                                 </div>
                             </transition>
-                            <div class="ts-space"></div>
                             <!-- post -->
                         </div>
                     </transition-group>
                     <!-- posts end -->
+
+                    <div class="ts-space"></div>
 
                     <!-- if no auto load -->
                     <transition enter-active-class="animate__animated animate__flipInX">
@@ -642,7 +643,7 @@ Inc::clas('user');
                     html: `
                         <div class="ts-row">
                             <div class="column">
-                                <div class="ts-avatar is-large is-circular">
+                                <div class="ts-avatar is-large is-circular is-bordered">
                                     <img src="${thePost.poster.avatar ? 'data:image/jpeg;base64,'+thePost.poster.avatar : user.avatarDefault}">
                                 </div>
                             </div>
@@ -707,8 +708,9 @@ Inc::clas('user');
                     posts.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
-                        if(resp.data === null || resp.data.length < datas.limit){ posts.is.noMore = true; }
+                        if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
                         else{
+                            if(resp.data.length < datas.limit){ posts.is.noMore = true; }
                             resp.data = resp.data.map(item => ({ ...item,
                                 comments:{
                                     is:{
@@ -737,7 +739,7 @@ Inc::clas('user');
             // 
             let datas = {
                 pid: thePost.id,
-                limit: 12,
+                limit: 6,
                 orderBy: 'ASC',
             };
             if(thePost.comments.data.length > 0){ datas.before = thePost.comments.data[0].id ; }
@@ -767,6 +769,7 @@ Inc::clas('user');
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ thePost.comments.is.noMore = true; }
                         else{
+                            if(resp.data.length < datas.limit){ thePost.comments.is.noMore = true; }
                             thePost.comments.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ thePost.comments.is.getError = true; }
                         }
