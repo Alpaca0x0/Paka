@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022-12-25 11:26:08
+-- 產生時間： 2022-12-26 10:35:03
 -- 伺服器版本： 8.0.17
 -- PHP 版本： 8.1.13
 
@@ -62,10 +62,10 @@ CREATE TABLE `comment` (
   `id` int(11) NOT NULL,
   `commenter` int(11) NOT NULL,
   `post` int(11) NOT NULL,
+  `reply` int(11) DEFAULT NULL,
   `content` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review',
-  `reply` varchar(640) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL
+  `status` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'alive' COMMENT 'alive, removed, review'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
