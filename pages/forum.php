@@ -169,7 +169,7 @@ Inc::clas('user');
                                                 <button @click="thePost.comments.is.visible=!thePost.comments.is.visible; thePost.comments.is.init || getComments(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span class="ts-icon is-comment-icon is-regular"></span>
                                                     留言
-                                                    <span v-show="thePost.comment_times" class="ts-badge is-outlined is-start-spaced">{{ thePost.comment_times }}</span>
+                                                    <span v-show="thePost.comments.times" class="ts-badge is-outlined is-start-spaced">{{ thePost.comments.times }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
@@ -199,41 +199,53 @@ Inc::clas('user');
                                         </div>
                                         <!-- comments loading end -->
 
+                                        <template v-if="thePost.comments.times > 0 && thePost.comments.is.visible && !thePost.comments.is.getting" v-cloak>
+                                            <div class="ts-space"></div>
+                                            <div class="ts-divider is-start-text">
+                                                <a v-show="!thePost.comments.is.noMore" @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.times - thePost.comments.data.length }} 則留言</a>
+                                            </div>
+                                            <div v-show="!thePost.comments.is.noMore && thePost.comments.is.getError" class="ts-divider is-start-text">
+                                                <span class="ts-text is-tiny is-negative">載入關於這則貼文的留言時發生錯誤</span>
+                                            </div>
+                                        </template>
+
                                         <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
                                             <div v-for="theComment in thePost.comments.data" :key="theComment" v-show="thePost.comments.is.visible" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
                                                 <!-- comment -->
                                                 <div class="ts-space"></div>
-                                                <transition enter-active-class="animate__faster animate__flipInX">
-                                                    <div class="ts-conversation">
-                                                        <div class="avatar ts-image">
-                                                            <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
+                                                <div class="ts-conversation">
+                                                    <div class="avatar ts-image">
+                                                        <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
+                                                    </div>
+                                                    <div class="content">
+                                                        <div class="bubble">
+                                                            <div class="author">
+                                                                <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
+                                                            </div>
+                                                            <div v-html="theComment.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;" class="text"></div>
                                                         </div>
-                                                        <div class="content">
-                                                            <div class="bubble">
-                                                                <div class="author">
-                                                                    <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
-                                                                </div>
-                                                                <div v-html="theComment.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;" class="text"></div>
+                                                        <div class="ts-meta is-small is-secondary">
+                                                            <a class="item">讚</a>
+                                                            <a class="item">回覆</a>
+                                                            <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                {{ moment(theComment.datetime*1000).fromNow() }}
+                                                            </a>
+                                                            <div class="item">
+                                                                <div class="ts-icon is-hashtag-icon"></div>
+                                                                {{ theComment.id }}
                                                             </div>
-                                                            <div class="ts-meta is-small is-secondary">
-                                                                <a class="item">讚</a>
-                                                                <a class="item">回覆</a>
-                                                                <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                    {{ moment(theComment.datetime*1000).fromNow() }}
-                                                                </a>
-                                                                <div class="item">
-                                                                    <div class="ts-icon is-hashtag-icon"></div>
-                                                                    {{ theComment.id }}
-                                                                </div>
+                                                        </div>
+
+                                                        <!-- replies -->
+                                                        <template v-if="theComment.replies.times > 0">
+                                                            <div class="ts-divider is-start-text">
+                                                                <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
                                                             </div>
-
-                                                            <!-- replies -->
-                                                            <template v-if="theComment.replies.times > 0">
-                                                                <div class="ts-divider is-start-text">
-                                                                    <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
-                                                                </div>
-
-                                                                <div v-for="theReply in theComment.replies.data" :key="theReply" v-cloak>
+                                                            <div v-show="!theComment.replies.is.noMore && theComment.replies.is.getError" class="ts-divider is-start-text">
+                                                                <span class="ts-text is-tiny is-negative">載入關於這則留言的回應時發生錯誤</span>
+                                                            </div>
+                                                            <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
+                                                                <div v-for="theReply in theComment.replies.data" :key="theReply" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
                                                                     <!-- reply -->
                                                                     <div class="ts-space"></div>
                                                                     <div class="ts-conversation">
@@ -262,12 +274,12 @@ Inc::clas('user');
                                                                     </div>
                                                                     <!-- reply end -->
                                                                 </div>
-                                                            </template>
-                                                            <!-- replies end -->
+                                                            </transition-group>
+                                                        </template>
+                                                        <!-- replies end -->
 
-                                                        </div>
                                                     </div>
-                                                </transition>
+                                                </div>
                                                 <!-- comment end -->
                                             </div>
                                         </transition-group>
@@ -285,8 +297,8 @@ Inc::clas('user');
                                                         <div class="ts-input is-fluid is-underlined is-small">
                                                             <textarea 
                                                                 @keydown.enter.exact.prevent="comment.create(thePost)" 
-                                                                @keydown.enter.shift.exact.prevent="thePost.newComment.content += '\n'" 
-                                                                v-model="thePost.newComment.content" 
+                                                                @keydown.enter.shift.exact.prevent="thePost.comment.creating.content += '\n'" 
+                                                                v-model="thePost.comment.creating.content" 
                                                                 placeholder="回覆這則貼文... (可以使用 Shift + Enter 換行)" 
                                                                 style="height: 2.5rem"
                                                                 oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
@@ -305,22 +317,22 @@ Inc::clas('user');
                                         <!-- comments end -->
 
                                     </div>
+
+                                    <!-- post deleting load -->
+                                    <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
+                                        <div class="ts-center">
+                                            <div class="ts-content" style="color: #FFF">
+                                                <div class="ts-loading is-large"></div>
+                                                <br>刪除中
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- post deleting load end -->
+
                                 </div>
                             </transition>
                             <!-- post -->
 
-                            <!-- post deleting load -->
-                            <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
-                                <div class="ts-center">
-                                    <div class="ts-content" style="color: #FFF">
-                                        <div class="ts-loading is-large"></div>
-                                        <br>刪除中
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- post deleting load end -->
-
-                            
                             <div class="ts-space"></div>
                         </div>
                     </transition-group>
@@ -553,6 +565,53 @@ Inc::clas('user');
                 getError: false,
             },
         });
+        // 
+        const format = {
+            post: (thePosts) => {
+                let ret = Array.isArray(thePosts) ? thePosts : [thePosts];
+                ret.forEach((item, idx)=>{
+                    !('comments' in item) && (item.comments = {});
+                        !('is' in item.comments) && (item.comments.is = {});
+                            !('visible' in item.comments.is) && (item.comments.is.visible = false);
+                            !('noMore' in item.comments.is) && (item.comments.is.noMore = false);
+                            !('init' in item.comments.is) && (item.comments.is.init = false);
+                            !('getting' in item.comments.is) && (item.comments.is.getting = false);
+                        !('data' in item.comments) && (item.comments.data = []);
+                        !('type' in item.comments) && (item.comments.type = 'info');
+                        !('status' in item.comments) && (item.comments.status = 'init');
+                        !('message' in item.comments) && (item.comments.message = '');
+                    // 
+                    !('comment' in item) && (item.comment = {});
+                        !('is' in item.comment) && (item.comment.is = {});
+                            !('creating' in item.comment.is) && (item.comment.is.creating = false);
+                        !('content' in item.comment) && (item.comment.content = '');
+                        !('creating' in item.comment) && (item.comment.creating = {});
+                            !('info' in item.comment.creating) && (item.comment.creating.info = {type:'', status:'', message:'', data:[]});
+                            !('content' in item.comment.creating) && (item.comment.creating.content = '');
+                    // 
+                    return item;
+                });
+                // 
+                if(Array.isArray(thePosts)){ return ret; }
+                else{ return ret[0]; }
+            },
+            comment: (theComment) => {
+                let ret = Array.isArray(theComment) ? theComment : [theComment];
+                ret.forEach((item, idx)=>{
+                    !('replies' in item) && (item.replies = {});
+                        !('times' in item.replies) && (item.replies.times = 0);
+                        !('is' in item.replies) && (item.replies.is = {});
+                            !('noMore' in item.replies.is) && (item.replies.is.noMore = item.replies.times ? false : true);
+                        !('data' in item.replies) && (item.replies.data = []);
+                    // 
+                    return item;
+                });
+                // 
+                if(Array.isArray(theComment)){ return ret; }
+                else{ return ret[0]; }
+            }
+        };
+        // 
         let post = reactive({
             menuActiver: false, // pid
             is: {
@@ -599,20 +658,7 @@ Inc::clas('user');
                     // 
                     if(resp.type === 'success'){
                         post.creating.content = '';
-                        resp.data['comments'] = resp.data['comments'] ? resp.data['comments'] : {
-                            is:{
-                                visible: false,
-                                noMore: false,
-                                init: false,
-                            },
-                            data: [],
-                        };
-                        resp.data['newComment'] = {
-                            is: {
-                                creating: false,
-                            },
-                            content: '',
-                        }
+                        resp.data = format.post(resp.data);
                         posts.data.unshift(resp.data);
                     }
                 }).always(() => {
@@ -739,61 +785,62 @@ Inc::clas('user');
         });
         let comment = reactive({
             create: (thePost) => {
-                if(thePost.newComment.is.creating){ return; }
-                thePost.newComment.is.creating = true;
-                // check data format
+                if(thePost.comment.is.creating){ return; }
+                thePost.comment.is.creating = true;
                 // 
                 $.ajax({
                     type: "POST",
                     url: '<?=Uri::auth('forum/comment/create')?>',
                     data: {
                         postId: thePost.id,
-                        content: thePost.newComment.content,
+                        content: thePost.comment.creating.content,
                     },
                     dataType: 'json',
                 }).always(() => {
-                    // post.creating.info = {
-                    //     type: 'error',
-                    //     status: 'unexpected',
-                    //     message: '很抱歉，發生了非預期的錯誤！',
-                    // };
+                    thePost.comment.creating.info = {
+                        type: 'error',
+                        status: 'unexpected',
+                        message: '很抱歉，發生了非預期的錯誤！',
+                        data: [],
+                    };
                 }).fail((xhr, status, error) => {
                     console.error(xhr.responseText);
                 }).done((resp) => {
                     console.log(resp);
                     if(!Resp.object(resp)){ return false; }
                     // 
-                    // post.creating.info = {
-                    //     type: resp.type,
-                    //     status: resp.type,
-                    //     data: resp.data,
-                    //     message: resp.message,
-                    // };
+                    thePost.comment.creating.info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
                     // 
                     if(resp.type === 'success'){
                         document.activeElement.blur(); // remove focus status
-                        thePost.newComment.content = '';
+                        thePost.comment.creating.content = '';
                         resp.data.replies.is = {
                             noMore: true,
                         };
                         resp.data.replies.data = [],
+                        thePost.comments.times += 1;
                         thePost.comments.data.push(resp.data);
                     }
                 }).always(() => {
-                    thePost.newComment.is.creating = false;
-                    // Swal.fire({
-                    //     position: 'bottom-start',
-                    //     icon: post.creating.info.type,
-                    //     title: post.creating.info.message,
-                    //     toast: true,
-                    //     showConfirmButton: false,
-                    //     timer: post.creating.info.type==='success' ? 2000 : false,
-                    //     timerProgressBar: true,
-                    //     didOpen: (toast) => {
-                    //         toast.addEventListener('mouseenter', Swal.stopTimer)
-                    //         toast.addEventListener('mouseleave', Swal.resumeTimer)
-                    //     }
-                    // });
+                    thePost.comment.is.creating = false;
+                    thePost.comment.creating.info.type === 'success' || Swal.fire({
+                        position: 'bottom-start',
+                        icon: thePost.comment.creating.info.type,
+                        title: thePost.comment.creating.info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
                 });
             },
         });
@@ -832,22 +879,7 @@ Inc::clas('user');
                         if(resp.data === null || resp.data.length < 1){ posts.is.noMore = true; }
                         else{
                             if(resp.data.length < datas.limit){ posts.is.noMore = true; }
-                            resp.data = resp.data.map(item => ({ ...item,
-                                comments:{
-                                    is:{
-                                        visible: false,
-                                        noMore: false,
-                                        init: false,
-                                    },
-                                    data: [],
-                                },
-                                newComment:{
-                                    is: {
-                                        creating: false,
-                                    },
-                                    content: '',
-                                }
-                            }));
+                            resp.data = format.post(resp.data);
                             posts.data.push(...resp.data);
                             if(!resp.data[0]['id']){ posts.is.getError = true; }
                         }
@@ -860,14 +892,14 @@ Inc::clas('user');
         // 
         const getComments = (thePost) => {
             if((thePost.comments.is.getting || thePost.comments.is.noMore || posts.is.getError)){ return; }
-            thePost.comments.is.init = true;
+            thePost.comments.is.init = true; // dont auto getComments when user has clicked to show comments
             thePost.comments.is.getting = true;
             thePost.comments.is.getError = false;
             // 
             let datas = {
                 postId: thePost.id,
-                limit: 6,
-                orderBy: 'ASC',
+                limit: 4,
+                orderBy: 'DESC',
             };
             if(thePost.comments.data.length > 0){ datas.before = thePost.comments.data[0].id ; }
             // 
@@ -877,9 +909,12 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                // posts.type = 'error';
-                // posts.status = 'unexpected';
-                // posts.message = '發生非預期的錯誤';
+                thePost.comments.info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    message: '發生非預期的錯誤',
+                    data: [],
+                };
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
                 thePost.comments.is.getError = true;
@@ -889,22 +924,25 @@ Inc::clas('user');
                     // check response format is correct
                     if(!Resp.object(resp)){ return false; }
                     // get msg
-                    // posts.type = resp.type;
-                    // posts.status = resp.status;
-                    // posts.message = resp.message;
+                    thePost.comments.info.type = resp.type;
+                    thePost.comments.info.status = resp.status;
+                    thePost.comments.info.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ thePost.comments.is.noMore = true; }
                         else{
                             if(resp.data.length < datas.limit){ thePost.comments.is.noMore = true; }
-                            resp.data.forEach((comment) => {
-                                comment.replies.is = {
-                                    noMore: comment.replies.times ? false : true,
-                                };
-                                comment.replies.data = [];
-                            })
+                            // resp.data.forEach((theComment) => {
+                            //     theComment.replies.is = {
+                            //         noMore: theComment.replies.times ? false : true,
+                            //     };
+                            //     theComment.replies.data = [];
+                            // });
+                            resp.data = format.comment(resp.data);
+                            resp.data = resp.data.reverse();
                             thePost.comments.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ thePost.comments.is.getError = true; }
+                            if(resp.data.length < datas.limit || thePost.comments.times <= thePost.comments.data.length){ thePost.comments.is.noMore = true; }
                         }
                     }else{ thePost.comments.is.getError = true; }
                 } catch (error){ console.error(error); }
@@ -922,7 +960,7 @@ Inc::clas('user');
             let datas = {
                 commentId: theComment.id,
                 limit: 6,
-                orderBy: 'ASC',
+                orderBy: 'DESC',
             };
             if(theComment.replies.data.length > 0){ datas.before = theComment.replies.data[0].id ; }
             // 
@@ -932,9 +970,12 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                // posts.type = 'error';
-                // posts.status = 'unexpected';
-                // posts.message = '發生非預期的錯誤';
+                theComment.replies.info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    message: '發生非預期的錯誤',
+                    data: [],
+                };
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
                 theComment.replies.is.getError = true;
@@ -944,16 +985,18 @@ Inc::clas('user');
                     // check response format is correct
                     if(!Resp.object(resp)){ return false; }
                     // get msg
-                    // posts.type = resp.type;
-                    // posts.status = resp.status;
-                    // posts.message = resp.message;
+                    theComment.replies.info.type = resp.type;
+                    theComment.replies.info.status = resp.status;
+                    theComment.replies.info.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ theComment.replies.is.noMore = true; }
                         else{
                             if(resp.data.length < datas.limit){ theComment.replies.is.noMore = true; }
+                            resp.data = resp.data.reverse();
                             theComment.replies.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ theComment.replies.is.getError = true; }
+                            if(resp.data.length < datas.limit || theComment.replies.times <= theComment.replies.data.length){ theComment.replies.is.noMore = true; }
                         }
                     }else{ theComment.replies.is.getError = true; }
                 } catch (error){ console.error(error); }
@@ -973,14 +1016,8 @@ Inc::clas('user');
                 let scrollTop = document.documentElement.scrollTop;
                 let clientHeight = document.documentElement.clientHeight;
                 let scrollHeight = document.documentElement.scrollHeight;
-                if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
+                if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ posts.is.noMore || getPosts(); }
             });
-            // document.documentElement.onscroll = (event) => {
-            //     let scrollTop = document.documentElement.scrollTop;
-            //     let clientHeight = document.documentElement.clientHeight;
-            //     let scrollHeight = document.documentElement.scrollHeight;
-            //     if(scrollTop+clientHeight > (scrollHeight-scrollHeight/5)){ getPosts(); }
-            // }; document.documentElement.onwheel = (event) => { document.documentElement.onscroll(event); }
         });
         // 
         return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment };
