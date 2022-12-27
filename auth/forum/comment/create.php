@@ -10,7 +10,7 @@ Arr::every($_POST, ...$needs) or Resp::warning('data_missing', $needs, '資料�
 
 # convert
 $uid = User::get('id', false);
-$pid = Type::int($_POST['postId'], 0);
+$postId = Type::int($_POST['postId'], 0);
 $content = Type::string($_POST['content'], '');
 
 # check format
@@ -27,13 +27,17 @@ if(!preg_match($config['content'], $preContent)){ Resp::warning('content_format'
 
 # create the comment
 Inc::clas('forum');
-$commentId = Forum::createComment($uid, $pid, $content);
-if($pid === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
+Forum::init() or Resp::error('cannot_init_forum', '初始化 Forum 時發生錯誤');
+
+$commentId = Forum::createComment($uid, $postId, $content);
+if($commentId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
+if(is_null($commentId)){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
 
 # return new comment
-$comment = Forum::getComment($commentId);
-if(!$comment){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的文章'); }
+$newComment = Forum::getComment($commentId);
+if($newComment === false){ Resp::error('sql_query', 'SQL 查詢新留言的資訊時發生錯誤'); }
+if(!$newComment){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的留言'); }
 
-$comment = Arr::nd($comment);
+$newComment = Arr::nd($newComment);
 
-Resp::success('successfully', $comment, '已成功留言');
+Resp::success('successfully', $newComment, '已成功留言');

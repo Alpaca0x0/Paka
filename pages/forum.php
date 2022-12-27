@@ -915,7 +915,7 @@ Inc::clas('user');
                     type: "POST",
                     url: '<?=Uri::auth('forum/reply/create')?>',
                     data: {
-                        commentId: theComment.id,
+                        replyId: theComment.id,
                         content: theComment.reply.creating.content,
                     },
                     dataType: 'json',

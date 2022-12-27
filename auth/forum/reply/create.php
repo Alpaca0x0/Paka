@@ -5,12 +5,12 @@ Inc::clas('user');
 User::isLogin() or Resp::warning('is_logout', '當前尚未登入任何帳戶，可能是 Token 過期了，請重新登入');
 
 # needed datas
-$needs = ['commentId', 'content'];
+$needs = ['replyId', 'content'];
 Arr::every($_POST, ...$needs) or Resp::warning('data_missing', $needs, '資料缺失');
 
 # convert
 $uid = User::get('id', false);
-$commentId = Type::int($_POST['commentId'], 0);
+$replyId = Type::int($_POST['replyId'], 0);
 $content = Type::string($_POST['content'], '');
 
 # check format
@@ -27,13 +27,14 @@ if(!preg_match($config['content'], $preContent)){ Resp::warning('content_format'
 
 # create the comment
 Inc::clas('forum');
-$commentId = Forum::createComment($uid, $commentId, $content);
-if($commentId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
+$replyId = Forum::createReply($uid, $replyId, $content);
+if($replyId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
+if(is_null($replyId)){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
 
 # return new comment
-$comment = Forum::getComment($commentId);
-if(!$comment){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的文章'); }
+$reply = Forum::getComment($replyId);
+if(!$reply){ Resp::error('unexpected', '發生非預期錯誤，無法返回新的回覆'); }
 
-$comment = Arr::nd($comment);
+$reply = Arr::nd($reply);
 
-Resp::success('successfully', $comment, '已成功留言');
+Resp::success('successfully', $reply, '已成功回應留言');

@@ -150,7 +150,7 @@ class Forum{
     }
 
     static function getComment($commentId){
-        if(!self::isInit()){ return false; };
+        if(!self::init()){ return false; };
         // reset args
         self::resetArgs();
 
@@ -163,18 +163,22 @@ class Forum{
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
 
-                , 0 as `replies.times`
+                , COUNT(`reply`.`id`)as`replies.times`
 
-                , 0 as`edited.times`, null as `edited.last_datetime` 
+                , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
+                LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
+
+                LEFT JOIN `comment` as `reply` ON (`comment`.`id`=`reply`.`reply` AND `reply`.`status`="alive") 
 
                 WHERE `comment`.`id` = :commentId
                 AND `comment`.`reply` IS NULL 
                 AND `comment`.`status`="alive" 
+                GROUP BY `comment`.`id`
                 LIMIT 1
         ';
         // 
@@ -236,6 +240,43 @@ class Forum{
         return $replies;
     }
 
+    static function getReply($replyId){
+        if(!self::init()){ return false; };
+        // reset args
+        self::resetArgs();
+
+        $sql = 'SELECT `reply`.`id`
+            , `reply`.`content`
+            , UNIX_TIMESTAMP(`reply`.`datetime`)as`datetime`
+
+            , `post`.`id` as `post`
+
+            , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
+            , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
+
+            , COUNT(`reply_edited`.`id`)as`edited.times`, MAX(`reply_edited`.`datetime`)as`edited.last_datetime` 
+
+            FROM `reply` 
+            LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
+            LEFT JOIN `account` ON (`reply`.`commenter`=`account`.`id`) 
+            LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
+            LEFT JOIN `comment_edited` AS `reply_edited` ON (`reply`.`id`=`reply_edited`.`comment`) 
+
+            WHERE `reply`.`id` = :replyId
+            AND `reply`.`reply` IS NOT NULL 
+            AND `reply`.`status`="alive" 
+            LIMIT 1
+        ';
+        // 
+        DB::query($sql)::execute([
+            ':replyId' => $replyId,
+        ]);
+        if(DB::error()){ return false; }
+        $reply = DB::fetch();
+        if(!$reply){ return null; }
+        return $reply;
+    }
+
     // add data
     static function createPost($poster, $content){
         if(!self::init()){ return false; };
@@ -252,7 +293,7 @@ class Forum{
         return DB::lastInsertId();
     }
 
-    static function createComment($commenter, $postId, $content, $reply=null){
+    static function createComment($commenter, $postId, $content){
         if(!self::init()){ return false; };
         $datetime = date("Y-m-d H:i:s");
         // create post
@@ -268,21 +309,33 @@ class Forum{
         return DB::lastInsertId();
     }
 
-    // static function createReply($commenter, $commentId, $content){
-    //     if(!self::init()){ return false; };
-    //     $datetime = date("Y-m-d H:i:s");
-    //     // create post
-    //     $sql = "INSERT INTO `comment`(`commenter`, `post`, `content`, `datetime`) VALUES (:commenter, :postId, :content, :datetime)";
-    //     DB::query($sql)::execute([
-    //         ':commenter' => $commenter,
-    //         ':commentId' => $commentId,
-    //         ':content' => $content,
-    //         ':datetime' => $datetime,
-    //     ]);
-	// 	if(DB::error()){ return false; }
-    //     // done
-    //     return DB::lastInsertId();
-    // }
+    static function createReply($commenter, $reply, $content){
+        if(!self::init()){ return false; };
+        $datetime = date("Y-m-d H:i:s");
+        // check if post and comment is exist
+        $postId = DB::query('SELECT `post` 
+                    FROM `comment` 
+                    WHERE `id`=:commentId AND `status`="alive" 
+                    LIMIT 1
+        ;')::execute([
+            ':commentId' => $reply,
+        ]);
+        if(DB::error()){ return false; }
+        if(!$postId){ return null; }
+
+        // create post
+        $sql = "INSERT INTO `comment`(`commenter`, `post`, `content`, `datetime`) VALUES (:commenter, :postId, :reply, :content, :datetime)";
+        DB::query($sql)::execute([
+            ':commenter' => $commenter,
+            ':postId' => $postId,
+            ':reply' => $reply,
+            ':content' => $content,
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ return false; }
+        // done
+        return DB::lastInsertId();
+    }
 
     // delete data
     static function deletePost($pid){
