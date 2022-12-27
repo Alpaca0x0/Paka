@@ -111,6 +111,7 @@ class Forum{
         $sql = 'SELECT `comment`.`id`
                 , `comment`.`content`
                 , UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
+                , `comment`.`commenter`as`commenter.id`
 
                 , `post`.`id` as `post`
 
@@ -157,6 +158,7 @@ class Forum{
         $sql = 'SELECT `comment`.`id`
                 , `comment`.`content`
                 , UNIX_TIMESTAMP(`comment`.`datetime`)as`datetime`
+                , `comment`.`commenter`as`commenter.id`
 
                 , `post`.`id` as `post`
 
@@ -359,6 +361,20 @@ class Forum{
 		if(DB::error()){ DB::rollback(); return false; }
         // done
         DB::commit();
+        return $rowCount;
+    }
+
+    static function deleteComment($commentId){
+        if(!self::init()){ return false; }
+        // delete comment
+		$sql = 'UPDATE `comment` SET `status`="removed" WHERE `status`="alive" AND (`id`=:commentId OR `reply`=:commentId2);';
+        DB::query($sql)::execute([
+            ':commentId' => $commentId,
+            ':commentId2' => $commentId,
+        ]);
+		if(DB::error()){ return false; }
+        $rowCount = DB::rowCount();
+        // done
         return $rowCount;
     }
 }
