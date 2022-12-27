@@ -138,8 +138,10 @@ Inc::clas('user');
                                                     </div>
                                                 </div>
                                                 <div class="ts-space is-small"></div>
-                                                <div v-html="thePost.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;"></div>
-                                                <div class="ts-space is-small"></div>
+
+                                                <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAll ? '' : '8.6rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAll=!thePost.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
+                                                
                                             </div>
                                             <!-- post actions -->
                                             <div v-show="user.id===thePost.poster.id" class="column">
@@ -655,6 +657,7 @@ Inc::clas('user');
                     !('is' in item) && (item.is = {});
                         !('deleting' in item.is) && (item.is.deleting = false);
                         !('removed' in item.is) && (item.is.removed = false);
+                        !('viewAll' in item.is) && (item.is.viewAll = false);
                     !('comments' in item) && (item.comments = {});
                         !('is' in item.comments) && (item.comments.is = {});
                             !('visible' in item.comments.is) && (item.comments.is.visible = false);
