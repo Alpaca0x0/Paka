@@ -102,14 +102,14 @@ Inc::clas('user');
                         <div v-for="thePost in posts.data" :key="thePost" class="animate__animated" v-cloak>
                             <!-- when post is removed -->
                             <transition enter-active-class="animate__slow animate__flipInX">
-                                <div v-show="thePost.isRemoved" class="ts-segment is-tertiary animate__animated">
+                                <div v-show="thePost.is.removed" class="ts-segment is-tertiary animate__animated">
                                     這裡曾有過一篇文章，但已不復存在。
                                 </div>
                             </transition>
                             <!-- when post is removed end -->
                             <!-- post -->
                             <transition leave-active-class="animate__hinge">
-                                <div v-show="!thePost.isRemoved" :id="'Post-'+thePost.id" class="animate__animated" :style="{'animation-duration': '900ms'}" v-cloak>
+                                <div v-show="!thePost.is.removed" :id="'Post-'+thePost.id" class="animate__animated" :style="{'animation-duration': '900ms'}" v-cloak>
                                     <div class="ts-segment is-very-elevated">
                                         <div class="ts-row">
                                             <div class="column">
@@ -217,7 +217,7 @@ Inc::clas('user');
                                                     <div class="avatar ts-image">
                                                         <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                     </div>
-                                                    <div class="content">
+                                                    <div class="content" style="width:100%">
                                                         <div class="bubble">
                                                             <div class="author">
                                                                 <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
@@ -225,8 +225,8 @@ Inc::clas('user');
                                                             <div v-html="theComment.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;" class="text"></div>
                                                         </div>
                                                         <div class="ts-meta is-small is-secondary">
-                                                            <a class="item">讚</a>
-                                                            <a class="item">回覆</a>
+                                                            <a href="#!" class="item">讚</a>
+                                                            <a @click="thePost.comment.preReply=(thePost.comment.preReply===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                             <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
                                                                 {{ moment(theComment.datetime*1000).fromNow() }}
                                                             </a>
@@ -234,6 +234,42 @@ Inc::clas('user');
                                                                 <div class="ts-icon is-hashtag-icon"></div>
                                                                 {{ theComment.id }}
                                                             </div>
+                                                        </div>
+
+                                                        <div v-show="thePost.comment.preReply===theComment.id">
+                                                            <!-- create reply -->
+                                                            <div class="ts-divider is-section"></div>
+                                                            <div class="ts-conversation">
+                                                                <div class="avatar">
+                                                                    <img :src="user.avatar || user.avatarDefault">
+                                                                </div>
+                                                                <div class="content" style="width: 100%;">
+                                                                    <div class="ts-input is-fluid is-underlined is-small">
+                                                                        <textarea 
+                                                                            :readonly="theComment.reply.is.creating"
+                                                                            @keydown.enter.exact.prevent="reply.create(theComment)" 
+                                                                            @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
+                                                                            v-model="theComment.reply.creating.content" 
+                                                                            placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
+                                                                            style="height: 2.5rem"
+                                                                            oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                                            onkeydown="this.oninput()" 
+                                                                            onfocus="this.oninput()" 
+                                                                            onblur="this.style.height='2.5rem'"
+                                                                        ></textarea>
+                                                                        <!-- reply creating load -->
+                                                                        <div v-show="theComment.reply.is.creating" class="ts-mask is-blurring">
+                                                                            <div class="ts-center">
+                                                                                <div class="ts-content" style="color: #FFF">
+                                                                                    <div class="ts-loading is-small"></div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- reply creating load end -->
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- create reply end -->
                                                         </div>
 
                                                         <!-- replies -->
@@ -296,6 +332,7 @@ Inc::clas('user');
                                                     <div class="content" style="width: 100%;">
                                                         <div class="ts-input is-fluid is-underlined is-small">
                                                             <textarea 
+                                                                :readonly="thePost.comment.is.creating"
                                                                 @keydown.enter.exact.prevent="comment.create(thePost)" 
                                                                 @keydown.enter.shift.exact.prevent="thePost.comment.creating.content += '\n'" 
                                                                 v-model="thePost.comment.creating.content" 
@@ -306,6 +343,15 @@ Inc::clas('user');
                                                                 onfocus="this.oninput()" 
                                                                 onblur="this.style.height='2.5rem'"
                                                             ></textarea>
+                                                            <!-- comment creating load -->
+                                                            <div v-show="thePost.comment.is.creating" class="ts-mask is-blurring">
+                                                                <div class="ts-center">
+                                                                    <div class="ts-content" style="color: #FFF">
+                                                                        <div class="ts-loading is-small"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <!-- comment creating load end -->
                                                         </div>
                                                     </div>
                                                 </div>
@@ -319,7 +365,7 @@ Inc::clas('user');
                                     </div>
 
                                     <!-- post deleting load -->
-                                    <div v-show="thePost.isDeleting" class="ts-mask is-blurring">
+                                    <div v-show="thePost.is.deleting" class="ts-mask is-blurring">
                                         <div class="ts-center">
                                             <div class="ts-content" style="color: #FFF">
                                                 <div class="ts-loading is-large"></div>
@@ -570,6 +616,9 @@ Inc::clas('user');
             post: (thePosts) => {
                 let ret = Array.isArray(thePosts) ? thePosts : [thePosts];
                 ret.forEach((item, idx)=>{
+                    !('is' in item) && (item.is = {});
+                        !('deleting' in item.is) && (item.is.deleting = false);
+                        !('removed' in item.is) && (item.is.removed = false);
                     !('comments' in item) && (item.comments = {});
                         !('is' in item.comments) && (item.comments.is = {});
                             !('visible' in item.comments.is) && (item.comments.is.visible = false);
@@ -582,6 +631,7 @@ Inc::clas('user');
                         !('message' in item.comments) && (item.comments.message = '');
                     // 
                     !('comment' in item) && (item.comment = {});
+                        !('preReply' in item.comment) && (item.comment.preReply = false);
                         !('is' in item.comment) && (item.comment.is = {});
                             !('creating' in item.comment.is) && (item.comment.is.creating = false);
                         !('content' in item.comment) && (item.comment.content = '');
@@ -598,6 +648,12 @@ Inc::clas('user');
             comment: (theComment) => {
                 let ret = Array.isArray(theComment) ? theComment : [theComment];
                 ret.forEach((item, idx)=>{
+                    !('reply' in item) && (item.reply = {});
+                        !('is' in item.reply) && (item.reply.is = {});
+                            !('creating' in item.reply.is) && (item.reply.is.creating = false);
+                        !('creating' in item.reply) && (item.reply.creating = {});
+                            !('info' in item.reply.creating) && (item.reply.creating.info = {type:'', status:'', message:'', data:[]});
+                            !('content' in item.reply.creating) && (item.reply.creating.content = '');
                     !('replies' in item) && (item.replies = {});
                         !('times' in item.replies) && (item.replies.times = 0);
                         !('is' in item.replies) && (item.replies.is = {});
@@ -609,6 +665,14 @@ Inc::clas('user');
                 // 
                 if(Array.isArray(theComment)){ return ret; }
                 else{ return ret[0]; }
+            },
+            reply: (theReply) => {
+                let ret = Array.isArray(theReply) ? theReply : [theReply];
+                ret.forEach((them, idx) => {
+                    // [is][creating]
+                                // [content]
+                                // [info] (type,status,data,message)
+                });
             }
         };
         // 
@@ -696,8 +760,8 @@ Inc::clas('user');
                     cancelButtonText: '取消',
                     focusCancel: true,
                 }).then((result) => {
-                    if(!result.isConfirmed || thePost.isDeleting){ return; }
-                    thePost.isDeleting = true;
+                    if(!result.isConfirmed || thePost.is.deleting){ return; }
+                    thePost.is.deleting = true;
                     $.ajax({
                         type: "POST",
                         url: '<?=Uri::auth('forum/post/delete')?>',
@@ -713,14 +777,14 @@ Inc::clas('user');
                             msg.icon = 'success';
                             msg.title = '成功刪除';
                             msg.text = false;
-                            thePost.isRemoved = true;
+                            thePost.is.removed = true;
                         }else{
                             msg.icon = resp.type;
                             msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
                             msg.text = resp.message;
                         }
                     }).always(() => {
-                        thePost.isDeleting = false;
+                        thePost.is.deleting = false;
                         Swal.fire({
                             ...msg,
                             position: 'bottom-start',
@@ -819,10 +883,8 @@ Inc::clas('user');
                     if(resp.type === 'success'){
                         document.activeElement.blur(); // remove focus status
                         thePost.comment.creating.content = '';
-                        resp.data.replies.is = {
-                            noMore: true,
-                        };
-                        resp.data.replies.data = [],
+                        resp.data = format.comment(resp.data);
+                        resp.data.replies.is.noMore = true;
                         thePost.comments.times += 1;
                         thePost.comments.data.push(resp.data);
                     }
@@ -832,6 +894,63 @@ Inc::clas('user');
                         position: 'bottom-start',
                         icon: thePost.comment.creating.info.type,
                         title: thePost.comment.creating.info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
+        });
+        let reply = reactive({
+            create: (theComment) => {
+                if(theComment.reply.is.creating){ return; }
+                theComment.reply.is.creating = true;
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/reply/create')?>',
+                    data: {
+                        commentId: theComment.id,
+                        content: theComment.reply.creating.content,
+                    },
+                    dataType: 'json',
+                }).always(() => {
+                    theComment.reply.creating.info = {
+                        type: 'error',
+                        status: 'unexpected',
+                        message: '很抱歉，發生了非預期的錯誤！',
+                        data: [],
+                    };
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    // 
+                    theComment.reply.creating.info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
+                    // 
+                    if(resp.type === 'success'){
+                        document.activeElement.blur(); // remove focus status
+                        theComment.reply.creating.content = '';
+                        theComment.replies.times += 1;
+                        theComment.replies.data.push(resp.data);
+                    }
+                }).always(() => {
+                    theComment.reply.is.creating = false;
+                    theComment.reply.creating.info.type === 'success' || Swal.fire({
+                        position: 'bottom-start',
+                        icon: theComment.reply.creating.info.type,
+                        title: theComment.reply.creating.info.message,
                         toast: true,
                         showConfirmButton: false,
                         timer: 2000,
@@ -993,6 +1112,7 @@ Inc::clas('user');
                         if(resp.data === null || resp.data.length < 1){ theComment.replies.is.noMore = true; }
                         else{
                             if(resp.data.length < datas.limit){ theComment.replies.is.noMore = true; }
+                            resp.data = format.reply(resp.data);
                             resp.data = resp.data.reverse();
                             theComment.replies.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ theComment.replies.is.getError = true; }
@@ -1020,7 +1140,7 @@ Inc::clas('user');
             });
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment };
+        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment, reply };
     }}).directive("clickAway",
         Directives.clickAway
     ).mount('#Forum');

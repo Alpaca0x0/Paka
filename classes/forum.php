@@ -252,7 +252,7 @@ class Forum{
         return DB::lastInsertId();
     }
 
-    static function createComment($commenter, $postId, $content){
+    static function createComment($commenter, $postId, $content, $reply=null){
         if(!self::init()){ return false; };
         $datetime = date("Y-m-d H:i:s");
         // create post
@@ -267,6 +267,22 @@ class Forum{
         // done
         return DB::lastInsertId();
     }
+
+    // static function createReply($commenter, $commentId, $content){
+    //     if(!self::init()){ return false; };
+    //     $datetime = date("Y-m-d H:i:s");
+    //     // create post
+    //     $sql = "INSERT INTO `comment`(`commenter`, `post`, `content`, `datetime`) VALUES (:commenter, :postId, :content, :datetime)";
+    //     DB::query($sql)::execute([
+    //         ':commenter' => $commenter,
+    //         ':commentId' => $commentId,
+    //         ':content' => $content,
+    //         ':datetime' => $datetime,
+    //     ]);
+	// 	if(DB::error()){ return false; }
+    //     // done
+    //     return DB::lastInsertId();
+    // }
 
     // delete data
     static function deletePost($pid){
