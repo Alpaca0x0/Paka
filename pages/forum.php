@@ -702,11 +702,9 @@ Inc::clas('user');
                     data: { content: post.creating.content },
                     dataType: 'json',
                 }).always(() => {
-                    post.creating.info = {
-                        type: 'error',
-                        status: 'unexpected',
-                        message: '很抱歉，發生了非預期的錯誤！',
-                    };
+                    post.creating.info['type'] = 'error';
+                    post.creating.info['status'] = 'unexpected';
+                    post.creating.info['message'] = '很抱歉，發生了非預期的錯誤！';
                 }).fail((xhr, status, error) => {
                     console.error(xhr.responseText);
                 }).done((resp) => {
@@ -861,12 +859,9 @@ Inc::clas('user');
                     },
                     dataType: 'json',
                 }).always(() => {
-                    thePost.comment.creating.info = {
-                        type: 'error',
-                        status: 'unexpected',
-                        message: '很抱歉，發生了非預期的錯誤！',
-                        data: [],
-                    };
+                    thePost.comment.creating.info['type'] = 'error';
+                    thePost.comment.creating.info['status'] = 'unexpected';
+                    thePost.comment.creating.info['message'] = '很抱歉，發生了非預期的錯誤！';
                 }).fail((xhr, status, error) => {
                     console.error(xhr.responseText);
                 }).done((resp) => {
@@ -920,12 +915,9 @@ Inc::clas('user');
                     },
                     dataType: 'json',
                 }).always(() => {
-                    theComment.reply.creating.info = {
-                        type: 'error',
-                        status: 'unexpected',
-                        message: '很抱歉，發生了非預期的錯誤！',
-                        data: [],
-                    };
+                    theComment.reply.creating.info['type'] = 'error';
+                    theComment.reply.creating.info['status'] = 'unexpected';
+                    theComment.reply.creating.info['message'] = '很抱歉，發生了非預期的錯誤！';
                 }).fail((xhr, status, error) => {
                     console.error(xhr.responseText);
                 }).done((resp) => {
@@ -1028,12 +1020,9 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                thePost.comments.info = {
-                    type: 'error',
-                    status: 'unexpected',
-                    message: '發生非預期的錯誤',
-                    data: [],
-                };
+                thePost.comments['type'] = 'error';
+                thePost.comments['status'] = 'unexpected';
+                thePost.comments['message'] = '發生非預期的錯誤';
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
                 thePost.comments.is.getError = true;
@@ -1043,9 +1032,9 @@ Inc::clas('user');
                     // check response format is correct
                     if(!Resp.object(resp)){ return false; }
                     // get msg
-                    thePost.comments.info.type = resp.type;
-                    thePost.comments.info.status = resp.status;
-                    thePost.comments.info.message = resp.message;
+                    thePost.comments.type = resp.type;
+                    thePost.comments.status = resp.status;
+                    thePost.comments.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ thePost.comments.is.noMore = true; }
@@ -1089,12 +1078,9 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                theComment.replies.info = {
-                    type: 'error',
-                    status: 'unexpected',
-                    message: '發生非預期的錯誤',
-                    data: [],
-                };
+                theComment.replies.info['type'] = 'error';
+                theComment.replies.info['status'] = 'unexpected';
+                theComment.replies.info['message'] = '發生非預期的錯誤';
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
                 theComment.replies.is.getError = true;
