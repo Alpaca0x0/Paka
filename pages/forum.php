@@ -235,7 +235,8 @@ Inc::clas('user');
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
-                                                                        <div v-html="theComment.content" style="white-space: pre-line; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow-wrap: break-word; overflow: hidden;" class="text"></div>
+                                                                        <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAll ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                        <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAll=!theComment.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
                                                                     </div>
                                                                     <div class="ts-meta is-small is-secondary">
                                                                         <a href="#!" class="item">讚</a>
@@ -270,7 +271,8 @@ Inc::clas('user');
                                                                                             <div class="author">
                                                                                                 <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
                                                                                             </div>
-                                                                                            <div v-html="theReply.content" style="white-space: pre-line; overflow: hidden; max-height: 11.3rem; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;" class="text"></div>
+                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAll ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                                            <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAll=!theReply.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
                                                                                         </div>
                                                                                         <div class="ts-meta is-small is-secondary">
                                                                                             <a class="item">讚</a>
@@ -686,6 +688,7 @@ Inc::clas('user');
                     !('is' in item) && (item.is = {});
                         !('removed' in item) && (item.is.removed = false);
                         !('deleting' in item) && (item.is.deleting = false);
+                        !('viewAll' in item) && (item.is.viewAll = false);
                     !('reply' in item) && (item.reply = {});
                         !('is' in item.reply) && (item.reply.is = {});
                             !('creating' in item.reply.is) && (item.reply.is.creating = false);
@@ -709,8 +712,9 @@ Inc::clas('user');
             },
             reply: (theReply) => {
                 let ret = Array.isArray(theReply) ? theReply : [theReply];
-                ret.forEach((them, idx) => {
-                    // 
+                ret.forEach((item, idx) => {
+                    !('is' in item) && (item.is = {});
+                        !('viewAll' in item) && (item.is.viewAll = false);
                 });
                 // 
                 if(Array.isArray(theReply)){ return ret; }
@@ -1035,6 +1039,7 @@ Inc::clas('user');
                         document.activeElement.blur(); // remove focus status
                         theComment.reply.creating.content = '';
                         theComment.replies.times += 1;
+                        resp.data = format.reply(resp.data);
                         theComment.replies.data.push(resp.data);
                     }
                 }).always(() => {
