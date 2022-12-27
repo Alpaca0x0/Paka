@@ -139,9 +139,9 @@ Inc::clas('user');
                                                 </div>
                                                 <div class="ts-space is-small"></div>
 
-                                                <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAll ? '' : '8.6rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAll=!thePost.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
-                                                
+                                                <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+
                                             </div>
                                             <!-- post actions -->
                                             <div v-show="user.id===thePost.poster.id" class="column">
@@ -237,8 +237,8 @@ Inc::clas('user');
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
-                                                                        <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAll ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                                        <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAll=!theComment.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
+                                                                        <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                        <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                                     </div>
                                                                     <div class="ts-meta is-small is-secondary">
                                                                         <a href="#!" class="item">讚</a>
@@ -273,8 +273,8 @@ Inc::clas('user');
                                                                                             <div class="author">
                                                                                                 <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
                                                                                             </div>
-                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAll ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                                                            <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAll=!theReply.is.viewAll" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAll ? '顯示較少' : '…顯示更多' }}</a>
+                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                                            <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAllContent=!theReply.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                                                         </div>
                                                                                         <div class="ts-meta is-small is-secondary">
                                                                                             <a class="item">讚</a>
@@ -657,7 +657,7 @@ Inc::clas('user');
                     !('is' in item) && (item.is = {});
                         !('deleting' in item.is) && (item.is.deleting = false);
                         !('removed' in item.is) && (item.is.removed = false);
-                        !('viewAll' in item.is) && (item.is.viewAll = false);
+                        !('viewAllContent' in item.is) && (item.is.viewAllContent = false);
                     !('comments' in item) && (item.comments = {});
                         !('is' in item.comments) && (item.comments.is = {});
                             !('visible' in item.comments.is) && (item.comments.is.visible = false);
@@ -691,7 +691,7 @@ Inc::clas('user');
                     !('is' in item) && (item.is = {});
                         !('removed' in item) && (item.is.removed = false);
                         !('deleting' in item) && (item.is.deleting = false);
-                        !('viewAll' in item) && (item.is.viewAll = false);
+                        !('viewAllContent' in item) && (item.is.viewAllContent = false);
                     !('reply' in item) && (item.reply = {});
                         !('is' in item.reply) && (item.reply.is = {});
                             !('creating' in item.reply.is) && (item.reply.is.creating = false);
@@ -717,7 +717,7 @@ Inc::clas('user');
                 let ret = Array.isArray(theReply) ? theReply : [theReply];
                 ret.forEach((item, idx) => {
                     !('is' in item) && (item.is = {});
-                        !('viewAll' in item) && (item.is.viewAll = false);
+                        !('viewAllContent' in item) && (item.is.viewAllContent = false);
                 });
                 // 
                 if(Array.isArray(theReply)){ return ret; }
