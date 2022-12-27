@@ -224,13 +224,13 @@ Inc::clas('user');
 
                                                 <!-- comment -->
                                                 <transition leave-active-class="animate__hinge">
-                                                    <div v-show="!theComment.is.removed" class="ts-row animate__animated" :style="{'animation-duration': '900ms'}">
+                                                    <div v-show="!theComment.is.removed" class="ts-row" :style="{'animation-duration': '900ms'}">
                                                         <div class="column is-fluid">
                                                             <div class="ts-conversation">
                                                                 <div class="avatar ts-image">
                                                                     <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                                 </div>
-                                                                <div class="content" style="width:100%">
+                                                                <div class="content" style="min-width: 99%; max-width: 99%">
                                                                     <div class="bubble">
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>

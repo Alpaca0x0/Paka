@@ -94,9 +94,10 @@ location ^~ /paka/ {
   - [x] posts api & view post `(UI not all)`
   - [x] create post
   - [X] delete post
-  - [ ] comment post
-  - [ ] delete comment
-  - [ ] reply comment
+  - [x] comment post
+  - [x] delete comment
+  - [x] reply comment
+  - [ ] delete reply
   - [ ] like post
   - [ ] share post
   - [ ] popular posts
@@ -192,7 +193,7 @@ location ^~ /paka/ {
 
 ### :art: CSS
 
-- [`Tocas-UI`](https://tocas-ui.com) (v4)
+- [`Tocas-UI`](https://tocas-ui.com) (v4.1.0)
 - [`Animate.css`](https://animate.style/) (v4.1.1)
 
 ### :magic_wand: JS
@@ -211,7 +212,7 @@ location ^~ /paka/ {
 
 ### :coffee: Developer(s)
 
-<sub>QQ 獨立開發好累，索性還有好多方便的現成工具...</sub>
+<sub>QQ 獨立開發好累，幸好還有很多方便的現成工具...</sub>
 
 - [`Alpaca0x0`](https://github.com/alpaca0x0)
 
