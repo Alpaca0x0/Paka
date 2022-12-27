@@ -220,9 +220,9 @@ class Forum{
                 LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` as `reply_edited` ON (`reply`.`id`=`reply_edited`.`comment`) 
 
-                WHERE `reply`.`reply` IS NOT NULL 
+                WHERE `reply`.`reply` IN ('.$commentIds.')
+                AND `reply`.`reply` IS NOT NULL 
                 AND `reply`.`status`="alive" 
-                AND `reply`.`post` IN ('.$commentIds.')
                 AND `reply`.`id` > :after AND `reply`.`id` < :before
                 GROUP BY `reply`.`id`
         ';
@@ -256,7 +256,7 @@ class Forum{
 
             , COUNT(`reply_edited`.`id`)as`edited.times`, MAX(`reply_edited`.`datetime`)as`edited.last_datetime` 
 
-            FROM `reply` 
+            FROM `comment` AS `reply` 
             LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
             LEFT JOIN `account` ON (`reply`.`commenter`=`account`.`id`) 
             LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
@@ -265,6 +265,7 @@ class Forum{
             WHERE `reply`.`id` = :replyId
             AND `reply`.`reply` IS NOT NULL 
             AND `reply`.`status`="alive" 
+            GROUP BY `reply`.`id`
             LIMIT 1
         ';
         // 
@@ -324,7 +325,7 @@ class Forum{
         if(!$postId){ return null; }
 
         // create post
-        $sql = "INSERT INTO `comment`(`commenter`, `post`, `content`, `datetime`) VALUES (:commenter, :postId, :reply, :content, :datetime)";
+        $sql = "INSERT INTO `comment`(`commenter`, `post`, `reply`, `content`, `datetime`) VALUES (:commenter, :postId, :reply, :content, :datetime)";
         DB::query($sql)::execute([
             ':commenter' => $commenter,
             ':postId' => $postId,

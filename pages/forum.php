@@ -236,42 +236,6 @@ Inc::clas('user');
                                                             </div>
                                                         </div>
 
-                                                        <div v-show="thePost.comment.preReply===theComment.id">
-                                                            <!-- create reply -->
-                                                            <div class="ts-divider is-section"></div>
-                                                            <div class="ts-conversation">
-                                                                <div class="avatar">
-                                                                    <img :src="user.avatar || user.avatarDefault">
-                                                                </div>
-                                                                <div class="content" style="width: 100%;">
-                                                                    <div class="ts-input is-fluid is-underlined is-small">
-                                                                        <textarea 
-                                                                            :readonly="theComment.reply.is.creating"
-                                                                            @keydown.enter.exact.prevent="reply.create(theComment)" 
-                                                                            @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
-                                                                            v-model="theComment.reply.creating.content" 
-                                                                            placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
-                                                                            style="height: 2.5rem"
-                                                                            oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
-                                                                            onkeydown="this.oninput()" 
-                                                                            onfocus="this.oninput()" 
-                                                                            onblur="this.style.height='2.5rem'"
-                                                                        ></textarea>
-                                                                        <!-- reply creating load -->
-                                                                        <div v-show="theComment.reply.is.creating" class="ts-mask is-blurring">
-                                                                            <div class="ts-center">
-                                                                                <div class="ts-content" style="color: #FFF">
-                                                                                    <div class="ts-loading is-small"></div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <!-- reply creating load end -->
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <!-- create reply end -->
-                                                        </div>
-
                                                         <!-- replies -->
                                                         <template v-if="theComment.replies.times > 0">
                                                             <div class="ts-divider is-start-text">
@@ -313,6 +277,44 @@ Inc::clas('user');
                                                             </transition-group>
                                                         </template>
                                                         <!-- replies end -->
+
+                                                        <transition enter-active-class="animate__slow animate__flipInX" leave-active-class="animate__fadeOut">
+                                                            <div v-show="thePost.comment.preReply===theComment.id" class="animate__animated" :style="{'animation-duration': thePost.comment.preReply===theComment.id ? '500ms' : '250ms'}">
+                                                                <!-- create reply -->
+                                                                <div class="ts-divider is-section"></div>
+                                                                <div class="ts-conversation">
+                                                                    <div class="avatar">
+                                                                        <img :src="user.avatar || user.avatarDefault">
+                                                                    </div>
+                                                                    <div class="content" style="width: 100%;">
+                                                                        <div class="ts-input is-fluid is-underlined is-small">
+                                                                            <textarea 
+                                                                                :readonly="theComment.reply.is.creating"
+                                                                                @keydown.enter.exact.prevent="reply.create(theComment)" 
+                                                                                @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
+                                                                                v-model="theComment.reply.creating.content" 
+                                                                                placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
+                                                                                style="height: 2.5rem"
+                                                                                oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                                                onkeydown="this.oninput()" 
+                                                                                onfocus="this.oninput()" 
+                                                                                onblur="this.style.height='2.5rem'"
+                                                                            ></textarea>
+                                                                            <!-- reply creating load -->
+                                                                            <div v-show="theComment.reply.is.creating" class="ts-mask is-blurring">
+                                                                                <div class="ts-center">
+                                                                                    <div class="ts-content" style="color: #FFF">
+                                                                                        <div class="ts-loading is-small"></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- reply creating load end -->
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- create reply end -->
+                                                            </div>
+                                                        </transition>
 
                                                     </div>
                                                 </div>
@@ -659,6 +661,9 @@ Inc::clas('user');
                         !('is' in item.replies) && (item.replies.is = {});
                             !('noMore' in item.replies.is) && (item.replies.is.noMore = item.replies.times ? false : true);
                         !('data' in item.replies) && (item.replies.data = []);
+                        !('type' in item.replies) && (item.replies.type = '');
+                        !('status' in item.replies) && (item.replies.status = '');
+                        !('message' in item.replies) && (item.replies.message = '');
                     // 
                     return item;
                 });
@@ -669,10 +674,11 @@ Inc::clas('user');
             reply: (theReply) => {
                 let ret = Array.isArray(theReply) ? theReply : [theReply];
                 ret.forEach((them, idx) => {
-                    // [is][creating]
-                                // [content]
-                                // [info] (type,status,data,message)
+                    // 
                 });
+                // 
+                if(Array.isArray(theReply)){ return ret; }
+                else{ return ret[0]; }
             }
         };
         // 
@@ -1078,9 +1084,9 @@ Inc::clas('user');
                 data: datas,
                 dataType: 'json',
             }).always(()=>{
-                theComment.replies.info['type'] = 'error';
-                theComment.replies.info['status'] = 'unexpected';
-                theComment.replies.info['message'] = '發生非預期的錯誤';
+                theComment.replies.type = 'error';
+                theComment.replies.status = 'unexpected';
+                theComment.replies.message = '發生非預期的錯誤';
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
                 theComment.replies.is.getError = true;
@@ -1090,9 +1096,9 @@ Inc::clas('user');
                     // check response format is correct
                     if(!Resp.object(resp)){ return false; }
                     // get msg
-                    theComment.replies.info.type = resp.type;
-                    theComment.replies.info.status = resp.status;
-                    theComment.replies.info.message = resp.message;
+                    theComment.replies.type = resp.type;
+                    theComment.replies.status = resp.status;
+                    theComment.replies.message = resp.message;
                     // check if success
                     if(resp.type==='success'){
                         if(resp.data === null || resp.data.length < 1){ theComment.replies.is.noMore = true; }
