@@ -143,8 +143,9 @@ Inc::clas('user');
                                                 <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
 
                                             </div>
+
                                             <!-- post actions -->
-                                            <div v-show="user.id===thePost.poster.id" class="column">
+                                            <div v-show="user.id===thePost.poster.id" class="column" style="max-height: 20px">
                                                 <div>
                                                     <button @click="post.preActionPost=thePost.id" v-click-away="()=>post.preActionPost=false" class="ts-button is-secondary is-icon is-small">
                                                         <span class="ts-icon is-ellipsis-icon"></span>
@@ -157,6 +158,7 @@ Inc::clas('user');
                                                 </div>
                                             </div>
                                             <!-- post actions end -->
+
                                         </div>
                                         <!-- post interactive -->
                                         <div class="ts-divider is-section"></div>
@@ -199,17 +201,17 @@ Inc::clas('user');
                                                 </div>
                                             </div>
                                         </div>
-                                        <!-- comments loading end -->
 
-                                        <template v-if="thePost.comments.times > 0 && thePost.comments.is.visible && !thePost.comments.is.getting" v-cloak>
+                                        <template v-if="!thePost.comments.is.noMore && thePost.comments.is.visible && !thePost.comments.is.getting" v-cloak>
                                             <div class="ts-space"></div>
                                             <div class="ts-divider is-start-text">
-                                                <a v-show="!thePost.comments.is.noMore" @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.times - thePost.comments.data.length }} 則留言</a>
+                                                <a @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.times - thePost.comments.data.length }} 則留言</a>
                                             </div>
-                                            <div v-show="!thePost.comments.is.noMore && thePost.comments.is.getError" class="ts-divider is-start-text">
+                                            <div v-show="thePost.comments.is.getError" class="ts-divider is-start-text">
                                                 <span class="ts-text is-tiny is-negative">載入關於這則貼文的留言時發生錯誤</span>
                                             </div>
                                         </template>
+                                        <!-- comments loading end -->
 
                                         <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
                                             <div v-for="theComment in thePost.comments.data" :key="theComment" v-show="thePost.comments.is.visible" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
@@ -227,6 +229,7 @@ Inc::clas('user');
                                                 <!-- comment -->
                                                 <transition leave-active-class="animate__hinge">
                                                     <div v-show="!theComment.is.removed" class="ts-row" :style="{'animation-duration': '900ms'}">
+
                                                         <div class="column is-fluid">
                                                             <div class="ts-conversation">
                                                                 <div class="avatar ts-image">
@@ -251,103 +254,19 @@ Inc::clas('user');
                                                                             {{ theComment.id }}
                                                                         </div>
                                                                     </div>
-
-                                                                    <!-- replies -->
-                                                                    <template v-if="theComment.replies.times > 0">
-                                                                        <div class="ts-divider is-start-text">
-                                                                            <a v-show="!theComment.replies.is.noMore" @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
-                                                                        </div>
-                                                                        <div v-show="!theComment.replies.is.noMore && theComment.replies.is.getError" class="ts-divider is-start-text">
-                                                                            <span class="ts-text is-tiny is-negative">載入關於這則留言的回應時發生錯誤</span>
-                                                                        </div>
-                                                                        <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
-                                                                            <div v-for="theReply in theComment.replies.data" :key="theReply" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
-                                                                                <!-- reply -->
-                                                                                <div class="ts-space"></div>
-                                                                                <div class="ts-conversation">
-                                                                                    <div class="avatar ts-image">
-                                                                                        <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
-                                                                                    </div>
-                                                                                    <div class="content" style="width: 100%;">
-                                                                                        <div class="bubble">
-                                                                                            <div class="author">
-                                                                                                <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
-                                                                                            </div>
-                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                                                            <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAllContent=!theReply.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
-                                                                                        </div>
-                                                                                        <div class="ts-meta is-small is-secondary">
-                                                                                            <a class="item">讚</a>
-                                                                                            <a class="item">回覆</a>
-                                                                                            <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                                                {{ moment(theReply.datetime*1000).fromNow() }}
-                                                                                            </a>
-                                                                                            <div class="item">
-                                                                                                <div class="ts-icon is-hashtag-icon"></div>
-                                                                                                {{ theReply.id }}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <!-- reply end -->
-                                                                            </div>
-                                                                        </transition-group>
-                                                                    </template>
-                                                                    <!-- replies end -->
-
-                                                                    <transition enter-active-class="animate__slow animate__flipInX" leave-active-class="animate__fadeOut">
-                                                                        <div v-show="thePost.comment.preReplyComment===theComment.id" class="animate__animated" :style="{'animation-duration': thePost.comment.preReplyComment===theComment.id ? '500ms' : '250ms'}">
-                                                                            <!-- create reply -->
-                                                                            <div class="ts-divider is-section"></div>
-                                                                            <div class="ts-conversation">
-                                                                                <div class="avatar">
-                                                                                    <img :src="user.avatar || user.avatarDefault">
-                                                                                </div>
-                                                                                <div class="content" style="width: 100%;">
-                                                                                    <div class="ts-input is-fluid is-underlined is-small">
-                                                                                        <textarea 
-                                                                                            :readonly="theComment.reply.is.creating"
-                                                                                            @keydown.enter.exact.prevent="reply.create(theComment)" 
-                                                                                            @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
-                                                                                            v-model="theComment.reply.creating.content" 
-                                                                                            placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
-                                                                                            style="height: 2.5rem"
-                                                                                            oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
-                                                                                            onkeydown="this.oninput()" 
-                                                                                            onfocus="this.oninput()" 
-                                                                                            onblur="this.style.height='2.5rem'"
-                                                                                        ></textarea>
-                                                                                        <!-- reply creating load -->
-                                                                                        <div v-show="theComment.reply.is.creating" class="ts-mask is-blurring">
-                                                                                            <div class="ts-center">
-                                                                                                <div class="ts-content" style="color: #FFF">
-                                                                                                    <div class="ts-loading is-small"></div>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <!-- reply creating load end -->
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <!-- create reply end -->
-                                                                        </div>
-                                                                    </transition>
-
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         <!-- comment actions -->
-                                                        <div v-show="user.id===theComment.commenter.id" class="column">
-                                                            <div>
-                                                                <button @click="thePost.comment.preActionComment=theComment.id" v-click-away="()=>thePost.comment.preActionComment=false" class="ts-button is-secondary is-icon is-small">
-                                                                    <span class="ts-icon is-ellipsis-icon"></span>
-                                                                </button>
-                                                                <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                                    <button class="item" @click="comment.edit(theComment)">編輯</button>
-                                                                    <div class="ts-divider"></div>
-                                                                    <button class="item" @click="comment.delete(theComment)">刪除</button>
-                                                                </div>
+                                                        <div v-show="user.id===theComment.commenter.id" class="column" style="max-height: 20px">
+                                                            <button @click="thePost.comment.preActionComment=theComment.id" v-click-away="()=>thePost.comment.preActionComment=false" class="ts-button is-secondary is-icon is-small">
+                                                                <span class="ts-icon is-ellipsis-icon"></span>
+                                                            </button>
+                                                            <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                                <button class="item" @click="comment.edit(theComment)">編輯</button>
+                                                                <div class="ts-divider"></div>
+                                                                <button class="item" @click="comment.delete(theComment)">刪除</button>
                                                             </div>
                                                         </div>
                                                         <!-- comment actions end -->
@@ -355,6 +274,142 @@ Inc::clas('user');
                                                     </div>
                                                 </transition>
                                                 <!-- comment end -->
+
+                                                <!-- replies -->
+                                                <div v-if="!theComment.is.removed" class="ts-row">
+                                                <!-- theComment.replies.times > 0  -->
+                                                    <!-- 縮排 -->
+                                                    <div class="column" style="width: 40px;"></div>
+
+                                                    <div class="column is-fluid">
+
+                                                        <!-- replies loading -->
+                                                        <div v-show="theComment.replies.is.getting" v-show="theComment.replies.is.visible" class="ts-placeholder is-loading" v-cloak>
+                                                            <div class="ts-space"></div>
+                                                            <div class="ts-row">
+                                                                <div class="column">
+                                                                    <div class="ts-avatar is-large">
+                                                                        <div class="image is-header"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="column is-fluid">
+                                                                    <div class="text is-header"></div>
+                                                                    <div class="text"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <template v-if="!theComment.replies.is.noMore && !theComment.replies.is.getting">
+                                                            <div class="ts-divider is-start-text">
+                                                                <div class="column is-fluid">
+                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
+                                                                </div>
+                                                            </div>
+                                                            <div v-show="theComment.replies.is.getError" class="ts-divider is-start-text">
+                                                                <div class="column is-fluid">
+                                                                    <span class="ts-text is-tiny is-negative">載入關於這則留言的回應時發生錯誤</span>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                        <!-- replies loading end -->
+
+                                                        <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
+                                                            <div v-for="theReply in theComment.replies.data" :key="theReply" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
+                                                                
+                                                                <!-- reply -->
+                                                                <div class="ts-space"></div>
+                                                                <div class="ts-row">
+
+                                                                    <div class="column is-fluid">
+                                                                        <div class="ts-conversation">
+                                                                            <div class="avatar ts-image">
+                                                                                <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
+                                                                            </div>
+                                                                            <div class="content" style="min-width: 99%; max-width: 99%">
+                                                                                <div class="bubble">
+                                                                                    <div class="author">
+                                                                                        <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
+                                                                                    </div>
+                                                                                    <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                                    <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAllContent=!theReply.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+                                                                                </div>
+                                                                                <div class="ts-meta is-small is-secondary">
+                                                                                    <a class="item">讚</a>
+                                                                                    <a class="item">回覆</a>
+                                                                                    <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                                        {{ moment(theReply.datetime*1000).fromNow() }}
+                                                                                    </a>
+                                                                                    <div class="item">
+                                                                                        <div class="ts-icon is-hashtag-icon"></div>
+                                                                                        {{ theReply.id }}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <!-- reply actions -->
+                                                                    <div v-show="user.id===theReply.replier.id" class="column" style="max-height: 20px">
+                                                                        <button @click="theComment.reply.preActionReply=theReply.id" v-click-away="()=>theComment.reply.preActionReply=false" class="ts-button is-secondary is-icon is-small">
+                                                                            <span class="ts-icon is-ellipsis-icon"></span>
+                                                                        </button>
+                                                                        <div :class="{ 'is-visible': theComment.reply.preActionReply===theReply.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                                            <button class="item" @click="reply.edit(theReply)">編輯</button>
+                                                                            <div class="ts-divider"></div>
+                                                                            <button class="item" @click="reply.delete(theReply)">刪除</button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <!-- reply actions end -->
+
+                                                                </div>
+                                                                <!-- reply end -->
+
+                                                            </div>
+                                                        </transition-group>
+
+                                                        <transition enter-active-class="animate__slow animate__flipInX" leave-active-class="animate__fadeOut">
+                                                            <div v-if="thePost.comment.preReplyComment===theComment.id" class="animate__animated" :style="{'animation-duration': thePost.comment.preReplyComment===theComment.id ? '500ms' : '250ms'}">
+                                                                <!-- create reply -->
+                                                                <div class="ts-divider is-section"></div>
+                                                                <div class="ts-conversation">
+                                                                    <div class="avatar">
+                                                                        <img :src="user.avatar || user.avatarDefault">
+                                                                    </div>
+                                                                    <div class="content" style="width: 100%;">
+                                                                        <div class="ts-input is-fluid is-underlined is-small">
+                                                                            <textarea 
+                                                                                :readonly="theComment.reply.is.creating"
+                                                                                @keydown.enter.exact.prevent="reply.create(theComment)" 
+                                                                                @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
+                                                                                v-model="theComment.reply.creating.content" 
+                                                                                placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
+                                                                                style="height: 2.5rem"
+                                                                                oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                                                onkeydown="this.oninput()" 
+                                                                                onfocus="this.oninput()" 
+                                                                                onblur="this.style.height='2.5rem'"
+                                                                                v-focus
+                                                                            ></textarea>
+                                                                            <!-- reply creating load -->
+                                                                            <div v-show="theComment.reply.is.creating" class="ts-mask is-blurring">
+                                                                                <div class="ts-center">
+                                                                                    <div class="ts-content" style="color: #FFF">
+                                                                                        <div class="ts-loading is-small"></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <!-- reply creating load end -->
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- create reply end -->
+                                                            </div>
+                                                        </transition>
+
+                                                    </div>
+                                                </div>
+                                                <!-- replies end -->
+
                                             </div>
                                         </transition-group>
 
@@ -618,7 +673,9 @@ Inc::clas('user');
     import { createApp, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
-    import * as Directives from '<?=Uri::js('vue/directives/click-away')?>';
+    import { focus, clickAway } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus, clickAway };
+    
     // moment.js to set datetime format
     import moment from '<?=Uri::js('moment')?>';
     // dynamically load current locale package of moment.js
@@ -693,6 +750,7 @@ Inc::clas('user');
                         !('deleting' in item) && (item.is.deleting = false);
                         !('viewAllContent' in item) && (item.is.viewAllContent = false);
                     !('reply' in item) && (item.reply = {});
+                        !('preActionReply' in item) && (item.preActionReply = false);
                         !('is' in item.reply) && (item.reply.is = {});
                             !('creating' in item.reply.is) && (item.reply.is.creating = false);
                         !('creating' in item.reply) && (item.reply.creating = {});
@@ -718,6 +776,8 @@ Inc::clas('user');
                 ret.forEach((item, idx) => {
                     !('is' in item) && (item.is = {});
                         !('viewAllContent' in item) && (item.is.viewAllContent = false);
+                        !('deleting' in item) && (item.is.deleting = false);
+                        !('removed' in item) && (item.is.removed = false);
                 });
                 // 
                 if(Array.isArray(theReply)){ return ret; }
@@ -1062,6 +1122,64 @@ Inc::clas('user');
                     });
                 });
             },
+            edit: (theReply) => {},
+            delete: (theReply) => {
+                let msg = {
+                    icon: 'error',
+                    title: '非預期錯誤',
+                    text: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                Swal.fire({
+                    icon: 'warning',
+                    title: '你確定嗎？',
+                    text: "即便刪除，留言內容依舊會存放於伺服器一段時間(可能幾個月)，且每個人都應該為自己的言行舉止負責。",
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: '是，刪除！',
+                    cancelButtonText: '取消',
+                    focusCancel: true,
+                }).then((result) => {
+                    if(!result.isConfirmed || theReply.is.deleting){ return; }
+                    theReply.is.deleting = true;
+                    $.ajax({
+                        type: "POST",
+                        url: '<?=Uri::auth('forum/reply/delete')?>',
+                        data: { replyId: theReply.id },
+                        dataType: 'json',
+                    }).fail((xhr, status, error) => {
+                        console.error(xhr.responseText);
+                    }).done((resp) => {
+                        console.log(resp);
+                        if(!Resp.object(resp)){ return false; }
+                        // 
+                        if(resp.type === 'success'){
+                            msg.icon = 'success';
+                            msg.title = '成功刪除';
+                            msg.text = false;
+                            theReply.is.removed = true;
+                        }else{
+                            msg.icon = resp.type;
+                            msg.title = resp.type[0].toUpperCase() + resp.type.slice(1);
+                            msg.text = resp.message;
+                        }
+                    }).always(() => {
+                        theReply.is.deleting = false;
+                        Swal.fire({
+                            ...msg,
+                            position: 'bottom-start',
+                            toast: true,
+                            showConfirmButton: false,
+                            timer: msg.icon==='success' ? 2000 : false,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                    });
+                });
+            },
         });
         // 
         const getPosts = (force=false) => {
@@ -1235,9 +1353,10 @@ Inc::clas('user');
         });
         // 
         return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment, reply };
-    }}).directive("clickAway",
-        Directives.clickAway
-    ).mount('#Forum');
+    }})
+    .directive("clickAway", Directives.clickAway)
+    .directive("focus", Directives.focus)
+    .mount('#Forum');
 </script>
 
 <?php

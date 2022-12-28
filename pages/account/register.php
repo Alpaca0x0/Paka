@@ -98,7 +98,8 @@ $config = Inc::config('account');
 
 <script type="module">
     import { createApp, reactive, ref, nextTick, onMounted } from '<?=Uri::js('vue')?>';
-    import * as directives from '<?=Uri::js('vue/directives')?>';
+    import { focus } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus };
     import * as Resp from '<?=Uri::js('resp')?>';
 
     const Register = createApp({setup(){
@@ -298,7 +299,7 @@ $config = Inc::config('account');
         // 
         return { is, refs, setRef, fields, classObject, info, checkDatas, submit };
     }}).directive('focus',
-        directives.focus
+        Directives.focus
     ).mount('#Register');
 </script>
 

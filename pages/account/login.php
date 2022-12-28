@@ -79,7 +79,8 @@ $config = Inc::config('account');
 
 <script type="module">
     import { createApp, reactive, ref, onMounted, nextTick, } from '<?=Uri::js('vue')?>';
-    import * as directives from '<?=Uri::js('vue/directives')?>';
+    import { focus } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus };
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
     // 
@@ -262,7 +263,7 @@ $config = Inc::config('account');
             fields, submit, checkDatas, is, classObjects, Dev, info, setRef
         }
     }}).directive('focus',
-        directives.focus,
+        Directives.focus,
     ).mount('#Login');
 
 </script>

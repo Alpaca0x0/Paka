@@ -214,7 +214,8 @@ $config = Inc::config('account');
 
 <script type="module">
     import { createApp, ref, reactive, onMounted, nextTick, } from '<?=Uri::js('vue')?>';
-    import * as directives from '<?=Uri::js('vue/directives')?>';
+    import { focus } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus };
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
     import Cropper from '<?=Uri::js('cropper')?>';
@@ -414,7 +415,7 @@ $config = Inc::config('account');
             user, refs, setRef, checkDatas, submit, fields, classObjects, is, reset,
         }
     }}).directive('focus',
-        directives.focus
+        Directives.focus
     ).mount('#Profile');
 </script>
 

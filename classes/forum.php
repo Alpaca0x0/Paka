@@ -208,6 +208,7 @@ class Forum{
         $sql = 'SELECT `reply`.`id`
                 , `reply`.`content`
                 , UNIX_TIMESTAMP(`reply`.`datetime`)as`datetime`
+                , `reply`.`commenter`as`replier.id`
 
                 , `post`.`id` as `post` 
 
@@ -250,6 +251,7 @@ class Forum{
         $sql = 'SELECT `reply`.`id`
             , `reply`.`content`
             , UNIX_TIMESTAMP(`reply`.`datetime`)as`datetime`
+            , `reply`.`commenter`as`replier.id`
 
             , `post`.`id` as `post`
 

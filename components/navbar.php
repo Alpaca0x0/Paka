@@ -69,7 +69,8 @@ Inc::clas('user');
     import { createApp, ref, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
-    import * as diravtives from '<?=Uri::js('vue/directives/click-away')?>';
+    import { clickAway } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { clickAway };
 
     const Navbar = createApp({setup(){
         let is = reactive({
@@ -201,7 +202,7 @@ Inc::clas('user');
         //
         return { is, items, ritems, subItems, currentPageId, onMouseItem, logout }
     }}).directive("clickAway",
-        diravtives.clickAway
+        Directives.clickAway
     ).mount('#Navbar');
 </script>
 
