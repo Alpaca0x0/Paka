@@ -146,15 +146,13 @@ Inc::clas('user');
 
                                             <!-- post actions -->
                                             <div v-show="user.id===thePost.poster.id" class="column" style="max-height: 20px">
-                                                <div>
-                                                    <button @click="post.preActionPost=thePost.id" v-click-away="()=>post.preActionPost=false" class="ts-button is-secondary is-icon is-small">
-                                                        <span class="ts-icon is-ellipsis-icon"></span>
-                                                    </button>
-                                                    <div :class="{ 'is-visible': post.preActionPost===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                        <button class="item" @click="post.edit(thePost)">編輯</button>
-                                                        <div class="ts-divider"></div>
-                                                        <button class="item" @click="post.delete(thePost)">刪除</button>
-                                                    </div>
+                                                <a @click="post.preActionPost=thePost.id" v-click-away="()=>post.preActionPost=false" style="cursor: pointer;">
+                                                    <span class="ts-icon is-spaced is-ellipsis-icon"></span>
+                                                </a>
+                                                <div :class="{ 'is-visible': post.preActionPost===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
+                                                    <button class="item" @click="post.edit(thePost)">編輯</button>
+                                                    <div class="ts-divider"></div>
+                                                    <button class="item" @click="post.delete(thePost)">刪除</button>
                                                 </div>
                                             </div>
                                             <!-- post actions end -->
@@ -230,18 +228,29 @@ Inc::clas('user');
                                                 <transition leave-active-class="animate__hinge">
                                                     <div v-show="!theComment.is.removed" class="ts-row" :style="{'animation-duration': '900ms'}">
 
-                                                        <div class="column is-fluid">
+                                                        <div class="column">
                                                             <div class="ts-conversation">
                                                                 <div class="avatar ts-image">
                                                                     <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                                 </div>
-                                                                <div class="content" style="min-width: 99%; max-width: 99%">
+                                                                <div class="content" style="max-width: 26.5rem;">
                                                                     <div class="bubble">
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
                                                                         <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                                         <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+
+                                                                        <!-- comment deleting load -->
+                                                                        <div v-show="theComment.is.deleting" class="ts-mask is-blurring">
+                                                                            <div class="ts-center">
+                                                                                <div class="ts-content" style="color: #FFF">
+                                                                                    <div class="ts-loading is-small"></div> 刪除中
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <!-- comment deleting load end -->
+
                                                                     </div>
                                                                     <div class="ts-meta is-small is-secondary">
                                                                         <a href="#!" class="item">讚</a>
@@ -259,10 +268,10 @@ Inc::clas('user');
                                                         </div>
 
                                                         <!-- comment actions -->
-                                                        <div v-show="user.id===theComment.commenter.id" class="column" style="max-height: 20px">
-                                                            <button @click="thePost.comment.preActionComment=theComment.id" v-click-away="()=>thePost.comment.preActionComment=false" class="ts-button is-secondary is-icon is-small">
+                                                        <div v-show="user.id===theComment.commenter.id" class="column" style="max-height: 20px; max-width: 30px">
+                                                            <a @click="thePost.comment.preActionComment=theComment.id" v-click-away="()=>thePost.comment.preActionComment=false" style="cursor: pointer;">
                                                                 <span class="ts-icon is-ellipsis-icon"></span>
-                                                            </button>
+                                                            </a>
                                                             <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
                                                                 <button class="item" @click="comment.edit(theComment)">編輯</button>
                                                                 <div class="ts-divider"></div>
@@ -279,7 +288,7 @@ Inc::clas('user');
                                                 <div v-if="!theComment.is.removed" class="ts-row">
                                                 <!-- theComment.replies.times > 0  -->
                                                     <!-- 縮排 -->
-                                                    <div class="column" style="width: 40px;"></div>
+                                                    <div class="column" style="width: 2.7rem;"></div>
 
                                                     <div class="column is-fluid">
 
@@ -320,18 +329,29 @@ Inc::clas('user');
                                                                 <div class="ts-space"></div>
                                                                 <div class="ts-row">
 
-                                                                    <div class="column is-fluid">
+                                                                    <div class="column">
                                                                         <div class="ts-conversation">
                                                                             <div class="avatar ts-image">
                                                                                 <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
                                                                             </div>
-                                                                            <div class="content" style="min-width: 99%; max-width: 99%">
+                                                                            <div class="content" style="max-width: 22.8rem;">
                                                                                 <div class="bubble">
                                                                                     <div class="author">
                                                                                         <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
                                                                                     </div>
                                                                                     <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                                                     <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAllContent=!theReply.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+
+                                                                                    <!-- reply deleting load -->
+                                                                                    <div v-show="theReply.is.deleting" class="ts-mask is-blurring">
+                                                                                        <div class="ts-center">
+                                                                                            <div class="ts-content" style="color: #FFF">
+                                                                                                <div class="ts-loading is-small"></div> 刪除中
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <!-- reply deleting load end -->
+
                                                                                 </div>
                                                                                 <div class="ts-meta is-small is-secondary">
                                                                                     <a class="item">讚</a>
@@ -349,10 +369,10 @@ Inc::clas('user');
                                                                     </div>
 
                                                                     <!-- reply actions -->
-                                                                    <div v-show="user.id===theReply.replier.id" class="column" style="max-height: 20px">
-                                                                        <button @click="theComment.reply.preActionReply=theReply.id" v-click-away="()=>theComment.reply.preActionReply=false" class="ts-button is-secondary is-icon is-small">
+                                                                    <div v-show="user.id===theReply.replier.id" class="column" style="max-height: 20px; max-width: 30px">
+                                                                        <a @click="theComment.reply.preActionReply=theReply.id" v-click-away="()=>theComment.reply.preActionReply=false" style="cursor: pointer;">
                                                                             <span class="ts-icon is-ellipsis-icon"></span>
-                                                                        </button>
+                                                                        </a>
                                                                         <div :class="{ 'is-visible': theComment.reply.preActionReply===theReply.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
                                                                             <button class="item" @click="reply.edit(theReply)">編輯</button>
                                                                             <div class="ts-divider"></div>
@@ -360,7 +380,7 @@ Inc::clas('user');
                                                                         </div>
                                                                     </div>
                                                                     <!-- reply actions end -->
-
+                                                                    
                                                                 </div>
                                                                 <!-- reply end -->
 
@@ -436,6 +456,7 @@ Inc::clas('user');
                                                                 onfocus="this.oninput()" 
                                                                 onblur="this.style.height='2.5rem'"
                                                             ></textarea>
+
                                                             <!-- comment creating load -->
                                                             <div v-show="thePost.comment.is.creating" class="ts-mask is-blurring">
                                                                 <div class="ts-center">
@@ -445,6 +466,7 @@ Inc::clas('user');
                                                                 </div>
                                                             </div>
                                                             <!-- comment creating load end -->
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -454,20 +476,18 @@ Inc::clas('user');
                                         </transition>
                                         
                                         <!-- comments end -->
-
-                                    </div>
-
-                                    <!-- post deleting load -->
-                                    <div v-show="thePost.is.deleting" class="ts-mask is-blurring">
-                                        <div class="ts-center">
-                                            <div class="ts-content" style="color: #FFF">
-                                                <div class="ts-loading is-large"></div>
-                                                <br>刪除中
+                                        
+                                        <!-- post deleting load -->
+                                        <div v-show="thePost.is.deleting" class="ts-mask is-blurring">
+                                            <div class="ts-center">
+                                                <div class="ts-content" style="color: #FFF">
+                                                    <div class="ts-loading"></div> 刪除中
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <!-- post deleting load end -->
+                                        <!-- post deleting load end -->
 
+                                    </div>
                                 </div>
                             </transition>
                             <!-- post -->
