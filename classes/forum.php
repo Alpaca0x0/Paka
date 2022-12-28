@@ -379,4 +379,18 @@ class Forum{
         // done
         return $rowCount;
     }
+
+    
+    static function deleteReply($replyId){
+        if(!self::init()){ return false; }
+        // delete comment
+		$sql = 'UPDATE `comment` SET `status`="removed" WHERE `id`=:replyId AND `status`="alive" AND `reply` IS NOT NULL;';
+        DB::query($sql)::execute([
+            ':replyId' => $replyId,
+        ]);
+		if(DB::error()){ return false; }
+        $rowCount = DB::rowCount();
+        // done
+        return $rowCount;
+    }
 }
