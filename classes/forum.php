@@ -43,7 +43,7 @@ class Forum{
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
-                , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
+                , COUNT(`post_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
                 , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.times`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
@@ -75,7 +75,7 @@ class Forum{
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
-                , COUNT(`post_edited`.`id`)as`edited.times`, MAX(`post_edited`.`datetime`)as`edited.last_datetime` 
+                , COUNT(`post_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
                 , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.times`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
@@ -120,7 +120,7 @@ class Forum{
 
                 , COUNT(`reply`.`id`)as`replies.times`
 
-                , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
+                , COUNT(`comment_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
@@ -167,7 +167,7 @@ class Forum{
 
                 , COUNT(`reply`.`id`)as`replies.times`
 
-                , COUNT(`comment_edited`.`id`)as`edited.times`, MAX(`comment_edited`.`datetime`)as`edited.last_datetime` 
+                , COUNT(`comment_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
@@ -215,7 +215,7 @@ class Forum{
                 , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
                 , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
 
-                , COUNT(`reply_edited`.`id`)as`edited.times`, MAX(`reply_edited`.`datetime`)as`edited.last_datetime` 
+                , COUNT(`reply_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` as `reply` 
                 LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
@@ -258,7 +258,7 @@ class Forum{
             , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
             , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
 
-            , COUNT(`reply_edited`.`id`)as`edited.times`, MAX(`reply_edited`.`datetime`)as`edited.last_datetime` 
+            , COUNT(`reply_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
             FROM `comment` AS `reply` 
             LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
@@ -379,7 +379,6 @@ class Forum{
         // done
         return $rowCount;
     }
-
     
     static function deleteReply($replyId){
         if(!self::init()){ return false; }
@@ -392,5 +391,56 @@ class Forum{
         $rowCount = DB::rowCount();
         // done
         return $rowCount;
+    }
+
+    // edit data
+    static function editPost($editor, $postId, $content){
+        if(!self::init()){ return false; }
+        $timestamp = time();
+        $datetime = date("Y-m-d H:i:s", $timestamp);
+        // 
+        // get old content of post
+        $sql = 'SELECT `post`.`content`, COUNT(`post_edited`.`id`)as`edited.times`
+                FROM `post` 
+                LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
+                WHERE `post`.`id`=:postId AND `post`.`status`="alive" 
+                LIMIT 1
+        ;';
+        DB::query($sql)::execute([
+            ':postId' => $postId,
+        ]);
+        if(DB::error()){ return false; }
+        $oldPost = DB::fetch();
+        if(!$oldPost){ return false; }
+        // 
+        DB::beginTransaction();
+        // insert post event
+		$sql = 'INSERT INTO `post_edited` (`editor`, `post`, `content`, `datetime`) 
+                VALUES(:editor, :postId, :content, :datetime)
+        ;';
+        DB::query($sql)::execute([
+            ':editor' => $editor,
+            ':postId' => $postId,
+            ':content' => $oldPost['content'],
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // edit post
+        $sql = 'UPDATE `post` 
+                SET `content`=:content
+                WHERE `id`=:postId AND `status`="alive" 
+        ;';
+        DB::query($sql)::execute([
+            ':content' => $content,
+            ':postId' => $postId,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // done
+        DB::commit();
+        return [
+            'content' => $content,
+            'edited.last_datetime' => $timestamp,
+            'edited.times' => $oldPost['edited.times']+1,
+        ];
     }
 }

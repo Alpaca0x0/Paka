@@ -37,7 +37,6 @@ Inc::clas('user');
                     <!-- write post -->
                     <div class="ts-segment">
 
-                        <!-- create post -->
                         <div class="ts-row">
                             <div class="column">
                                 <div class="ts-avatar is-large is-circular">
@@ -50,16 +49,11 @@ Inc::clas('user');
                                 </div>
                             </div>
                         </div>
-                        <!-- create post end -->
 
                         <!-- submit button -->
                         <div class="ts-space is-small"></div>
                         <div class="ts-row">
-                            <div class="column is-fluid">
-                                <!-- <div class="ts-input is-fluid">
-                                    <input type="text" class="input" placeholder="搜尋文章…" />
-                                </div> -->
-                            </div>
+                            <div class="column is-fluid"></div>
                             <div class="column">
                                 <button @click="post.create()" :class="{'is-disabled': post.is.creating}" class="ts-button is-start-labeled-icon is-outlined" v-cloak>
                                     <span v-show="!post.is.creating" class="ts-icon is-paper-plane-icon"></span>
@@ -71,6 +65,7 @@ Inc::clas('user');
                             </div>
                         </div>
                         <!-- submit button end -->
+
                         
                         <!-- <div class="ts-divider is-section"></div>
                         <div class="ts-row">
@@ -100,6 +95,7 @@ Inc::clas('user');
                     <!-- posts -->
                     <transition-group enter-active-class="animate__fast animate__fadeIn">
                         <div v-for="thePost in posts.data" :key="thePost" class="animate__animated" v-cloak>
+
                             <!-- when post is removed -->
                             <transition enter-active-class="animate__slow animate__flipInX">
                                 <div v-if="thePost.is.removed" class="ts-segment is-tertiary animate__animated">
@@ -107,6 +103,7 @@ Inc::clas('user');
                                 </div>
                             </transition>
                             <!-- when post is removed end -->
+
                             <!-- post -->
                             <transition leave-active-class="animate__hinge">
                                 <div v-if="!thePost.is.removed" :id="'Post-'+thePost.id" class="animate__animated" :style="{'animation-duration': '900ms'}" v-cloak>
@@ -131,16 +128,66 @@ Inc::clas('user');
                                                             <div class="ts-icon is-clock-icon"></div>
                                                             {{ moment(thePost.datetime*1000).fromNow() }}
                                                         </a>
-                                                        <div class="item">
+                                                        <div v-if="is.Dev" class="item">
                                                             <div class="ts-icon is-hashtag-icon"></div>
                                                             {{ thePost.id }}
                                                         </div>
+                                                        <a v-if="thePost.edited.last_datetime" href="#!" class="item" :title="'在 ' + moment(thePost.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                            <div class="ts-icon is-pen-to-square-icon"></div>
+                                                            已編輯
+                                                        </a>
                                                     </div>
                                                 </div>
                                                 <div class="ts-space is-small"></div>
 
-                                                <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+                                                <template v-if="!thePost.is.preEditing">
+                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 27rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                    <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+                                                </template>
+                                                <template v-else>
+                                                    <!-- when post is preEditing -->
+                                                    <div class="ts-input is-fluid is-underlined is-small" style="width: 26rem;">
+                                                        <textarea 
+                                                            :readonly="thePost.is.editing"
+                                                            v-model="thePost.preEditing.content" 
+                                                            :placeholder="thePost.content" 
+                                                            oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                            onkeydown="this.oninput()" 
+                                                            onfocus="this.oninput()"
+                                                            v-focus
+                                                        ></textarea>
+                                                        <!-- post editing load -->
+                                                        <!-- <div v-show="thePost.is.editing" class="ts-mask is-blurring">
+                                                            <div class="ts-center">
+                                                                <div class="ts-content" style="color: #FFF">
+                                                                    <div class="ts-loading is-small"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div> -->
+                                                        <!-- post editing load end -->
+                                                    </div>
+
+                                                    <!-- submit and cancel buttons -->
+                                                    <div class="ts-space is-small"></div>
+                                                    <div class="ts-row">
+                                                        <div class="column is-fluid"></div>
+                                                        <div class="column">
+                                                            <div class="ts-wrap">
+                                                                <button @click="thePost.is.preEditing=false; thePost.preEditing.content=thePost.content" :class="{'is-disabled': thePost.is.editing}" :disabled="thePost.is.editing" class="ts-button is-outlined is-small is-dense" v-cloak>取消</button>
+                                                                <button @click="post.edit(thePost)" :class="{'is-disabled': thePost.is.editing}" class="ts-button is-end-labeled-icon is-small is-dense" v-cloak>
+                                                                    <span v-show="!thePost.is.editing" class="ts-icon is-pen-to-square-icon"></span>
+                                                                    <div v-show="thePost.is.editing" class="ts-icon">
+                                                                        <div class="ts-loading is-small"></div>
+                                                                    </div>
+                                                                    {{ post.is.creating ? '正在編輯貼文...' : '編輯' }}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- submit and cancel buttons end -->
+                        
+                                                    <!-- when post is preEditing end -->
+                                                </template>
 
                                             </div>
 
@@ -150,7 +197,7 @@ Inc::clas('user');
                                                     <span class="ts-icon is-spaced is-ellipsis-icon"></span>
                                                 </a>
                                                 <div :class="{ 'is-visible': post.preActionPost===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                    <button class="item" @click="post.edit(thePost)">編輯</button>
+                                                    <button class="item" @click="thePost.preEditing.content=thePost.content; thePost.is.preEditing=true">編輯</button>
                                                     <div class="ts-divider"></div>
                                                     <button class="item" @click="post.delete(thePost)">刪除</button>
                                                 </div>
@@ -175,9 +222,9 @@ Inc::clas('user');
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
-                                                <button @click="post.detail(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                                <button @click="post.share(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span class="ts-icon is-share-from-square-icon is-regular"></span>
-                                                    Detail
+                                                    分享
                                                 </button>
                                             </div>
                                         </div>
@@ -694,7 +741,7 @@ Inc::clas('user');
     </div>
 </div>
 
-<template id="swal-post-detail">
+<template id="swal-post-share">
     <swal-html></swal-html>
     <swal-param name="allowEscapeKey" value="true" />
 </template>
@@ -717,6 +764,10 @@ Inc::clas('user');
     const Forum = createApp({setup(){
         let refs = reactive({});
         let setRef = (el) => { refs[el.getAttribute('data-ref-id')] = el; }
+        // 
+        let is = reactive({
+            Dev: <?=DEV?'true':'false'?>
+        });
         // 
         let user = reactive({
             id: <?=User::get('id','false')?>,
@@ -741,10 +792,14 @@ Inc::clas('user');
             post: (thePosts) => {
                 let ret = Array.isArray(thePosts) ? thePosts : [thePosts];
                 ret.forEach((item, idx)=>{
+                    !('preEditing' in item) && (item.preEditing = {});
+                        !('content' in item.preEditing) && (item.preEditing.content = '');
                     !('is' in item) && (item.is = {});
                         !('deleting' in item.is) && (item.is.deleting = false);
+                        !('editing' in item.is) && (item.is.editing = false);
                         !('removed' in item.is) && (item.is.removed = false);
                         !('viewAllContent' in item.is) && (item.is.viewAllContent = false);
+                        !('preEditing' in item.is) && (item.is.preEditing = false);
                     !('comments' in item) && (item.comments = {});
                         !('is' in item.comments) && (item.comments.is = {});
                             !('visible' in item.comments.is) && (item.comments.is.visible = false);
@@ -825,11 +880,6 @@ Inc::clas('user');
                 info: {},
                 content: '',
             },
-            // datas using on edit()
-            editing: {
-                info: {},
-                content: '',
-            },
             create: () => {
                 if(post.is.creating){ return; }
                 post.is.creating = true;
@@ -879,7 +929,63 @@ Inc::clas('user');
                     });
                 });
             },
-            edit: (thePost) => {},
+            edit: (thePost) => {
+                if(thePost.is.editing){ return; }
+                thePost.is.editing = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/post/edit')?>',
+                    data: {
+                        postId: thePost.id,
+                        content: thePost.preEditing.content,
+                    },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    // 
+                    info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
+                    // 
+                    if(resp.type === 'success'){
+                        if(resp.data){
+                            thePost.content = resp.data.content;
+                            thePost.edited.last_datetime = resp.data.edited.last_datetime;
+                            thePost.edited.times = resp.data.edited.times;
+                        }
+                        thePost.is.preEditing = false;
+                    }
+                }).always(() => {
+                    thePost.is.editing = false;
+                    Swal.fire({
+                        position: 'bottom-start',
+                        icon: info.type,
+                        title: info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: info.type==='success' ? 2000 : false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
             delete: (thePost) => {
                 let msg = {
                     icon: 'error',
@@ -937,9 +1043,9 @@ Inc::clas('user');
                     });
                 });
             },
-            detail: (thePost) => {
+            share: (thePost) => {
                 Swal.fire({
-                    template: '#swal-post-detail',
+                    template: '#swal-post-share',
                     showConfirmButton: false,
                     width: '50vw',
                     showClass: {
@@ -973,6 +1079,13 @@ Inc::clas('user');
                                             <div class="ts-icon is-hashtag-icon"></div>
                                             ${ thePost.id }
                                         </div>
+                                        `+(
+                                            thePost.edited.last_datetime ? 
+                                        `<a href="#!" class="item" title="在 ${moment(thePost.edited.last_datetime*1000).fromNow()} 編輯">
+                                            <div class="ts-icon is-pen-to-square-icon"></div>
+                                            已編輯
+                                        </a>` : ''
+                                        )+`
                                     </div>
                                 </div>
                                 <div class="ts-space is-small"></div>
@@ -1382,7 +1495,7 @@ Inc::clas('user');
             });
         });
         // 
-        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment, reply };
+        return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment, reply, is };
     }})
     .directive("clickAway", Directives.clickAway)
     .directive("focus", Directives.focus)
