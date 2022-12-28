@@ -78,7 +78,7 @@ location ^~ /paka/ {
 - [x] `Forum` 當中的文章若非使用者所有，則不應該出現 `postActions` 按鈕。
 - [x] `Forum` 在發出 `create` 或 `delete` 請求後，UI 應呈現 loading 狀態。
 - [x] `放棄了 = =` ~~`Forum` class 架構難於 `post` 及 `comment` 調用，需要再更改。~~
-- [ ] 不該使用 `times` 作為數量統計的命名，用 `count` 會更好一些。
+- [x] 不該使用 `times` 作為數量統計的命名，用 `count` 會更好一些。
 
 ### :memo: Todo list
 

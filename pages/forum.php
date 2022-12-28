@@ -218,7 +218,7 @@ Inc::clas('user');
                                                 <button @click="thePost.comments.is.visible=!thePost.comments.is.visible; thePost.comments.is.init || getComments(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span class="ts-icon is-comment-icon is-regular"></span>
                                                     留言
-                                                    <span v-show="thePost.comments.times" class="ts-badge is-outlined is-start-spaced">{{ thePost.comments.times }}</span>
+                                                    <span v-show="thePost.comments.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.comments.count }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
@@ -250,7 +250,7 @@ Inc::clas('user');
                                         <template v-if="!thePost.comments.is.noMore && thePost.comments.is.visible && !thePost.comments.is.getting" v-cloak>
                                             <div class="ts-space"></div>
                                             <div class="ts-divider is-start-text">
-                                                <a @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.times - thePost.comments.data.length }} 則留言</a>
+                                                <a @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.count - thePost.comments.data.length }} 則留言</a>
                                             </div>
                                             <div v-show="thePost.comments.is.getError" class="ts-divider is-start-text">
                                                 <span class="ts-text is-tiny is-negative">載入關於這則貼文的留言時發生錯誤</span>
@@ -333,7 +333,7 @@ Inc::clas('user');
 
                                                 <!-- replies -->
                                                 <div v-if="!theComment.is.removed" class="ts-row">
-                                                <!-- theComment.replies.times > 0  -->
+                                                <!-- theComment.replies.count > 0  -->
                                                     <!-- 縮排 -->
                                                     <div class="column" style="width: 2.7rem;"></div>
 
@@ -358,7 +358,7 @@ Inc::clas('user');
                                                         <template v-if="!theComment.replies.is.noMore && !theComment.replies.is.getting">
                                                             <div class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
-                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.times - theComment.replies.data.length }} 則回應</a>
+                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.count - theComment.replies.data.length }} 則回應</a>
                                                                 </div>
                                                             </div>
                                                             <div v-show="theComment.replies.is.getError" class="ts-divider is-start-text">
@@ -842,9 +842,9 @@ Inc::clas('user');
                             !('info' in item.reply.creating) && (item.reply.creating.info = {type:'', status:'', message:'', data:[]});
                             !('content' in item.reply.creating) && (item.reply.creating.content = '');
                     !('replies' in item) && (item.replies = {});
-                        !('times' in item.replies) && (item.replies.times = 0);
+                        !('count' in item.replies) && (item.replies.count = 0);
                         !('is' in item.replies) && (item.replies.is = {});
-                            !('noMore' in item.replies.is) && (item.replies.is.noMore = item.replies.times ? false : true);
+                            !('noMore' in item.replies.is) && (item.replies.is.noMore = item.replies.count ? false : true);
                         !('data' in item.replies) && (item.replies.data = []);
                         !('type' in item.replies) && (item.replies.type = '');
                         !('status' in item.replies) && (item.replies.status = '');
@@ -965,7 +965,7 @@ Inc::clas('user');
                         if(resp.data){
                             thePost.content = resp.data.content;
                             thePost.edited.last_datetime = resp.data.edited.last_datetime;
-                            thePost.edited.times = resp.data.edited.times;
+                            thePost.edited.count = resp.data.edited.count;
                         }
                         thePost.is.preEditing = false;
                     }
@@ -1132,7 +1132,7 @@ Inc::clas('user');
                         thePost.comment.creating.content = '';
                         resp.data = format.comment(resp.data);
                         resp.data.replies.is.noMore = true;
-                        thePost.comments.times += 1;
+                        thePost.comments.count += 1;
                         thePost.comments.data.push(resp.data);
                     }
                 }).always(() => {
@@ -1244,7 +1244,7 @@ Inc::clas('user');
                     if(resp.type === 'success'){
                         document.activeElement.blur(); // remove focus status
                         theComment.reply.creating.content = '';
-                        theComment.replies.times += 1;
+                        theComment.replies.count += 1;
                         resp.data = format.reply(resp.data);
                         theComment.replies.data.push(resp.data);
                     }
@@ -1411,7 +1411,7 @@ Inc::clas('user');
                             if(resp.data.length < datas.limit){ thePost.comments.is.noMore = true; }
                             // resp.data.forEach((theComment) => {
                             //     theComment.replies.is = {
-                            //         noMore: theComment.replies.times ? false : true,
+                            //         noMore: theComment.replies.count ? false : true,
                             //     };
                             //     theComment.replies.data = [];
                             // });
@@ -1419,7 +1419,7 @@ Inc::clas('user');
                             resp.data = resp.data.reverse();
                             thePost.comments.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ thePost.comments.is.getError = true; }
-                            if(resp.data.length < datas.limit || thePost.comments.times <= thePost.comments.data.length){ thePost.comments.is.noMore = true; }
+                            if(resp.data.length < datas.limit || thePost.comments.count <= thePost.comments.data.length){ thePost.comments.is.noMore = true; }
                         }
                     }else{ thePost.comments.is.getError = true; }
                 } catch (error){ console.error(error); }
@@ -1471,7 +1471,7 @@ Inc::clas('user');
                             resp.data = resp.data.reverse();
                             theComment.replies.data.unshift(...resp.data);
                             if(!resp.data[0]['id']){ theComment.replies.is.getError = true; }
-                            if(resp.data.length < datas.limit || theComment.replies.times <= theComment.replies.data.length){ theComment.replies.is.noMore = true; }
+                            if(resp.data.length < datas.limit || theComment.replies.count <= theComment.replies.data.length){ theComment.replies.is.noMore = true; }
                         }
                     }else{ theComment.replies.is.getError = true; }
                 } catch (error){ console.error(error); }

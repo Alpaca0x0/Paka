@@ -43,8 +43,8 @@ class Forum{
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
-                , COUNT(`post_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
-                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.times`
+                , COUNT(`post_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
+                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.count`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
@@ -75,8 +75,8 @@ class Forum{
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
-                , COUNT(`post_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
-                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.times`
+                , COUNT(`post_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
+                , (SELECT COUNT(`comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.count`
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
@@ -118,9 +118,9 @@ class Forum{
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
 
-                , COUNT(`reply`.`id`)as`replies.times`
+                , COUNT(`reply`.`id`)as`replies.count`
 
-                , COUNT(`comment_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
+                , COUNT(`comment_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
@@ -165,9 +165,9 @@ class Forum{
                 , `account`.`username`as`commenter.username`, `account`.`identity`as`commenter.identity`
                 , `profile`.`nickname`as`commenter.nickname`, `profile`.`gender`as`commenter.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`commenter.avatar`
 
-                , COUNT(`reply`.`id`)as`replies.times`
+                , COUNT(`reply`.`id`)as`replies.count`
 
-                , COUNT(`comment_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
+                , COUNT(`comment_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
@@ -215,7 +215,7 @@ class Forum{
                 , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
                 , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
 
-                , COUNT(`reply_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
+                , COUNT(`reply_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
                 FROM `comment` as `reply` 
                 LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
@@ -258,7 +258,7 @@ class Forum{
             , `account`.`username`as`replier.username`, `account`.`identity`as`replier.identity`
             , `profile`.`nickname`as`replier.nickname`, `profile`.`gender`as`replier.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`replier.avatar`
 
-            , COUNT(`reply_edited`.`id`)as`edited.times`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
+            , COUNT(`reply_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
             FROM `comment` AS `reply` 
             LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
@@ -400,7 +400,7 @@ class Forum{
         $datetime = date("Y-m-d H:i:s", $timestamp);
         // 
         // get old content of post
-        $sql = 'SELECT `post`.`content`, COUNT(`post_edited`.`id`)as`edited.times`
+        $sql = 'SELECT `post`.`content`, COUNT(`post_edited`.`id`)as`edited.count`
                 FROM `post` 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
                 WHERE `post`.`id`=:postId AND `post`.`status`="alive" 
@@ -440,7 +440,7 @@ class Forum{
         return [
             'content' => $content,
             'edited.last_datetime' => $timestamp,
-            'edited.times' => $oldPost['edited.times']+1,
+            'edited.count' => $oldPost['edited.count']+1,
         ];
     }
 }
