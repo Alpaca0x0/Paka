@@ -32,7 +32,7 @@ Forum::init() or Resp::error('forum_cannot_init', '發生非預期錯，Forum �
 // check option
 $before = isset($_GET['before']) ? Type::int($_GET['before'], $def['before']) : $def['before']; 
 $after = isset($_GET['after']) ? Type::int($_GET['after'], $def['after']) : $def['after']; 
-$orderBy = isset($_GET['orderBy']) ? strtoupper(Type::string($_GET['orderBy'], $def['orderBy'])) : $def['orderBy']; 
+$orderBy = isset($_GET['orderBy']) ? strtoupper(Type::string($_GET['orderBy'], $def['orderBy'])) : $def['orderBy'];
 $limit = isset($_GET['limit']) ? Type::int($_GET['limit'], $def['limit']) : $def['limit'];
 
 // filter
@@ -40,7 +40,7 @@ if($after){ $after = ($after<$min['after']||$after>$max['after']) ? $def['after'
 else if($before){ $before = ($before<$min['before']||$before>$max['before']) ? $def['before'] : $before; }
 else{ $before=false; $after=$def['after']; }
 
-if(!Arr::includes([$orderBy], 'DESC', 'ASC')){ $orderBy = $def['orderBy']; }
+if(!in_array($orderBy, ['DESC', 'ASC'])){ $orderBy = $def['orderBy']; }
 
 if($limit<$min['limit'] || $limit>$max['limit']){ $limit = $def['limit']; }
 
