@@ -280,18 +280,18 @@ Inc::clas('user');
                                                                 <div class="avatar ts-image">
                                                                     <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                                 </div>
-                                                                <div class="content" style="max-width: 30rem;">
+                                                                <div class="content" style="max-width: 35rem;">
                                                                     <div class="bubble">
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
                                                                         <template v-if="!theComment.is.preEditing">
-                                                                            <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 27rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                            <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 28rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                                             <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                                         </template>
                                                                         <template v-else>
                                                                             <!-- when comment is preEditing -->
-                                                                            <div class="ts-input is-fluid is-underlined" style="width: 29rem;">
+                                                                            <div class="ts-input is-fluid is-underlined" style="width: 30rem;">
                                                                                 <textarea 
                                                                                     @keydown.enter.exact.prevent="comment.edit(theComment)" 
                                                                                     @keydown.enter.shift.exact.prevent="theComment.preEditing.content += '\n'" 
@@ -340,7 +340,7 @@ Inc::clas('user');
                                                                             </div>
                                                                         </div>
                                                                         <div class="column">
-                                                                            <div v-show="theComment.is.preEditing">
+                                                                            <div v-show="theComment.is.preEditing && !theComment.is.editing">
                                                                                 <a href="#!" @click="theComment.is.preEditing=false" class="ts-text is-link">
                                                                                     <div class="ts-icon is-xmark-icon"></div> 取消編輯
                                                                                 </a>
@@ -428,21 +428,21 @@ Inc::clas('user');
                                                                                 <div class="avatar ts-image">
                                                                                     <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
                                                                                 </div>
-                                                                                <div class="content" style="max-width: 22.8rem;">
+                                                                                <div class="content" style="max-width: 28rem;">
                                                                                     <div class="bubble">
                                                                                         <div class="author">
                                                                                             <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
                                                                                         </div>
                                                                                         <template v-if="!theReply.is.preEditing">
-                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                                            <div v-html="theReply.content" :style="{'max-height': theReply.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 24.3rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                                                             <a v-show="theReply.content.split(/\r\n|\r|\n/).length > 4" @click="theReply.is.viewAllContent=!theReply.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theReply.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                                                         </template>
                                                                                         <template v-else>
-                                                                                            <!-- when comment is preEditing -->
-                                                                                            <div class="ts-input is-fluid is-underlined" style="width: 23rem;">
+                                                                                            <!-- when reply is preEditing -->
+                                                                                            <div class="ts-input is-fluid is-underlined" style="width: 26.3rem;">
                                                                                                 <textarea 
-                                                                                                    @keydown.enter.exact.prevent="comment.edit(theComment)" 
-                                                                                                    @keydown.enter.shift.exact.prevent="theComment.preEditing.content += '\n'" 
+                                                                                                    @keydown.enter.exact.prevent="reply.edit(theReply)" 
+                                                                                                    @keydown.enter.shift.exact.prevent="theReply.preEditing.content += '\n'" 
                                                                                                     :readonly="theReply.is.editing"
                                                                                                     v-model="theReply.preEditing.content" 
                                                                                                     :placeholder="theReply.content" 
@@ -452,6 +452,7 @@ Inc::clas('user');
                                                                                                     v-focus
                                                                                                 ></textarea>
                                                                                             </div>
+                                                                                            <!-- when reply is preEditing end -->
                                                                                         </template>
 
                                                                                         <!-- reply editing load -->
@@ -475,17 +476,28 @@ Inc::clas('user');
                                                                                         <!-- reply deleting load end -->
 
                                                                                     </div>
-                                                                                    <div class="ts-meta is-small is-secondary">
-                                                                                        <a class="item">讚</a>
-                                                                                        <a class="item">回覆</a>
-                                                                                        <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                                            {{ moment(theReply.datetime*1000).fromNow() }}
-                                                                                        </a>
-                                                                                        <div class="item">
-                                                                                            <div class="ts-icon is-hashtag-icon"></div>
-                                                                                            {{ theReply.id }}
+
+                                                                                    <div class="ts-row">
+                                                                                        <div class="ts-meta is-small is-secondary column is-fluid">
+                                                                                            <a class="item">讚</a>
+                                                                                            <a class="item">回覆</a>
+                                                                                            <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                                                {{ moment(theReply.datetime*1000).fromNow() }} {{ theReply.edited.count > 0 ? '(已編輯)' : '' }}
+                                                                                            </a>
+                                                                                            <div v-show="is.Dev" class="item">
+                                                                                                <div class="ts-icon is-hashtag-icon"></div>
+                                                                                                {{ theReply.id }}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="column">
+                                                                                            <div v-show="theReply.is.preEditing && !theReply.is.editing">
+                                                                                                <a href="#!" @click="theReply.is.preEditing=false" class="ts-text is-link">
+                                                                                                    <div class="ts-icon is-xmark-icon"></div> 取消編輯
+                                                                                                </a>
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
+
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1392,7 +1404,63 @@ Inc::clas('user');
                     });
                 });
             },
-            edit: (theReply) => {},
+            edit: (theReply) => {
+                if(theReply.is.editing){ return; }
+                theReply.is.editing = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/reply/edit')?>',
+                    data: {
+                        replyId: theReply.id,
+                        content: theReply.preEditing.content,
+                    },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    // 
+                    info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
+                    // 
+                    if(resp.type === 'success'){
+                        if(resp.data){
+                            theReply.content = resp.data.content;
+                            theReply.edited.last_datetime = resp.data.edited.last_datetime;
+                            theReply.edited.count = resp.data.edited.count;
+                        }
+                        theReply.is.preEditing = false;
+                    }
+                }).always(() => {
+                    theReply.is.editing = false;
+                    Swal.fire({
+                        position: 'bottom-start',
+                        icon: info.type,
+                        title: info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: info.type==='success' ? 2000 : false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
             delete: (theReply) => {
                 let msg = {
                     icon: 'error',

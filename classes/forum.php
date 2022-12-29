@@ -454,7 +454,7 @@ class Forum{
         $sql = 'SELECT `comment`.`content`, COUNT(DISTINCT `comment_edited`.`id`)as`edited.count`
                 FROM `comment` 
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
-                WHERE `comment`.`id`=:commentId AND `comment`.`status`="alive" 
+                WHERE `comment`.`id`=:commentId AND `comment`.`status`="alive" AND `comment`.`reply` IS NULL
                 GROUP BY `comment`.`id`
                 LIMIT 1
         ;';
@@ -480,7 +480,7 @@ class Forum{
         // edit comment
         $sql = 'UPDATE `comment` 
                 SET `content`=:content
-                WHERE `id`=:commentId AND `status`="alive" 
+                WHERE `id`=:commentId AND `status`="alive" AND `reply` IS NULL
         ;';
         DB::query($sql)::execute([
             ':content' => $content,
@@ -493,6 +493,57 @@ class Forum{
             'content' => $content,
             'edited.last_datetime' => $timestamp,
             'edited.count' => $oldComment['edited.count']+1,
+        ];
+    }
+
+    static function editReply($editor, $replyId, $content){
+        if(!self::init()){ return false; }
+        $timestamp = time();
+        $datetime = date("Y-m-d H:i:s", $timestamp);
+        // 
+        // get old content of comment
+        $sql = 'SELECT `reply`.`content`, COUNT(DISTINCT `comment_edited`.`id`) as `edited.count`
+                FROM `comment` as `reply`
+                LEFT JOIN `comment_edited` ON (`reply`.`id`=`comment_edited`.`comment`) 
+                WHERE `reply`.`id`=:replyId AND `reply`.`status`="alive" AND `reply`.`reply` IS NOT NULL
+                GROUP BY `reply`.`id`
+                LIMIT 1
+        ;';
+        DB::query($sql)::execute([
+            ':replyId' => $replyId,
+        ]);
+        if(DB::error()){ return false; }
+        $oldReply = DB::fetch();
+        if(!$oldReply){ return false; }
+        // 
+        DB::beginTransaction();
+        // insert comment event
+		$sql = 'INSERT INTO `comment_edited` (`editor`, `comment`, `content`, `datetime`) 
+                VALUES(:editor, :replyId, :content, :datetime)
+        ;';
+        DB::query($sql)::execute([
+            ':editor' => $editor,
+            ':replyId' => $replyId,
+            ':content' => $oldReply['content'],
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // edit comment
+        $sql = 'UPDATE `comment` 
+                SET `content`=:content
+                WHERE `id`=:replyId AND `status`="alive" AND `reply` IS NOT NULL
+        ;';
+        DB::query($sql)::execute([
+            ':content' => $content,
+            ':replyId' => $replyId,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // done
+        DB::commit();
+        return [
+            'content' => $content,
+            'edited.last_datetime' => $timestamp,
+            'edited.count' => $oldReply['edited.count']+1,
         ];
     }
 }

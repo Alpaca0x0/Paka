@@ -103,7 +103,7 @@ location ^~ /paka/ {
   - [x] edit comment
   - [x] reply comment
   - [x] delete reply
-  - [ ] edit reply
+  - [x] edit reply
   - [ ] like post
   - [ ] share post
   - [ ] popular posts
