@@ -314,7 +314,7 @@ class Forum{
         return DB::lastInsertId();
     }
 
-    static function createReply($commenter, $reply, $content){
+    static function createReply($replier, $commentId, $content){
         if(!self::init()){ return false; };
         $datetime = date("Y-m-d H:i:s");
         // check if post and comment is exist
@@ -323,17 +323,17 @@ class Forum{
                     WHERE `id`=:commentId AND `status`="alive" 
                     LIMIT 1
         ;')::execute([
-            ':commentId' => $reply,
-        ]);
+            ':commentId' => $commentId,
+        ])::fetch();
         if(DB::error()){ return false; }
         if(!$postId){ return null; }
-
-        // create post
-        $sql = "INSERT INTO `comment`(`commenter`, `post`, `reply`, `content`, `datetime`) VALUES (:commenter, :postId, :reply, :content, :datetime)";
+        $postId = $postId['post'];
+        // create reply
+        $sql = "INSERT INTO `comment`(`commenter`, `post`, `reply`, `content`, `datetime`) VALUES (:replier, :postId, :commentId, :content, :datetime);";
         DB::query($sql)::execute([
-            ':commenter' => $commenter,
+            ':replier' => $replier,
             ':postId' => $postId,
-            ':reply' => $reply,
+            ':commentId' => $commentId,
             ':content' => $content,
             ':datetime' => $datetime,
         ]);
@@ -404,6 +404,7 @@ class Forum{
                 FROM `post` 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
                 WHERE `post`.`id`=:postId AND `post`.`status`="alive" 
+                GROUP BY `post`.`id`
                 LIMIT 1
         ;';
         DB::query($sql)::execute([

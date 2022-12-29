@@ -61,6 +61,7 @@ location ^~ /paka/ {
 - [x] `Forum` 中的 `post action` 失效，原因是 `vue-click-alway` 觸發點錯誤。
 - [x] 用戶`token`憑證更新時，cookie 不會更新。
 - [x] 貼文文字過多時不會自動換行。(add `overflow-wrap: break-word`)
+- [x] 修復 `Forum::editPost()` 在 `MySQL 5.7+` 會出現「`Syntax error or access violation: 1140 In aggregated query without GROUP BY, expression`」的錯誤。
 
 <!-- ### :wrench: Issues -->
 
