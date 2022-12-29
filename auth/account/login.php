@@ -45,7 +45,7 @@ else if($user['status'] !== 'alive'){ Resp::warning('user_status', $username, "å
 # tried times limit, more than 3 times since 15 minutes, needs captcha
 $loginMaxTimes = 3;
 $result = DB::query(
-    'SELECT COUNT(`id`) AS `count` FROM `account_event` 
+    'SELECT COUNT(DISTINCT `id`) AS `count` FROM `account_event` 
     WHERE `commit`=:commit AND `uid`=:uid AND UNIX_TIMESTAMP((:datetime-`datetime`))<15*60  # 15 mins
     LIMIT 1;'
 )::execute([
