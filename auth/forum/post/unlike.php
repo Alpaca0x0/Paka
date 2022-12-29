@@ -24,9 +24,9 @@ if(!$post){ Resp::warning('post_not_found', '找不到該文章'); }
 $post = Arr::nd($post);
 
 # delete the post
-$result = Forum::likePost($uid, $postId);
-if($result===false){ Resp::error('sql_like_post', 'SQL 語法執行失敗'); }
-if(is_null($result)){ Resp::success('seems_already_liked', '看起來已經按讚過囉'); }
-if(!$result){ Resp::error('sql_like_post', 'SQL 語法執行失敗，非預期錯誤'); }
+$result = Forum::unlikePost($uid, $postId);
+if($result===false){ Resp::error('sql_unlike_post', 'SQL 語法執行失敗'); }
+if(is_null($result)){ Resp::success('seems_already_unliked', '看起來尚未按讚過呢'); }
+if(!$result){ Resp::error('sql_unlike_post', 'SQL 語法執行失敗，非預期錯誤'); }
 
-Resp::success('successfully', $postId, '已成功對該文章按讚');
+Resp::success('successfully', $postId, '已成功對該文章收回讚');

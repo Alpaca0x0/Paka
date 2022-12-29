@@ -18,7 +18,7 @@ if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳
 
 # check permission
 Inc::clas('forum');
-$post = Forum::getPost($postId);
+$post = Forum::getPost($postId, $uid);
 if($post === false){ Resp::error('sql_query', 'SQL 查詢時發生錯誤'); }
 if(!$post){ Resp::warning('post_not_found', '找不到該文章'); }
 $post = Arr::nd($post);

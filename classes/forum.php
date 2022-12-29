@@ -30,7 +30,7 @@ class Forum{
     static function orderBy($field, $type){ self::init(); self::$orderBy = [$field, $type]; return self::class; }
 
     // get data
-    static function getPosts(){
+    static function getPosts($uid=null){
         if(!self::isInit()){ return false; };
         // get args
         $limit = self::$limit;
@@ -41,15 +41,23 @@ class Forum{
         self::resetArgs();
 
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
+
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
+
                 , COUNT(DISTINCT `post_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
+
                 , (SELECT COUNT(DISTINCT `comment`.`id`) FROM `comment` WHERE `comment`.`post`=`post`.`id` AND `comment`.`status`="alive" AND `comment`.`reply` IS NULL)as`comments.count`
+
+                , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+                , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
-                WHERE `post`.`status`=:status AND `post`.`id` > :after AND `post`.`id` < :before
+                LEFT JOIN `post_event` as `liked` ON (`post`.`id`=`liked`.`post` AND `liked`.`commit`="like") 
+                WHERE `post`.`status`="alive" AND `post`.`id` > :after AND `post`.`id` < :before
                 GROUP BY `post`.`id`
         ';
         $sql .= is_null($orderBy) ? '' : " ORDER BY $orderBy[0] $orderBy[1] ";
@@ -57,7 +65,7 @@ class Forum{
         $sql .= ';';
         // 
         DB::query($sql)::execute([
-            ':status' => "alive",
+            ':uid' => $uid,
             ':before' => $before,
             ':after' => $after,
         ]);
@@ -67,28 +75,37 @@ class Forum{
         return $posts;
     }
 
-    static function getPost($pid){
+    static function getPost($postId, $uid=null){
         if(!self::init()){ return false; };
         // reset args
         self::resetArgs();
 
         $sql = 'SELECT `post`.`id`, `post`.`content`, `post`.`poster`as`poster.id`, UNIX_TIMESTAMP(`post`.`datetime`)as`datetime`
+
                 , `account`.`username`as`poster.username`, `account`.`identity`as`poster.identity`
                 , `profile`.`nickname`as`poster.nickname`, `profile`.`gender`as`poster.gender`, IFNULL(REPLACE(TO_BASE64(`profile`.`avatar`),"\n",""), NULL)as`poster.avatar`
+
                 , COUNT(DISTINCT `post_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`post_edited`.`datetime`))as`edited.last_datetime` 
+
                 , (SELECT COUNT(DISTINCT `comment`.`id`) FROM `comment` WHERE `comment`.`status`="alive" AND `comment`.`post`=`post`.`id`)as`comments.count`
+
+                , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+                , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
                 FROM `post` 
                 LEFT JOIN `account` ON (`post`.`poster`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`post`.`poster`=`profile`.`id`) 
                 LEFT JOIN `post_edited` ON (`post`.`id`=`post_edited`.`post`) 
-                WHERE `post`.`status`=:status AND `post`.`id`=:pid
+                LEFT JOIN `post_event` as `liked` ON (`post`.`id`=`liked`.`post` AND `liked`.`commit`="like") 
+                WHERE `post`.`status`=:status AND `post`.`id`=:postId
                 GROUP BY `post`.`id`
                 LIMIT 1;
         ';
         // 
         DB::query($sql)::execute([
             ':status' => "alive",
-            ':pid' => $pid
+            ':postId' => $postId,
+            ':uid' => $uid,
         ]);
         if(DB::error()){ return false; }
         $post = DB::fetch();
@@ -548,24 +565,66 @@ class Forum{
     }
 
     // event
-    static function likePost($uid, $postId, $ip){
+    static function likePost($uid, $postId){
         if(!self::init()){ return false; }
         $datetime = date("Y-m-d H:i:s");
+        $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
         // 
         $sql = 'INSERT INTO `post_event` (`uid`, `commit`, `post`, `ip`, `datetime`)
-                VALUES (:uid, "like", :post, :ip, :datetime)
+                SELECT :uid, "like", :post, :ip, :datetime FROM DUAL
                 WHERE NOT EXISTS (
                     SELECT 1 FROM `post_event`
-                    WHERE `commit`="like" and `post`=:post2
+                    WHERE `post_event`.`commit`="like" and `post_event`.`post`=:post2
                 )
         ;';
         DB::query($sql)::execute([
             ':uid' => $uid,
             ':post' => $postId,
+            ':post2' => $postId,
             ':ip' => $ip,
             ':datetime' => $datetime,
         ]);
         if(DB::error()){ return false; }
-        return DB::rowCount();
+        if(DB::rowCount() < 1){ return null; }
+        return true;
+    }
+    static function unlikePost($uid, $postId){
+        if(!self::init()){ return false; }
+        $datetime = date("Y-m-d H:i:s");
+        $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
+        // 
+        DB::beginTransaction();
+        // 
+        // update old like
+        $sql = 'UPDATE `post_event` 
+                SET `commit`="ever_liked" 
+                WHERE `commit`="like" AND `post`=:postId AND `uid`=:uid
+        ;';
+        DB::query($sql)::execute([
+            ':postId' => $postId,
+            ':uid' => $uid,
+        ]);
+        if(DB::error()){ DB::rollback(); return false; }
+        if(DB::rowCount() < 1){ DB::rollback(); return null; }
+        // 
+        $sql = 'INSERT INTO `post_event` (`uid`, `commit`, `post`, `ip`, `datetime`)
+                SELECT :uid, "unlike", :postId, :ip, :datetime FROM DUAL
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM `post_event`
+                    WHERE `post_event`.`commit`="like" and `post_event`.`post`=:postId2
+                )
+        ;';
+        DB::query($sql)::execute([
+            ':uid' => $uid,
+            ':postId' => $postId,
+            ':postId2' => $postId,
+            ':ip' => $ip,
+            ':datetime' => $datetime,
+        ]);
+        if(DB::error()){ DB::rollback(); return false; }
+        if(DB::rowCount() < 1){ DB::rollback(); return null; }
+        // 
+        DB::commit();
+        return true;
     }
 }

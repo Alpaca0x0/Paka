@@ -209,9 +209,10 @@ Inc::clas('user');
                                         <div class="ts-divider is-section"></div>
                                         <div class="ts-row">
                                             <div class="column is-fluid">
-                                                <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
+                                                <button @click="thePost.liked.have ? post.unlike(thePost) : post.like(thePost)" :disabled="thePost.is.liking || thePost.is.unliking" :class="{'is-disabled': thePost.is.liking || thePost.is.unliking}" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                                    讚
+                                                    {{ thePost.liked.have ? '收回讚' : '讚' }}
+                                                    <span v-show="thePost.liked.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.liked.count }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
@@ -874,6 +875,8 @@ Inc::clas('user');
                     !('is' in item) && (item.is = {});
                         !('deleting' in item.is) && (item.is.deleting = false);
                         !('editing' in item.is) && (item.is.editing = false);
+                        !('liking' in item.is) && (item.is.liking = false);
+                        !('unliking' in item.is) && (item.is.unliking = false);
                         !('removed' in item.is) && (item.is.removed = false);
                         !('viewAllContent' in item.is) && (item.is.viewAllContent = false);
                         !('preEditing' in item.is) && (item.is.preEditing = false);
@@ -1070,6 +1073,8 @@ Inc::clas('user');
                 });
             },
             delete: (thePost) => {
+                if(thePost.is.deleting){ return; }
+                // 
                 let msg = {
                     icon: 'error',
                     title: '非預期錯誤',
@@ -1178,6 +1183,100 @@ Inc::clas('user');
                         </div>
                         `,
                 });
+            },
+            like: (thePost) => {
+                if(thePost.is.liking || thePost.is.unliking){ return; }
+                thePost.is.liking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/post/like')?>',
+                    data: { postId: thePost.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        thePost.liked.have = 1;
+                        if(resp.status==='successfully'){
+                            thePost.liked.count += 1;
+                        }
+                    }
+                }).always(() => {
+                    thePost.is.liking = false;
+                    info.type==='success' || Swal.fire({
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+                // 
+            },
+            unlike: (thePost) => {
+                if(thePost.is.unliking || thePost.is.liking){ return; }
+                thePost.is.unliking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/post/unlike')?>',
+                    data: { postId: thePost.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        thePost.liked.have = 0;
+                        if(resp.status==='successfully'){
+                            thePost.liked.count -= 1;
+                        }
+                    }
+                }).always(() => {
+                    thePost.is.unliking = false;
+                    info.type==='success' || Swal.fire({
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+                // 
             },
         });
         let comment = reactive({

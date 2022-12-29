@@ -83,7 +83,7 @@ location ^~ /paka/ {
   - [x] reply comment
   - [x] delete reply
   - [x] edit reply
-  - [ ] like post
+  - [x] like post
   - [ ] share post
   - [ ] popular posts
 - RWD

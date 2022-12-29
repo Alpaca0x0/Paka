@@ -44,12 +44,15 @@ if(!in_array($orderBy, ['DESC', 'ASC'])){ $orderBy = $def['orderBy']; }
 
 if($limit<$min['limit'] || $limit>$max['limit']){ $limit = $def['limit']; }
 
+Inc::clas('user');
+$uid = User::get('id', null);
+
 // sql query
 $posts = Forum::before($before)
 				::after($after)
 				::orderBy('post.datetime', $orderBy)
 				::limit($limit)
-				::getPosts();
+				::getPosts($uid);
 
 if($posts === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(is_null($posts)){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }
