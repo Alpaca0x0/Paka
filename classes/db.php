@@ -2,6 +2,7 @@
 class DB{
 	static private $connect = false;
 	static private $query = false; // self::Query->execute([...])
+	static private $message = '';
 	static private $status = [
 		'error' => null, // true when error
 		'success' => null, // true when success
@@ -41,9 +42,12 @@ class DB{
 			self::$connect->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
 			// error throw to try catch
 			self::$connect->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-		}catch(Exception $e){ self::error(true); return false; }
+		}catch(Exception $e){ self::$message=$e; self::error(true); return false; }
 		self::success(true); return true;
 	}
+
+	// show message
+	static function message(){ return self::$message; }
 
 	// reset all status
 	static function unstatus($keys=false, $set=false){
@@ -82,7 +86,7 @@ class DB{
 		try{
 			self::$query = self::$connect->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 			return self::success(true);
-		}catch (Exception $e) { return self::error(true); }
+		}catch (Exception $e) { self::$message=$e; return self::error(true); }
 	}
 
 	static function execute($values=[]){
@@ -91,7 +95,7 @@ class DB{
 		    if(self::$query->execute($values) === false){ // e.g. [':example'=>'value']
 		    	return self::error(true); // self::$query->debugDumpParams();
 			}else{ return self::success(true); }
-		}catch (Exception $e) { return self::error(true); }
+		}catch (Exception $e) { self::$message=$e; return self::error(true); }
 	}
 
 	static function sentence(){ return self::$query->queryString; }
