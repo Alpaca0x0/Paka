@@ -62,6 +62,7 @@ location ^~ /paka/ {
 - [x] 用戶`token`憑證更新時，cookie 不會更新。
 - [x] 貼文文字過多時不會自動換行。(add `overflow-wrap: break-word`)
 - [x] 修復 `Forum::editPost()` 在 `MySQL 5.7+` 會出現「`Syntax error or access violation: 1140 In aggregated query without GROUP BY, expression`」的錯誤。
+- [x] `Forum` class 中的 COUNT 會在 JOIN TABLE 後，計算到重複的資料筆。(使用 `COUNT(DISTINCT COLUMN)` 的方式過濾重複資料筆)
 
 <!-- ### :wrench: Issues -->
 
