@@ -27,7 +27,7 @@ Inc::clas('user');
                         </a>
                     </template>
                     <!-- if login -->
-                    <a v-if="is.login" href="#!" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" @click="ritems.account.isDropdown=true;" v-click-away="()=>ritems.account.isDropdown=false" class="item">
+                    <a v-if="is.login" href="#!" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" @click="ritems.account.isDropdown=true;" v-click-outside="()=>ritems.account.isDropdown=false" class="item">
                         <div class="label">
                             <div class="content">
                                 <span class="ts-avatar is-small is-circular">
@@ -69,8 +69,8 @@ Inc::clas('user');
     import { createApp, ref, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
-    import { clickAway } from '<?=Uri::js('vue/directives')?>';
-    const Directives = { clickAway };
+    import { clickOutside } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { clickOutside };
 
     const Navbar = createApp({setup(){
         let is = reactive({
@@ -201,8 +201,8 @@ Inc::clas('user');
         })
         //
         return { is, items, ritems, subItems, currentPageId, onMouseItem, logout }
-    }}).directive("clickAway",
-        Directives.clickAway
+    }}).directive("clickOutside",
+        Directives.clickOutside
     ).mount('#Navbar');
 </script>
 

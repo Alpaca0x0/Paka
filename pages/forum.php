@@ -193,7 +193,7 @@ Inc::clas('user');
 
                                             <!-- post actions -->
                                             <div v-show="user.id===thePost.poster.id" class="column" style="max-height: 20px">
-                                                <a @click="post.preActionPost=thePost.id" v-click-away="()=>post.preActionPost=false" style="cursor: pointer;">
+                                                <a @click="post.preActionPost=thePost.id" v-click-outside="()=>post.preActionPost=post.preActionPost===thePost.id?false:post.preActionPost" style="cursor: pointer;">
                                                     <span class="ts-icon is-spaced is-ellipsis-icon"></span>
                                                 </a>
                                                 <div :class="{ 'is-visible': post.preActionPost===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
@@ -316,7 +316,7 @@ Inc::clas('user');
 
                                                         <!-- comment actions -->
                                                         <div v-show="user.id===theComment.commenter.id" class="column" style="max-height: 20px; max-width: 30px">
-                                                            <a @click="thePost.comment.preActionComment=theComment.id" v-click-away="()=>thePost.comment.preActionComment=false" style="cursor: pointer;">
+                                                            <a @click="thePost.comment.preActionComment=theComment.id" v-click-outside="()=>thePost.comment.preActionComment=thePost.comment.preActionComment===theComment.id?false:thePost.comment.preActionComment" style="cursor: pointer;">
                                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                                             </a>
                                                             <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
@@ -427,7 +427,7 @@ Inc::clas('user');
 
                                                                         <!-- reply actions -->
                                                                         <div v-show="user.id===theReply.replier.id" class="column" style="max-height: 20px; max-width: 30px">
-                                                                            <a @click="theComment.reply.preActionReply=theReply.id" v-click-away="()=>theComment.reply.preActionReply=false" style="cursor: pointer;">
+                                                                            <a @click="theComment.reply.preActionReply=theReply.id" v-click-outside="()=>theComment.reply.preActionReply=theComment.reply.preActionReply===theReply.id?false:theComment.reply.preActionReply" style="cursor: pointer;">
                                                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                                                             </a>
                                                                             <div :class="{ 'is-visible': theComment.reply.preActionReply===theReply.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
@@ -750,8 +750,8 @@ Inc::clas('user');
     import { createApp, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
-    import { focus, clickAway } from '<?=Uri::js('vue/directives')?>';
-    const Directives = { focus, clickAway };
+    import { focus, clickOutside } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus, clickOutside };
     
     // moment.js to set datetime format
     import moment from '<?=Uri::js('moment')?>';
@@ -1497,7 +1497,7 @@ Inc::clas('user');
         // 
         return { user, posts, post, setRef, getPosts, moment, getComments, getReplies, comment, reply, is };
     }})
-    .directive("clickAway", Directives.clickAway)
+    .directive("clickOutside", Directives.clickOutside)
     .directive("focus", Directives.focus)
     .mount('#Forum');
 </script>
