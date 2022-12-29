@@ -99,7 +99,7 @@ location ^~ /paka/ {
   - [x] edit post
   - [x] comment post
   - [x] delete comment
-  - [ ] edit comment
+  - [x] edit comment
   - [x] reply comment
   - [x] delete reply
   - [ ] edit reply

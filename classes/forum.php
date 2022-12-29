@@ -444,4 +444,55 @@ class Forum{
             'edited.count' => $oldPost['edited.count']+1,
         ];
     }
+
+    static function editComment($editor, $commentId, $content){
+        if(!self::init()){ return false; }
+        $timestamp = time();
+        $datetime = date("Y-m-d H:i:s", $timestamp);
+        // 
+        // get old content of comment
+        $sql = 'SELECT `comment`.`content`, COUNT(`comment_edited`.`id`)as`edited.count`
+                FROM `comment` 
+                LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
+                WHERE `comment`.`id`=:commentId AND `comment`.`status`="alive" 
+                GROUP BY `comment`.`id`
+                LIMIT 1
+        ;';
+        DB::query($sql)::execute([
+            ':commentId' => $commentId,
+        ]);
+        if(DB::error()){ return false; }
+        $oldComment = DB::fetch();
+        if(!$oldComment){ return false; }
+        // 
+        DB::beginTransaction();
+        // insert comment event
+		$sql = 'INSERT INTO `comment_edited` (`editor`, `comment`, `content`, `datetime`) 
+                VALUES(:editor, :commentId, :content, :datetime)
+        ;';
+        DB::query($sql)::execute([
+            ':editor' => $editor,
+            ':commentId' => $commentId,
+            ':content' => $oldComment['content'],
+            ':datetime' => $datetime,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // edit comment
+        $sql = 'UPDATE `comment` 
+                SET `content`=:content
+                WHERE `id`=:commentId AND `status`="alive" 
+        ;';
+        DB::query($sql)::execute([
+            ':content' => $content,
+            ':commentId' => $commentId,
+        ]);
+		if(DB::error()){ DB::rollback(); return false; }
+        // done
+        DB::commit();
+        return [
+            'content' => $content,
+            'edited.last_datetime' => $timestamp,
+            'edited.count' => $oldComment['edited.count']+1,
+        ];
+    }
 }

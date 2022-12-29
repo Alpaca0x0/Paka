@@ -141,12 +141,12 @@ Inc::clas('user');
                                                 <div class="ts-space is-small"></div>
 
                                                 <template v-if="!thePost.is.preEditing">
-                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 27rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 30rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                     <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                 </template>
                                                 <template v-else>
                                                     <!-- when post is preEditing -->
-                                                    <div class="ts-input is-fluid is-underlined is-small" style="width: 26rem;">
+                                                    <div class="ts-input is-fluid is-underlined" style="width: 30.2rem;">
                                                         <textarea 
                                                             :readonly="thePost.is.editing"
                                                             v-model="thePost.preEditing.content" 
@@ -157,13 +157,13 @@ Inc::clas('user');
                                                             v-focus
                                                         ></textarea>
                                                         <!-- post editing load -->
-                                                        <!-- <div v-show="thePost.is.editing" class="ts-mask is-blurring">
+                                                        <div v-show="thePost.is.editing" class="ts-mask is-blurring">
                                                             <div class="ts-center">
                                                                 <div class="ts-content" style="color: #FFF">
-                                                                    <div class="ts-loading is-small"></div>
+                                                                    <div class="ts-loading is-small"></div> 編輯中
                                                                 </div>
                                                             </div>
-                                                        </div> -->
+                                                        </div>
                                                         <!-- post editing load end -->
                                                     </div>
 
@@ -280,34 +280,68 @@ Inc::clas('user');
                                                                 <div class="avatar ts-image">
                                                                     <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
                                                                 </div>
-                                                                <div class="content" style="max-width: 26.5rem;">
+                                                                <div class="content" style="max-width: 30.7rem;">
                                                                     <div class="bubble">
                                                                         <div class="author">
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
-                                                                        <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
-                                                                        <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
-
-                                                                        <!-- comment deleting load -->
-                                                                        <div v-show="theComment.is.deleting" class="ts-mask is-blurring">
-                                                                            <div class="ts-center">
-                                                                                <div class="ts-content" style="color: #FFF">
-                                                                                    <div class="ts-loading is-small"></div> 刪除中
+                                                                        <template v-if="!theComment.is.preEditing">
+                                                                            <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 28rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                            <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
+                                                                        </template>
+                                                                        <template v-else>
+                                                                            <!-- when comment is preEditing -->
+                                                                            <div class="ts-input is-fluid is-underlined" style="width: 30.2rem;">
+                                                                                <textarea 
+                                                                                    @keydown.enter.exact.prevent="comment.edit(theComment)" 
+                                                                                    @keydown.enter.shift.exact.prevent="theComment.preEditing.content += '\n'" 
+                                                                                    :readonly="theComment.is.editing"
+                                                                                    v-model="theComment.preEditing.content" 
+                                                                                    :placeholder="theComment.content" 
+                                                                                    oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
+                                                                                    onkeydown="this.oninput()" 
+                                                                                    onfocus="this.oninput()"
+                                                                                    v-focus
+                                                                                ></textarea>
+                                                                                <!-- comment editing load -->
+                                                                                <div v-show="theComment.is.editing" class="ts-mask is-blurring">
+                                                                                    <div class="ts-center">
+                                                                                        <div class="ts-content" style="color: #FFF">
+                                                                                            <div class="ts-loading is-small"></div> 編輯中
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <!-- comment editing load end -->
+                                                                            </div>
+                                                                            <!-- comment deleting load -->
+                                                                            <div v-show="theComment.is.deleting" class="ts-mask is-blurring">
+                                                                                <div class="ts-center">
+                                                                                    <div class="ts-content" style="color: #FFF">
+                                                                                        <div class="ts-loading is-small"></div> 刪除中
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
-                                                                        <!-- comment deleting load end -->
-
+                                                                            <!-- comment deleting load end -->
+                                                                        </template>
                                                                     </div>
-                                                                    <div class="ts-meta is-small is-secondary">
-                                                                        <a href="#!" class="item">讚</a>
-                                                                        <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
-                                                                        <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                            {{ moment(theComment.datetime*1000).fromNow() }}
-                                                                        </a>
-                                                                        <div class="item">
-                                                                            <div class="ts-icon is-hashtag-icon"></div>
-                                                                            {{ theComment.id }}
+                                                                    <div class="ts-row">
+                                                                        <div class="ts-meta is-small is-secondary column is-fluid">
+                                                                            <a href="#!" class="item">讚</a>
+                                                                            <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
+                                                                            <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                                                {{ moment(theComment.datetime*1000).fromNow() }} {{ theComment.edited.count > 0 ? '(已編輯)' : '' }}
+                                                                            </a>
+                                                                            <div v-show="is.Dev" class="item">
+                                                                                <div class="ts-icon is-hashtag-icon"></div>
+                                                                                {{ theComment.id }}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="column">
+                                                                            <div v-show="theComment.is.preEditing">
+                                                                                <a href="#!" @click="theComment.is.preEditing=false" class="ts-text is-link">
+                                                                                    <div class="ts-icon is-xmark-icon"></div> 取消編輯
+                                                                                </a>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -320,7 +354,7 @@ Inc::clas('user');
                                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                                             </a>
                                                             <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                                <button class="item" @click="comment.edit(theComment)">編輯</button>
+                                                                <button class="item" @click="theComment.preEditing.content=theComment.content; theComment.is.preEditing=true;">編輯</button>
                                                                 <div class="ts-divider"></div>
                                                                 <button class="item" @click="comment.delete(theComment)">刪除</button>
                                                             </div>
@@ -830,10 +864,13 @@ Inc::clas('user');
             comment: (theComment) => {
                 let ret = Array.isArray(theComment) ? theComment : [theComment];
                 ret.forEach((item, idx)=>{
+                    !('preEditing' in item) && (item.preEditing = {});
+                        !('content' in item) && (item.preEditing.content = '');
                     !('is' in item) && (item.is = {});
                         !('removed' in item) && (item.is.removed = false);
                         !('deleting' in item) && (item.is.deleting = false);
                         !('viewAllContent' in item) && (item.is.viewAllContent = false);
+                        !('preEditing' in item) && (item.is.preEditing = false);
                     !('reply' in item) && (item.reply = {});
                         !('preActionReply' in item) && (item.preActionReply = false);
                         !('is' in item.reply) && (item.reply.is = {});
@@ -1152,7 +1189,63 @@ Inc::clas('user');
                     });
                 });
             },
-            edit: () => {},
+            edit: (theComment) => {
+                if(theComment.is.editing){ return; }
+                theComment.is.editing = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤！',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/comment/edit')?>',
+                    data: {
+                        commentId: theComment.id,
+                        content: theComment.preEditing.content,
+                    },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    // 
+                    info = {
+                        type: resp.type,
+                        status: resp.type,
+                        data: resp.data,
+                        message: resp.message,
+                    };
+                    // 
+                    if(resp.type === 'success'){
+                        if(resp.data){
+                            theComment.content = resp.data.content;
+                            theComment.edited.last_datetime = resp.data.edited.last_datetime;
+                            theComment.edited.count = resp.data.edited.count;
+                        }
+                        theComment.is.preEditing = false;
+                    }
+                }).always(() => {
+                    theComment.is.editing = false;
+                    Swal.fire({
+                        position: 'bottom-start',
+                        icon: info.type,
+                        title: info.message,
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: info.type==='success' ? 2000 : false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+            },
             delete: (theComment) => {
                 let msg = {
                     icon: 'error',
