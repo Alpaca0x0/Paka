@@ -29,7 +29,7 @@ if(!preg_match($config['content'], $preContent)){ Resp::warning('content_format'
 Inc::clas('forum');
 $replyId = Forum::createReply($uid, $replyId, $content);
 if($replyId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
-if(is_null($replyId)){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
+if(!$replyId){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
 
 # return new comment
 $reply = Forum::getReply($replyId);
