@@ -574,11 +574,12 @@ class Forum{
                 SELECT :uid, "like", :post, :ip, :datetime FROM DUAL
                 WHERE NOT EXISTS (
                     SELECT 1 FROM `post_event`
-                    WHERE `post_event`.`commit`="like" and `post_event`.`post`=:post2
+                    WHERE `post_event`.`commit`="like" AND `post_event`.`post`=:post2 AND `uid`=:uid2
                 )
         ;';
         DB::query($sql)::execute([
             ':uid' => $uid,
+            ':uid2' => $uid,
             ':post' => $postId,
             ':post2' => $postId,
             ':ip' => $ip,
@@ -598,7 +599,7 @@ class Forum{
         // update old like
         $sql = 'UPDATE `post_event` 
                 SET `commit`="ever_liked" 
-                WHERE `commit`="like" AND `post`=:postId AND `uid`=:uid
+                WHERE `commit`="like" AND `post`=:postId AND `uid`=:uid 
         ;';
         DB::query($sql)::execute([
             ':postId' => $postId,
@@ -611,11 +612,12 @@ class Forum{
                 SELECT :uid, "unlike", :postId, :ip, :datetime FROM DUAL
                 WHERE NOT EXISTS (
                     SELECT 1 FROM `post_event`
-                    WHERE `post_event`.`commit`="like" and `post_event`.`post`=:postId2
+                    WHERE `post_event`.`commit`="like" AND `post_event`.`post`=:postId2 AND `uid`=:uid2
                 )
         ;';
         DB::query($sql)::execute([
             ':uid' => $uid,
+            ':uid2' => $uid,
             ':postId' => $postId,
             ':postId2' => $postId,
             ':ip' => $ip,
