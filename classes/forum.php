@@ -546,4 +546,26 @@ class Forum{
             'edited.count' => $oldReply['edited.count']+1,
         ];
     }
+
+    // event
+    static function likePost($uid, $postId, $ip){
+        if(!self::init()){ return false; }
+        $datetime = date("Y-m-d H:i:s");
+        // 
+        $sql = 'INSERT INTO `post_event` (`uid`, `commit`, `post`, `ip`, `datetime`)
+                VALUES (:uid, "like", :post, :ip, :datetime)
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM `post_event`
+                    WHERE `commit`="like" and `post`=:post2
+                )
+        ;';
+        DB::query($sql)::execute([
+            ':uid' => $uid,
+            ':post' => $postId,
+            ':ip' => $ip,
+            ':datetime' => $datetime,
+        ]);
+        if(DB::error()){ return false; }
+        return DB::rowCount();
+    }
 }
