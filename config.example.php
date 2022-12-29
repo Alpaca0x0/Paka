@@ -4,6 +4,9 @@
 # Usually needed to be set      ##
 ##################################
 
+# Name of project
+define('NAME', 'Paka');
+
 # Debug mode, show errors
 define('DEBUG', true);
 

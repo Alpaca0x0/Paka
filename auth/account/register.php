@@ -37,7 +37,7 @@ DB::connect() or Resp::error('database_cannot_connect', '無法連接資料庫')
 $result = DB::query(
     'SELECT MAX(IF(`username`=:username, 1, 0)) AS `username_exist`, MAX(IF(`email`=:email, 1,0)) AS `email_exist` 
 	FROM `account` 
-	WHERE (`username`=:username2 OR `email`=:email2) AND `status`="removed"
+	WHERE (`username`=:username2 OR `email`=:email2) AND `status`<>"removed"
     LIMIT 1'
 )::execute([':username'=>$username, ':email'=>$email, ':username2'=>$username, ':email2'=>$email, ]);
 if(DB::error()){ Resp::error('sql_query_error', 'SQL 語法查詢錯誤'); }
