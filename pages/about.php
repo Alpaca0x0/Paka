@@ -1,6 +1,20 @@
 <?php
 Inc::component('header');
 Inc::component('navbar');
+
+Inc::clas('db');
+DB::connect() or die('Error - SQL Cannot Connect.');
+$member = DB::query(
+    'SELECT COUNT(DISTINCT `account`.`id`) AS `count`
+    , COUNT(DISTINCT `register`.`uid`) as `registeredSince7Days`
+    FROM `account`
+    LEFT JOIN `account_event` AS `register` ON (`register`.`commit` = "register" AND `account`.`id` = `register`.`uid` AND UNIX_TIMESTAMP(`register`.`datetime`)>:datetimeSince7Days)
+    WHERE `account`.`status` <> "removed" AND `account`.`status` <> "unverified"
+;'
+)::execute([
+    ':datetimeSince7Days' => time() - 60*60*24*7,
+])::fetch();
+if(DB::error()){ die('Error - SQL Query.'); }
 ?>
 
 <div class="ts-space is-large"></div>
@@ -27,8 +41,8 @@ Inc::component('navbar');
                 <div class="ts-box">
                     <div class="ts-content">
                         <div class="ts-statistic">
-                            <div class="value">8,652</div>
-                            <div class="comparison is-increased">351</div>
+                            <div class="value"><?=$member['count']?></div>
+                            <div class="comparison is-increased"><?=$member['registeredSince7Days']?></div>
                         </div>
                         總會員數
                     </div>
