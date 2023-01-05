@@ -86,11 +86,11 @@ Inc::clas('user');
             },
             // 
             'rule': {
-                'id': '<?=ID(Router::tryFile(Path::page.'rule'))?>',
-                'text': '社群規範',
-                'link': '<?=Uri::page('#!')?>',
+                'id': '<?=ID(Router::tryFile(Path::page.'rules'))?>',
+                'text': '社群規章',
+                'link': '<?=Uri::page('rules')?>',
                 'icon': 'info',
-                'isDisabled': true,
+                'isDisabled': false,
                 'isHidden': false,
             },
             'about': {
