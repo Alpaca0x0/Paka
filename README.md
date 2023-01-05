@@ -67,6 +67,8 @@ location ^~ /paka/ {
 
 ### :memo: Todo list
 
+- About
+  - [ ] count member and member who recently join
 - Account
   - [x] login
   - [x] register
