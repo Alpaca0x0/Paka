@@ -124,18 +124,18 @@ Inc::clas('user');
                                                             <div class="ts-icon is-earth-asia-icon"></div>
                                                             public
                                                         </div>
-                                                        <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')">
+                                                        <a href="#!" class="item" :title="moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm:ss')">
                                                             <div class="ts-icon is-clock-icon"></div>
                                                             {{ moment(thePost.datetime*1000).fromNow() }}
+                                                        </a>
+                                                        <a v-if="thePost.edited.last_datetime" href="#!" class="item" :title="'在 ' + moment(thePost.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                            <div class="ts-icon is-pen-to-square-icon"></div>
+                                                            已編輯
                                                         </a>
                                                         <div v-if="is.Dev" class="item">
                                                             <div class="ts-icon is-hashtag-icon"></div>
                                                             {{ thePost.id }}
                                                         </div>
-                                                        <a v-if="thePost.edited.last_datetime" href="#!" class="item" :title="'在 ' + moment(thePost.edited.last_datetime*1000).fromNow() + ' 編輯'">
-                                                            <div class="ts-icon is-pen-to-square-icon"></div>
-                                                            已編輯
-                                                        </a>
                                                     </div>
                                                 </div>
                                                 <div class="ts-space is-small"></div>
@@ -210,21 +210,21 @@ Inc::clas('user');
                                         <div class="ts-row">
                                             <div class="column is-fluid">
                                                 <button @click="thePost.liked.have ? post.unlike(thePost) : post.like(thePost)" :disabled="thePost.is.liking || thePost.is.unliking" :class="{'is-disabled': thePost.is.liking || thePost.is.unliking}" class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
-                                                    {{ thePost.liked.have ? '收回讚' : '讚' }}
+                                                    <span :class="{'is-regular':!thePost.liked.have}" class="ts-icon is-heart-icon"></span>
+                                                    {{ thePost.liked.have ? '收回喜歡' : '喜歡' }}
                                                     <span v-show="thePost.liked.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.liked.count }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
                                                 <button @click="thePost.comments.is.visible=!thePost.comments.is.visible; thePost.comments.is.init || getComments(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                                    <span class="ts-icon is-comment-icon is-regular"></span>
+                                                    <span :class="{'is-regular':!thePost.comments.is.visible}" class="ts-icon is-comment-icon"></span>
                                                     留言
                                                     <span v-show="thePost.comments.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.comments.count }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
                                                 <button @click="post.share(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                                    <span class="ts-icon is-share-from-square-icon is-regular"></span>
+                                                    <span :class="{'is-regular':!thePost.is.preSharing}" class="ts-icon is-share-from-square-icon"></span>
                                                     分享
                                                 </button>
                                             </div>
@@ -332,9 +332,14 @@ Inc::clas('user');
                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
                                                                             <a href="#!" class="item">讚</a>
                                                                             <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
-                                                                            <a href="#!" class="item" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                                {{ moment(theComment.datetime*1000).fromNow() }} {{ theComment.edited.count > 0 ? '(已編輯)' : '' }}
-                                                                            </a>
+                                                                            <div class="item">
+                                                                                <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')">
+                                                                                    {{ moment(theComment.datetime*1000).fromNow() }}
+                                                                                </a>
+                                                                                <a href="#!" :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                    {{ theComment.edited.count > 0 ? ' (已編輯)' : '' }}
+                                                                                </a>
+                                                                            </div>
                                                                             <div v-show="is.Dev" class="item">
                                                                                 <div class="ts-icon is-hashtag-icon"></div>
                                                                                 {{ theComment.id }}
@@ -406,9 +411,18 @@ Inc::clas('user');
                                                             </div>
                                                         </template>
                                                         <!-- replies loading end -->
+                                                        <template v-else-if="!theComment.replies.is.getting && theComment.replies.count > 0">
+                                                            <div class="ts-divider is-start-text">
+                                                                <div class="column is-fluid">
+                                                                    <a @click="theComment.replies.is.visible=!theComment.replies.is.visible" href="#!" class="item ts-text is-tiny is-link">
+                                                                        {{theComment.replies.is.visible ? '隱藏關於這則留言的 '+theComment.replies.data.length+' 則回應' : '顯示關於這則留言的 '+theComment.replies.data.length+' 則回應'}}
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </template>
 
                                                         <transition-group enter-active-class="animate__faster animate__fadeIn" leave-active-class="animate__fadeOut">
-                                                            <div v-for="theReply in theComment.replies.data" :key="theReply" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
+                                                            <div v-show="theComment.replies.is.visible" v-for="theReply in theComment.replies.data" :key="theReply" class="animate__animated" :style="{'animation-duration': '250ms'}" v-cloak>
 
                                                                 <div class="ts-space"></div>
 
@@ -481,10 +495,15 @@ Inc::clas('user');
                                                                                     <div class="ts-row">
                                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
                                                                                             <a class="item">讚</a>
-                                                                                            <a class="item">回覆</a>
-                                                                                            <a href="#!" class="item" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm')">
-                                                                                                {{ moment(theReply.datetime*1000).fromNow() }} {{ theReply.edited.count > 0 ? '(已編輯)' : '' }}
-                                                                                            </a>
+                                                                                            <!-- <a class="item">回覆</a> -->
+                                                                                            <div class="item">
+                                                                                                <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')">
+                                                                                                    {{ moment(theReply.datetime*1000).fromNow() }}
+                                                                                                </a>
+                                                                                                <a href="#!" :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                                    {{ theReply.edited.count > 0 ? ' (已編輯)' : '' }}
+                                                                                                </a>
+                                                                                            </div>
                                                                                             <div v-show="is.Dev" class="item">
                                                                                                 <div class="ts-icon is-hashtag-icon"></div>
                                                                                                 {{ theReply.id }}
@@ -709,7 +728,7 @@ Inc::clas('user');
                         <div class="ts-row">
                             <div class="column is-fluid">
                                 <button class="ts-button is-dense is-start-icon is-ghost is-fluid">
-                                    <span class="ts-icon is-thumbs-up-icon is-regular"></span>
+                                    <span class="ts-icon is-heart-icon is-regular"></span>
                                     讚
                                 </button>
                             </div>
@@ -880,6 +899,7 @@ Inc::clas('user');
                         !('removed' in item.is) && (item.is.removed = false);
                         !('viewAllContent' in item.is) && (item.is.viewAllContent = false);
                         !('preEditing' in item.is) && (item.is.preEditing = false);
+                        !('preSharing' in item.is) && (item.is.preSharing = false);
                     !('comments' in item) && (item.comments = {});
                         !('is' in item.comments) && (item.comments.is = {});
                             !('visible' in item.comments.is) && (item.comments.is.visible = false);
@@ -927,6 +947,7 @@ Inc::clas('user');
                     !('replies' in item) && (item.replies = {});
                         !('count' in item.replies) && (item.replies.count = 0);
                         !('is' in item.replies) && (item.replies.is = {});
+                            !('visible' in item.replies.is) && (item.replies.is.visible = true);
                             !('noMore' in item.replies.is) && (item.replies.is.noMore = item.replies.count ? false : true);
                         !('data' in item.replies) && (item.replies.data = []);
                         !('type' in item.replies) && (item.replies.type = '');
@@ -1132,6 +1153,8 @@ Inc::clas('user');
                 });
             },
             share: (thePost) => {
+                if(thePost.is.preSharing){ return; }
+                thePost.is.preSharing = true;
                 Swal.fire({
                     template: '#swal-post-share',
                     showConfirmButton: false,
@@ -1159,7 +1182,7 @@ Inc::clas('user');
                                             <div class="ts-icon is-earth-asia-icon"></div>
                                             public
                                         </div>
-                                        <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm')}">
+                                        <a href="#!" class="item" title="${moment(thePost.datetime*1000).format('YYYY/MM/DD hh:mm:ss')}">
                                             <div class="ts-icon is-clock-icon"></div>
                                             ${ moment(thePost.datetime*1000).fromNow() }
                                         </a>
@@ -1182,6 +1205,8 @@ Inc::clas('user');
                             </div>
                         </div>
                         `,
+                }).then(()=>{
+                    thePost.is.preSharing = false;
                 });
             },
             like: (thePost) => {
@@ -1216,6 +1241,7 @@ Inc::clas('user');
                 }).always(() => {
                     thePost.is.liking = false;
                     info.type==='success' || Swal.fire({
+                        icon: info.type,
                         title: info.type[0].toUpperCase() + info.type.slice(1),
                         text: info.message,
                         position: 'bottom-start',
@@ -1485,6 +1511,7 @@ Inc::clas('user');
                         theComment.replies.count += 1;
                         resp.data = format.reply(resp.data);
                         theComment.replies.data.push(resp.data);
+                        theComment.replies.is.visible = true;
                     }
                 }).always(() => {
                     theComment.reply.is.creating = false;
