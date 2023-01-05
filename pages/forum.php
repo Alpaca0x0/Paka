@@ -415,7 +415,7 @@ Inc::clas('user');
                                                             <div class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
                                                                     <a @click="theComment.replies.is.visible=!theComment.replies.is.visible" href="#!" class="item ts-text is-tiny is-link">
-                                                                        {{theComment.replies.is.visible ? '隱藏關於這則留言的 '+theComment.replies.data.length+' 則回應' : '顯示關於這則留言的 '+theComment.replies.data.length+' 則回應'}}
+                                                                        {{theComment.replies.is.visible ? '隱藏以下 '+theComment.replies.data.length+' 則回應' : '顯示關於這則留言的 '+theComment.replies.data.length+' 則回應'}}
                                                                     </a>
                                                                 </div>
                                                             </div>
