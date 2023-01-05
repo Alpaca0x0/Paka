@@ -113,68 +113,53 @@ location ^~ /paka/ {
 
 ### :open_file_folder: Folders
 
-#### :small_blue_diamond: `api`
+- **`api`**\
+  一些專門用於獲取資料的頁面。
+  - `captcha` 取得驗證碼的值，當然這只能用於 DEV 模式下。
 
-一些專門用於獲取資料的頁面。
+- **`assets`**\
+  前端所會用到的資源，包含常見的 JS、CSS，以及圖片、插件庫等。
 
-- `captcha` 取得驗證碼的值，當然這只能用於 DEV 模式下。
-
-#### :small_blue_diamond: `assets`
-
-前端所會用到的資源，包含常見的 JS、CSS，以及圖片、插件庫等。
-
-#### :small_blue_diamond: `auth`
-
-用於驗證的頁面，通常採用 Ajax 請求，並回應 Json 格式。通常情況下，回應欄位有以下幾種：
-
-- `type` 作為回應類別，通常有如下幾種常見的類型：
-  - `success` 成功執行
-  - `warning` 請求存在問題，而無法完成
-  - `error` 伺服端錯誤
-  - `info` 單純的顯示訊息
+- **`auth`**\
+  用於驗證的頁面，通常採用 Ajax 請求，並回應 Json 格式。通常情況下，回應欄位有以下幾種：
+  - `type` 作為回應類別，通常有如下幾種常見的類型：
+    - `success` 成功執行
+    - `warning` 請求存在問題，而無法完成
+    - `error` 伺服端錯誤
+    - `info` 單純的顯示訊息
 
     當然這並非固定格式，在某些特定功能中，也會有其獨有的回應格式。
 
-- `status` 回應狀態碼，同個功能下，必須是唯一值，用於表明請求的處理狀態，且不能含有空格。例如`is_login`或`data_not_found`...等。
-- `data` 用於回傳相關資料，如執行更新請求後，回傳新值等。\
-  當然，若是沒有需要回傳的欄位，該欄位可以為`NULL`。
-- `message` 用於顯示的回應訊息，可以含有任意字元，但通常結尾並不會有標點符號。大多數情況下，該欄位被要求必須設定，但在少數情況，該欄位被允許為`NULL`。
+  - `status` 回應狀態碼，同個功能下，必須是唯一值，用於表明請求的處理狀態，且不能含有空格。例如`is_login`或`data_not_found`...等。
+  - `data` 用於回傳相關資料，如執行更新請求後，回傳新值等。\
+    當然，若是沒有需要回傳的欄位，該欄位可以為`NULL`。
+  - `message` 用於顯示的回應訊息，可以含有任意字元，但通常結尾並不會有標點符號。大多數情況下，該欄位被要求必須設定，但在少數情況，該欄位被允許為`NULL`。
 
-#### :small_blue_diamond: `classes`
+- **`classes`**\
+  一些核心的功能，以 Class 的方式包裝資料與函式，通常為靜態呼叫。
+  - `init` 在該目錄下的檔案會在初始時自動的被載入。
 
-一些核心的功能，以 Class 的方式包裝資料與函式，通常為靜態呼叫。
+- **`components`**\
+  一些常用的頁面部件，如`header`、`footer`等。
 
-- `init` 在該目錄下的檔案會在初始時自動的被載入。
+- **`configs`**\
+  用於存放設定檔的目錄，其`.example`為範例檔案，需要將檔名中的該字節刪除。如`db.example.php`修改內容後更名為`db.php`。
 
-#### :small_blue_diamond: `components`
+- **`functions`**\
+  一些核心的函式。
+  - `init` 在該目錄下的檔案會在初始時自動的被載入。
 
-一些常用的頁面部件，如`header`、`footer`等。
+- **`libraries`**\
+  與 `assets/plugin` 不同的點在於，`plugin` 資源可於前端調用，而 `libraries` 僅供後端使用。
 
-#### :small_blue_diamond: `configs`
+- **`pages`**\
+  存放站點的主要頁面。
 
-用於存放設定檔的目錄，其`.example`為範例檔案，需要將檔名中的該字節刪除。如`db.example.php`修改內容後更名為`db.php`。
+- **`routers`**\
+  用於存放`Sub Router`的目錄。
 
-#### :small_blue_diamond: `functions`
-
-一些核心的函式。
-
-- `init` 在該目錄下的檔案會在初始時自動的被載入。
-
-#### :small_blue_diamond: `libraries`
-
-`libraries` 與 `assets/plugin` 不同的在於，`plugin` 資源可於前端調用，而 `libraries` 僅供後端使用。
-
-#### :small_blue_diamond: `pages`
-
-存放站點的主要頁面。
-
-#### :small_blue_diamond: `routers`
-
-用於存放`Sub Router`的目錄。
-
-#### :small_blue_diamond: `src`
-
-用於存放站點架設所需的資源，該目錄並未有嚴格的規定，總之... ~~有需要就塞~~。
+- **`src`**\
+  用於存放站點架設所需的資源，該目錄並未有嚴格的規定，總之... ~~有需要就塞~~。
 
 ---
 
@@ -200,8 +185,6 @@ location ^~ /paka/ {
 ---
 
 ### :coffee: Developer(s)
-
-<sub>QQ 獨立開發好累，幸好還有很多方便的現成工具...</sub>
 
 - [`Alpaca0x0`](https://github.com/alpaca0x0)
 
