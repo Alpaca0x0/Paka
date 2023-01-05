@@ -333,10 +333,10 @@ Inc::clas('user');
                                                                             <a href="#!" class="item">讚</a>
                                                                             <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                                             <div class="item">
-                                                                                <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')">
+                                                                                <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                     {{ moment(theComment.datetime*1000).fromNow() }}
                                                                                 </a>
-                                                                                <a href="#!" :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                <a href="#!" :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
                                                                                     {{ theComment.edited.count > 0 ? ' (已編輯)' : '' }}
                                                                                 </a>
                                                                             </div>
@@ -497,10 +497,10 @@ Inc::clas('user');
                                                                                             <a class="item">讚</a>
                                                                                             <!-- <a class="item">回覆</a> -->
                                                                                             <div class="item">
-                                                                                                <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')">
+                                                                                                <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                                     {{ moment(theReply.datetime*1000).fromNow() }}
                                                                                                 </a>
-                                                                                                <a href="#!" :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                                <a href="#!" :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
                                                                                                     {{ theReply.edited.count > 0 ? ' (已編輯)' : '' }}
                                                                                                 </a>
                                                                                             </div>
