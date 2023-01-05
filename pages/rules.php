@@ -50,7 +50,7 @@ Inc::component('navbar');
                 punish: `若侵權事件影響本服務，則視情況進行${punishs.free()}`
             },
             {
-                content: '濫用系統功能，包括惡意的進行網路攻擊行為，或是嘗試入侵他人帳戶，侵犯他人權益等\n(詳情請見 <a href="https://law.moj.gov.tw/LawClass/LawParaDeatil.aspx?pcode=C0000001&bp=53">中華民國刑法 第 三十六 章 妨害電腦使用罪 第 358 至 363 條)</a>',
+                content: `濫用系統功能，包括惡意的進行網路攻擊行為，或是嘗試入侵他人帳戶，侵犯他人權益等\n(詳情請見 <a href="https://law.moj.gov.tw/LawClass/LawParaDeatil.aspx?pcode=C0000001&bp=53" target="_blank">中華民國刑法 第 三十六 章 妨害電腦使用罪 第 358 至 363 條)</a>`,
                 punish: `視情況可能${punishs.banByDay(1,7)}，甚至${punishs.deleteAccount()}\n視情況將可能採取相關法律行動`,
             },
             {
