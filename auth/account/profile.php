@@ -68,23 +68,16 @@ if(Arr::includes($_POST, 'birthday')){
 }
 
 #avatar
-// class_exists('Image') or require_once(Local::Clas('image'));
-// if(isset($_FILES['avatar'])){
-//     if(empty($_FILES["avatar"]["name"]) || 
-//     !file_exists($_FILES['avatar']['tmp_name']) || !is_uploaded_file($_FILES['avatar']['tmp_name'])){
-//         $avatar = false;
-//     }else{ 
-//         $avatar = $_FILES['avatar'];
-//         Image::image($avatar);
-//         //
-//         if(!in_array(Image::get('mime'), $config['avatar']['formats']) || 
-//         Image::get('width') !== Image::get('height') || Image::get('width') != $config['avatar']['width']){
-//             Roger::warning('avatar_format_not_match');
-//             $avatar = false;
-//         }else{ $avatar = Image::get('blob'); }
-//     }
-// }else{ $avatar = false; }
-
+Inc::clas('image');
+$Image = new Image();
+if(empty($_FILES["avatar"]["name"]) || !file_exists($_FILES['avatar']['tmp_name']) || !is_uploaded_file($_FILES['avatar']['tmp_name'])){
+    $avatar = false;
+}else{ $avatar = $_FILES['avatar']; $Image->image($avatar); }
+if($avatar){
+    if(!in_array($Image->get('mime'), $config['avatar']['formats']) || $Image->get('width') !== $Image->get('height') || $Image->get('width')!=$config['avatar']['width']){
+        $avatar = false;
+    }else{ $avatar = $Image->get('blob'); }
+}
 
 #
 Inc::clas('db');
@@ -95,6 +88,7 @@ $id or Resp::error('cannot_get_user_id','發生致命錯誤，無法獲取當前
 
 $columns = [];
 if($nickname !== false){ $columns['nickname'] = $nickname; }
+if($avatar !== false){ $columns['avatar'] = $avatar; }
 if(is_array($birthday['all'])){ $columns['birthday'] = join('-',$birthday['all']); }
 else if(is_null($birthday['all'])){ $columns['birthday'] = null; }
 // 'gender' => false

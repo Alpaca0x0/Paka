@@ -6,6 +6,15 @@ Inc::component('navbar');
 $config = Inc::config('account');
 ?>
 
+<style>
+    .cropper-view-box {
+        border-radius: 50%;
+    }
+    .cropper-face {
+        background-color:inherit !important;
+    }
+</style>
+
 <div id="Profile" class="cell is-fluid is-secondary">
     <div class="ts-space is-large"></div>
     <div class="ts-container is-narrow">
@@ -15,87 +24,124 @@ $config = Inc::config('account');
         <div class="ts-text is-secondary">關於您帳戶的基本資訊。</div>
         <div class="ts-space is-large"></div>
         <!--  -->
-        <form @submit.prevent="submit()">
 
-            <!-- avatar -->
-            <div class="ts-image is-circular is-small is-centered">
-                <label for="avatarFile" stype="padding:1px">
-                    <img :src="fields.avatar.value" data-ref-id="avatar" :ref="setRef">
-                    <input id="avatarFile" data-ref-id="avatarFile" :ref="setRef" type="file" accept="image/*" style="display: none;">
-                </label>
-            </div>
-            <!-- avatar view modal -->
-            <div :class="{'is-visible': fields.avatar.is.cropping}" class="ts-modal is-big" v-cloak>
-                <div class="content">
-                    <div class="ts-content is-dense">
-                        <div class="ts-row">
-                            <div class="column is-fluid">
-                                <!-- <div class="ts-header">裁剪您的頭貼</div> -->
+        <!-- avatar view modal -->
+        <div :class="{'is-visible': fields.avatar.is.cropping}" class="ts-modal is-big" v-cloak>
+            <div class="content">
+                <!-- close button -->
+                <div class="ts-content is-dense">
+                    <div class="ts-row">
+                        <div class="column is-fluid">
+                            <!-- <div class="ts-header">裁剪您的頭貼</div> -->
+                        </div>
+                        <div class="column">
+                            <button @click="fields.avatar.is.cropping=false" type="button" class="ts-close"></button>
+                        </div>
+                    </div>
+                </div>
+                <!-- /close button -->
+                <div class="ts-container">
+                    <div class="ts-divider is-start-text">編輯工具</div>
+                    <!-- <div class="ts-box is-horizontal is-hollowed"> -->
+                    <div class="ts-row">
+                        <div class="column is-fluid">
+                            <div class="ts-content">
+                                <!-- <div class="ts-header">
+                                    裁切您的大頭貼
+                                </div> -->
+                                <!-- tool buttons -->
+                                <div class="ts-wrap">
+                                    <button type="button" class="ts-button is-icon" @click="fields.avatar.object.rotate(-5)">
+                                        <span class="ts-icon is-arrow-rotate-left-icon"></span>
+                                    </button>
+                                    <button type="button" class="ts-button is-icon">
+                                        <span class="ts-icon is-arrow-rotate-right-icon"></span>
+                                    </button>
+                                </div>
+                                <!-- /tool buttons --> 
                             </div>
-                            <div class="column">
-                                <button @click="fields.avatar.is.cropping=false" type="button" class="ts-close"></button>
+                        </div>
+                        <div class="column">
+                            <div class="ts-image is-1-by-1 is-covered">
+                                <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 200px; height: 200px; border-radius: 50%;"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="ts-divider"></div>
-                    <!--  -->
-                    <div class="ts-image is-circular">
-                        <div class="ts-image is-1-by-1 is-covered">
-                            <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 200px; height: 200px;"></div>
-                        </div>
-                    </div>
-                    <!-- <div class="ts-content"> -->
-                        <!-- <div class="ts-image is-circular" style="overflow: hidden; width: 240px; height: 240px;">
-                            <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 240px; height: 240px;"></div>
-                        </div> -->
-                        <!-- <div class="ts-image is-circular" data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; height: 240px;"></div> -->
-                    <!-- </div> -->
-                    <div class="ts-divider"></div>
+
+                    <div class="ts-divider is-start-text">裁減圖片</div>
                     <div class="ts-content">
                         <div class="ts-image is-small is-centered" style="height: 480px;">
                             <img :src="fields.avatar.view" data-ref-id="avatarView" :ref="setRef">
                             <div class="ts-space is-small"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <!-- avatar view modal end -->
-            <!-- avatar end -->
-            <div class="ts-divider is-section"></div>
 
-            <div class="ts-grid is-stackable">
-                <!--  -->
-                <div class="column is-8-wide">
-                    <div class="ts-text is-label">Username</div>
-                    <div class="ts-space is-small"></div>
-                    <div :class="classObjects('username')" class="ts-input is-start-labeled">
-                        <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
-                        <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+                    <div class="ts-divider is-end-text">
+                        <button type="button" class="ts-button is-end-icon" @click="fields.avatar.cropped()">
+                            完成
+                            <span class="ts-icon is-check-icon"></span>
+                        </button>
                     </div>
                 </div>
-                <!--  -->
-                <div class="column is-8-wide">
-                    <div class="ts-text is-label">E-Mail</div>
-                    <div class="ts-space is-small"></div>
-                    <div :class="classObjects('email')" class="ts-input">
-                        <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" data-ref-id="email" :ref="setRef" readonly>
-                    </div>
-                </div>
-                <div class="column is-8-wide">
-                    <div class="ts-text is-label">Nickname</div>
-                    <div class="ts-space is-small"></div>
-                    <div :class="classObjects('nickname')" class="ts-input">
-                        <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" data-ref-id="nickname" :ref="setRef">
-                    </div>
-                </div>
-                <div class="column is-8-wide">
-                    <div class="ts-text is-label">Birthday</div>
-                    <div class="ts-space is-small"></div>
-                    <div :class="classObjects('birthday')" class="ts-input">
-                        <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" data-ref-id="birthday" :ref="setRef">
-                    </div>
-                </div>
+                <br>
             </div>
+        </div>
+        <!-- /avatar view modal -->
+
+        <form @submit.prevent="submit()">
+            <div class="ts-grid is-stackable">
+                <!-- avatar -->
+                <div class="column is-4-wide">
+                    <div class="ts-center">
+                        <label for="avatarFile">
+                            <div class="ts-image is-circular is-small is-centered is-covered">
+                                <img :src="fields.avatar.value" data-ref-id="avatar" :ref="setRef">
+                            </div>
+                            <input id="avatarFile" data-ref-id="avatarFile" :ref="setRef" type="file" accept="image/*" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+                <!-- /avatar -->
+
+                <!-- profile fields -->
+                <div class="column is-12-wide">
+                    <div class="ts-grid is-stackable">
+                        <!--  -->
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Username</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('username')" class="ts-input is-start-labeled">
+                                <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
+                                <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+                            </div>
+                        </div>
+                        <!--  -->
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">E-Mail</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('email')" class="ts-input">
+                                <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" data-ref-id="email" :ref="setRef" readonly>
+                            </div>
+                        </div>
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Nickname</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('nickname')" class="ts-input">
+                                <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" data-ref-id="nickname" :ref="setRef">
+                            </div>
+                        </div>
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Birthday</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('birthday')" class="ts-input">
+                                <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" data-ref-id="birthday" :ref="setRef">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /profile fields -->
+            </div>
+
             <!--  -->
             <div class="ts-space is-small"></div>
             <!--  -->
@@ -260,8 +306,27 @@ $config = Inc::config('account');
                 },
                 value: user.avatar || user.avatarDefault,
                 view: user.avatar || user.avatarDefault,
+                object: null,
+                cropped: undefined,
+                image: undefined,
+                blob: null,
             },
         });
+        fields.avatar.cropped = () => {
+            let image = fields.avatar.image;
+            fields.avatar.object.getCroppedCanvas({
+                width: 320,
+                height: 320,
+            }).toBlob(function(blob){
+                fields.avatar.value = URL.createObjectURL(blob);
+                let file = new File([blob], image.name,{type:image.type, lastModified:new Date().getTime()});
+                let container = new DataTransfer();
+                container.items.add(file);
+                refs.avatarFile.files = container.files;
+                fields.avatar.blob = blob;
+            }, image.type,0.8);
+            fields.avatar.is.cropping = false;
+        }
         // set birthday range
         {let today = new Date();
         let dd = String(today.getDate()).padStart(2, '0');
@@ -333,7 +398,13 @@ $config = Inc::config('account');
                 email: fields.email.value,
                 nickname: fields.nickname.value,
                 birthday: fields.birthday.value,
+                avatar: refs.avatarFile.files,
             };
+            datas = new FormData();
+            datas.append('email', fields.email.value);
+            datas.append('nickname', fields.nickname.value);
+            datas.append('birthday', fields.birthday.value);
+            datas.append('avatar', fields.avatar.blob);
             // 
             let info = {
                 type: 'error',
@@ -345,6 +416,8 @@ $config = Inc::config('account');
                 url: '<?=Uri::auth('account/profile')?>',
                 data: datas,
                 dataType: 'json',
+                contentType: false,
+                processData: false,
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
             }).done((resp) => {
@@ -393,20 +466,22 @@ $config = Inc::config('account');
         }
         // 
         onMounted(() => {
+            fields.avatar.object = new Cropper(refs.avatarView);
             refs.avatarFile.onchange = () => {
-                let newAvatar = refs.avatarFile.files[0];
-                if(!newAvatar){ return; }
+                fields.avatar.image = refs.avatarFile.files[0];
+                if(!fields.avatar.image){ return; }
                 (async ()=>{
-                    fields.avatar.view = URL.createObjectURL(newAvatar);
+                    fields.avatar.object.destroy();
+                    fields.avatar.view = URL.createObjectURL(fields.avatar.image);
                     await nextTick();
-                    const cropper = new Cropper(refs.avatarView, {
-                        viewMode: 1,
+                    fields.avatar.object = new Cropper(refs.avatarView, {
+                        viewMode: 2,
                         aspectRatio: 1 / 1,
                         initialAspectRatio: 1 / 1,
                         preview: refs.avatarPreview,
                     });
-                    cropper.crop();
                     fields.avatar.is.cropping = true;
+                    fields.avatar.object.crop();
                 })();
             };
         });
