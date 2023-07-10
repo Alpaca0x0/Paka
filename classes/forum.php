@@ -594,39 +594,41 @@ class Forum{
         $datetime = date("Y-m-d H:i:s");
         $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
         // 
-        DB::beginTransaction();
+        // DB::beginTransaction();
         // 
         // update old like
-        $sql = 'UPDATE `post_event` 
-                SET `commit`="ever_liked" 
-                WHERE `commit`="like" AND `post`=:postId AND `uid`=:uid 
-        ;';
+        // $sql = 'UPDATE `post_event` 
+        //         SET `commit`="ever_liked" 
+        //         WHERE `commit`="like" AND `post`=:postId AND `uid`=:uid 
+        // ;';
+        $sql = 'DELETE FROM `post_event` WHERE `post`=:postId AND `uid`=:uid AND `commit`=:commit';
         DB::query($sql)::execute([
             ':postId' => $postId,
             ':uid' => $uid,
+            ':commit' => 'like'
         ]);
-        if(DB::error()){ DB::rollback(); return false; }
-        if(DB::rowCount() < 1){ DB::rollback(); return null; }
+        // if(DB::error()){ DB::rollback(); return false; }
+        // if(DB::rowCount() < 1){ DB::rollback(); return null; }
+        // // 
+        // $sql = 'INSERT INTO `post_event` (`uid`, `commit`, `post`, `ip`, `datetime`)
+        //         SELECT :uid, "unlike", :postId, :ip, :datetime FROM DUAL
+        //         WHERE NOT EXISTS (
+        //             SELECT 1 FROM `post_event`
+        //             WHERE `post_event`.`commit`="like" AND `post_event`.`post`=:postId2 AND `uid`=:uid2
+        //         )
+        // ;';
+        // DB::query($sql)::execute([
+        //     ':uid' => $uid,
+        //     ':uid2' => $uid,
+        //     ':postId' => $postId,
+        //     ':postId2' => $postId,
+        //     ':ip' => $ip,
+        //     ':datetime' => $datetime,
+        // ]);
+        // if(DB::error()){ DB::rollback(); return false; }
+        // if(DB::rowCount() < 1){ DB::rollback(); return null; }
         // 
-        $sql = 'INSERT INTO `post_event` (`uid`, `commit`, `post`, `ip`, `datetime`)
-                SELECT :uid, "unlike", :postId, :ip, :datetime FROM DUAL
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `post_event`
-                    WHERE `post_event`.`commit`="like" AND `post_event`.`post`=:postId2 AND `uid`=:uid2
-                )
-        ;';
-        DB::query($sql)::execute([
-            ':uid' => $uid,
-            ':uid2' => $uid,
-            ':postId' => $postId,
-            ':postId2' => $postId,
-            ':ip' => $ip,
-            ':datetime' => $datetime,
-        ]);
-        if(DB::error()){ DB::rollback(); return false; }
-        if(DB::rowCount() < 1){ DB::rollback(); return null; }
-        // 
-        DB::commit();
+        // DB::commit();
         return true;
     }
 }
