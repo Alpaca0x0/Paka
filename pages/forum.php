@@ -270,7 +270,7 @@ Inc::clas('user');
                                                         這裡曾有過一則留言，但已隨風而去。
                                                     </div>
                                                 </transition>
-                                                <!-- when comment is removed end -->
+                                                <!-- /when comment is removed -->
 
                                                 <!-- comment -->
                                                 <transition leave-active-class="animate__hinge">
@@ -328,11 +328,13 @@ Inc::clas('user');
                                                                         <!-- comment deleting load end -->
 
                                                                     </div>
+                                                                    
                                                                     <div class="ts-row">
                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
-                                                                            <a href="#!" class="item" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)">
-                                                                                {{ theComment.liked.have ? '收回讚' : '讚' }}
-                                                                            </a>
+                                                                            <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
+                                                                                <input type="checkbox" :checked="theComment.liked.have" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)" />
+                                                                                <div class="content">👍{{ theComment.liked.count > 0 ? " "+theComment.liked.have : "" }}</div>
+                                                                            </label>
                                                                             <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                                             <div class="item">
                                                                                 <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
@@ -496,8 +498,10 @@ Inc::clas('user');
 
                                                                                     <div class="ts-row">
                                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
-                                                                                            <a class="item">讚</a>
-                                                                                            <!-- <a class="item">回覆</a> -->
+                                                                                            <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
+                                                                                                <input type="checkbox" :checked="theReply.liked.have" @click="theReply.liked.have ? reply.unlike(theReply) : reply.like(theReply)" />
+                                                                                                <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.have : "" }}</div>
+                                                                                            </label>
                                                                                             <div class="item">
                                                                                                 <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                                     {{ moment(theReply.datetime*1000).fromNow() }}
@@ -1736,6 +1740,100 @@ Inc::clas('user');
                                 toast.addEventListener('mouseleave', Swal.resumeTimer)
                             }
                         });
+                    });
+                });
+            },
+            like: (theReply) => {
+                if(theReply.is.liking || theReply.is.unliking){ return; }
+                theReply.is.liking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/reply/like')?>',
+                    data: { replyId: theReply.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        theReply.liked.have = 1;
+                        if(resp.status==='successfully'){
+                            theReply.liked.count += 1;
+                        }
+                    }
+                }).always(() => {
+                    theReply.is.liking = false;
+                    info.type==='success' || Swal.fire({
+                        icon: info.type,
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+                // 
+            },
+            unlike: (theReply) => {
+                if(theReply.is.unliking || theReply.is.liking){ return; }
+                theReply.is.unliking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/reply/unlike')?>',
+                    data: { replyId: theReply.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        theReply.liked.have = 0;
+                        if(resp.status==='successfully'){
+                            theReply.liked.count -= 1;
+                        }
+                    }
+                }).always(() => {
+                    theReply.is.unliking = false;
+                    info.type==='success' || Swal.fire({
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
                     });
                 });
             },

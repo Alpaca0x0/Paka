@@ -215,7 +215,7 @@ class Forum{
         return $comment;
     }
 
-    static function getReplies($commentIds){
+    static function getReplies($commentIds, $uid=null){
         if(!self::isInit()){ return false; };
         // get args
         $limit = self::$limit;
@@ -239,11 +239,15 @@ class Forum{
 
                 , COUNT(DISTINCT `reply_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
+                , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+                , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
                 FROM `comment` as `reply` 
                 LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`reply`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` as `reply_edited` ON (`reply`.`id`=`reply_edited`.`comment`) 
+                LEFT JOIN `comment_event` as `liked` ON (`reply`.`id`=`liked`.`comment` AND `liked`.`commit`="like") 
 
                 WHERE `reply`.`reply` IN ('.$commentIds.')
                 AND `reply`.`reply` IS NOT NULL 
@@ -258,6 +262,7 @@ class Forum{
         DB::query($sql)::execute([
             ':before' => $before,
             ':after' => $after,
+            ':uid' => $uid,
         ]);
         if(DB::error()){ return false; }
         $replies = DB::fetchAll();
