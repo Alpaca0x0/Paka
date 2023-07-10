@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022-12-29 11:34:38
+-- 產生時間： 2023-07-10 15:39:43
 -- 伺服器版本： 8.0.17
 -- PHP 版本： 8.1.13
 
@@ -86,6 +86,21 @@ CREATE TABLE `comment_edited` (
 -- --------------------------------------------------------
 
 --
+-- 資料表結構 `comment_event`
+--
+
+CREATE TABLE `comment_event` (
+  `id` int(11) NOT NULL,
+  `uid` int(11) NOT NULL COMMENT 'account id',
+  `commit` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `comment` int(11) NOT NULL,
+  `ip` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- --------------------------------------------------------
+
+--
 -- 資料表結構 `post`
 --
 
@@ -124,7 +139,6 @@ CREATE TABLE `post_event` (
   `commit` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `post` int(11) NOT NULL,
   `ip` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `expire` timestamp NULL DEFAULT NULL COMMENT 'token expire time',
   `datetime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
@@ -168,6 +182,12 @@ ALTER TABLE `comment`
 -- 資料表索引 `comment_edited`
 --
 ALTER TABLE `comment_edited`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- 資料表索引 `comment_event`
+--
+ALTER TABLE `comment_event`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -220,6 +240,12 @@ ALTER TABLE `comment`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `comment_edited`
 --
 ALTER TABLE `comment_edited`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `comment_event`
+--
+ALTER TABLE `comment_event`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
