@@ -2,6 +2,11 @@
 class Resp{
     static private $buffer;
 
+    static function header(){
+        if(headers_sent()){ self::error('header_send', 'Headers already been sent.'); }
+        header('Content-Type: application/json; charset=utf-8');
+    }
+
     static private function write(){
         $args = func_get_args();
         #
