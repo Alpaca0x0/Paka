@@ -330,7 +330,9 @@ Inc::clas('user');
                                                                     </div>
                                                                     <div class="ts-row">
                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
-                                                                            <a href="#!" class="item">讚</a>
+                                                                            <a href="#!" class="item" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)">
+                                                                                {{ theComment.liked.have ? '收回讚' : '讚' }}
+                                                                            </a>
                                                                             <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                                             <div class="item">
                                                                                 <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
@@ -1302,7 +1304,6 @@ Inc::clas('user');
                         }
                     });
                 });
-                // 
             },
         });
         let comment = reactive({
@@ -1471,6 +1472,100 @@ Inc::clas('user');
                                 toast.addEventListener('mouseleave', Swal.resumeTimer)
                             }
                         });
+                    });
+                });
+            },
+            like: (theComment) => {
+                if(theComment.is.liking || theComment.is.unliking){ return; }
+                theComment.is.liking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/comment/like')?>',
+                    data: { commentId: theComment.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        theComment.liked.have = 1;
+                        if(resp.status==='successfully'){
+                            theComment.liked.count += 1;
+                        }
+                    }
+                }).always(() => {
+                    theComment.is.liking = false;
+                    info.type==='success' || Swal.fire({
+                        icon: info.type,
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                });
+                // 
+            },
+            unlike: (theComment) => {
+                if(theComment.is.unliking || theComment.is.liking){ return; }
+                theComment.is.unliking = true;
+                // 
+                let info = {
+                    type: 'error',
+                    status: 'unexpected',
+                    data: [],
+                    message: '很抱歉，發生了非預期的錯誤',
+                };
+                // 
+                $.ajax({
+                    type: "POST",
+                    url: '<?=Uri::auth('forum/comment/unlike')?>',
+                    data: { commentId: theComment.id },
+                    dataType: 'json',
+                }).fail((xhr, status, error) => {
+                    console.error(xhr.responseText);
+                }).done((resp) => {
+                    console.log(resp);
+                    if(!Resp.object(resp)){ return false; }
+                    info = resp;
+                    // 
+                    if(resp.type === 'success'){
+                        theComment.liked.have = 0;
+                        if(resp.status==='successfully'){
+                            theComment.liked.count -= 1;
+                        }
+                    }
+                }).always(() => {
+                    theComment.is.unliking = false;
+                    info.type==='success' || Swal.fire({
+                        title: info.type[0].toUpperCase() + info.type.slice(1),
+                        text: info.message,
+                        position: 'bottom-start',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: false,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
                     });
                 });
             },

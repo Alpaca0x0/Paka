@@ -32,6 +32,8 @@ Arr::every($_GET, ...$needs) or Resp::warning('data_missing', '資料缺失');
 Inc::clas('forum');
 Forum::init() or Resp::error('forum_cannot_init', '發生非預期錯，Forum 資料無法被初始化');
 
+Inc::clas('User');
+$uid = User::get('id', 0);
 // check pids
 $pids = $_GET['postId'];
 if(!is_array($pids)){ $pids = [$pids]; }
@@ -60,7 +62,7 @@ $comments = Forum::before($before)
 				::after($after)
 				::orderBy('`comment`.`datetime`', $orderBy)
 				::limit($limit)
-				::getComments($pids);
+				::getComments($pids, $uid);
 // 
 if($comments === false){ Resp::error('sql_query', 'SQL 語法查詢失敗'); }
 if(!$comments){ Resp::success('empty_data', null, '查詢成功，但資料為空'); }

@@ -113,7 +113,7 @@ class Forum{
         return $post;
     }
 
-    static function getComments($pids){
+    static function getComments($pids, $uid=null){
         if(!self::isInit()){ return false; };
         // get args
         $limit = self::$limit;
@@ -139,11 +139,15 @@ class Forum{
 
                 , COUNT(DISTINCT `comment_edited`.`id`) as `edited.count`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
+                , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+                , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
+                LEFT JOIN `comment_event` as `liked` ON (`comment`.`id`=`liked`.`comment` AND `liked`.`commit`="like") 
 
                 LEFT JOIN `comment` as `reply` ON (`comment`.`id`=`reply`.`reply` AND `reply`.`status`="alive") 
 
@@ -160,6 +164,7 @@ class Forum{
         DB::query($sql)::execute([
             ':before' => $before,
             ':after' => $after,
+            ':uid' => $uid,
         ]);
         if(DB::error()){ return false; }
         $comments = DB::fetchAll();
@@ -629,6 +634,43 @@ class Forum{
         // if(DB::rowCount() < 1){ DB::rollback(); return null; }
         // 
         // DB::commit();
+        return true;
+    }
+    static function likeComment($uid, $commentId){
+        if(!self::init()){ return false; }
+        $datetime = date("Y-m-d H:i:s");
+        $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
+        // 
+        $sql = 'INSERT INTO `comment_event` (`uid`, `commit`, `comment`, `ip`, `datetime`)
+                SELECT :uid, "like", :comment, :ip, :datetime FROM DUAL
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM `comment_event`
+                    WHERE `comment_event`.`commit`="like" AND `comment_event`.`comment`=:comment2 AND `uid`=:uid2
+                )
+        ;';
+        DB::query($sql)::execute([
+            ':uid' => $uid,
+            ':uid2' => $uid,
+            ':comment' => $commentId,
+            ':comment2' => $commentId,
+            ':ip' => $ip,
+            ':datetime' => $datetime,
+        ]);
+        if(DB::error()){ return false; }
+        if(DB::rowCount() < 1){ return null; }
+        return true;
+    }
+    static function unlikeComment($uid, $commentId){
+        if(!self::init()){ return false; }
+        $datetime = date("Y-m-d H:i:s");
+        $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
+        // 
+        $sql = 'DELETE FROM `comment_event` WHERE `comment`=:commentId AND `uid`=:uid AND `commit`=:commit';
+        DB::query($sql)::execute([
+            ':commentId' => $commentId,
+            ':uid' => $uid,
+            ':commit' => 'like'
+        ]);
         return true;
     }
 }
