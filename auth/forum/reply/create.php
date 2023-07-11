@@ -32,7 +32,7 @@ if($replyId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
 if(!$replyId){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
 
 # return new comment
-$reply = Forum::getReply($replyId);
+$reply = Forum::getReply($replyId, $uid);
 if(!$reply){ Resp::error('unexpected', '發生非預期錯誤，無法返回新的回覆'); }
 
 $reply = Arr::nd($reply);

@@ -30,7 +30,7 @@ Inc::clas('forum');
 Forum::init() or Resp::error('forum_cannot_init', 'Forum 無法初始化');
 
 # check permission
-$comment = Forum::getComment($commentId);
+$comment = Forum::getComment($commentId, $uid);
 if($comment === false){ Resp::error('sql_query', 'SQL 語法執行錯誤'); }
 if(!$comment){ Resp::warning('comment_not_found', '找不到該留言'); }
 $comment = Arr::nd($comment);

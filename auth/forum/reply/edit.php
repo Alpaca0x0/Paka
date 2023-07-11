@@ -30,7 +30,7 @@ Inc::clas('forum');
 Forum::init() or Resp::error('forum_cannot_init', 'Forum 無法初始化');
 
 # check permission
-$reply = Forum::getReply($replyId);
+$reply = Forum::getReply($replyId, $uid);
 if($reply === false){ Resp::error('sql_query', 'SQL 語法執行錯誤'); }
 if(!$reply){ Resp::warning('reply_not_found', '找不到該留言'); }
 $reply = Arr::nd($reply);

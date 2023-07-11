@@ -172,7 +172,7 @@ class Forum{
         return $comments;
     }
 
-    static function getComment($commentId){
+    static function getComment($commentId, $uid=null){
         if(!self::init()){ return false; };
         // reset args
         self::resetArgs();
@@ -191,11 +191,15 @@ class Forum{
 
                 , COUNT(DISTINCT `comment_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`comment_edited`.`datetime`))as`edited.last_datetime` 
 
+                , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+                , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
                 FROM `comment` 
                 LEFT JOIN `post` ON (`comment`.`post`=`post`.`id`) 
                 LEFT JOIN `account` ON (`comment`.`commenter`=`account`.`id`) 
                 LEFT JOIN `profile` ON (`comment`.`commenter`=`profile`.`id`) 
                 LEFT JOIN `comment_edited` ON (`comment`.`id`=`comment_edited`.`comment`) 
+                LEFT JOIN `comment_event` as `liked` ON (`comment`.`id`=`liked`.`comment` AND `liked`.`commit`="like") 
 
                 LEFT JOIN `comment` as `reply` ON (`comment`.`id`=`reply`.`reply` AND `reply`.`status`="alive") 
 
@@ -208,6 +212,7 @@ class Forum{
         // 
         DB::query($sql)::execute([
             ':commentId' => $commentId,
+            ':uid' => $uid,
         ]);
         if(DB::error()){ return false; }
         $comment = DB::fetch();
@@ -270,7 +275,7 @@ class Forum{
         return $replies;
     }
 
-    static function getReply($replyId){
+    static function getReply($replyId, $uid=null){
         if(!self::init()){ return false; };
         // reset args
         self::resetArgs();
@@ -287,11 +292,15 @@ class Forum{
 
             , COUNT(DISTINCT `reply_edited`.`id`)as`edited.count`, UNIX_TIMESTAMP(MAX(`reply_edited`.`datetime`))as`edited.last_datetime` 
 
+            , COUNT(DISTINCT `liked`.`id`) as `liked.count`
+            , IF(COUNT(DISTINCT CASE WHEN `liked`.`uid`=:uid THEN 1 ELSE NULL END)>0, 1, 0) as `liked.have`
+
             FROM `comment` AS `reply` 
             LEFT JOIN `post` ON (`reply`.`post`=`post`.`id`) 
             LEFT JOIN `account` ON (`reply`.`commenter`=`account`.`id`) 
             LEFT JOIN `profile` ON (`reply`.`commenter`=`profile`.`id`) 
             LEFT JOIN `comment_edited` AS `reply_edited` ON (`reply`.`id`=`reply_edited`.`comment`) 
+            LEFT JOIN `comment_event` as `liked` ON (`reply`.`id`=`liked`.`comment` AND `liked`.`commit`="like") 
 
             WHERE `reply`.`id` = :replyId
             AND `reply`.`reply` IS NOT NULL 
@@ -302,6 +311,7 @@ class Forum{
         // 
         DB::query($sql)::execute([
             ':replyId' => $replyId,
+            ':uid' => $uid,
         ]);
         if(DB::error()){ return false; }
         $reply = DB::fetch();

@@ -18,7 +18,7 @@ if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳
 
 # check permission
 Inc::clas('forum');
-$comment = Forum::getComment($commentId);
+$comment = Forum::getComment($commentId, $uid);
 if($comment === false){ Resp::error('sql_query', 'SQL 查詢時發生錯誤'); }
 if(!$comment){ Resp::warning('comment_not_found', '找不到該留言'); }
 $comment = Arr::nd($comment);

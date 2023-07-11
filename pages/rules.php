@@ -18,8 +18,9 @@ Inc::component('navbar');
             </div>
         </div>
     </template>
-
 </div>
+<br>
+<div class="ts-divider"></div>
 
 <script type="module">
     import { createApp } from '<?=Uri::js('vue')?>';

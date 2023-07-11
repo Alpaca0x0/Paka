@@ -170,7 +170,7 @@ $config = Inc::config('account');
             <div class="column is-16-wide">
                 <div class="ts-box is-top-indicated" style="overflow-x:auto;">
                     <div class="ts-content is-dense">
-                        <div class="ts-header is-heavy">事件記錄簿</div>
+                        <div class="ts-header is-heavy">事件記錄簿 (僅模擬，功能尚未完成)</div>
                     </div>
                     <div class="ts-divider"></div>
                     <table class="ts-table is-basic">
@@ -219,7 +219,7 @@ $config = Inc::config('account');
         <div class="ts-space is-small"></div>
 
         <!-- 統計資訊 -->
-        <div class="ts-header is-large is-heavy">統計</div>
+        <div class="ts-header is-large is-heavy">統計 (僅模擬，功能尚未完成)</div>
         <div class="ts-text is-secondary">帳戶創立至今的數據。</div>
         <div class="ts-space is-large"></div>
         <div class="ts-grid is-2-columns is-stackable">

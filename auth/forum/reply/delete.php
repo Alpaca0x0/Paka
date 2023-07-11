@@ -18,7 +18,7 @@ if(!$uid){ Resp::error('uid_not_found', '發生非預期錯誤，無法獲取帳
 
 # check permission
 Inc::clas('forum');
-$reply = Forum::getreply($replyId);
+$reply = Forum::getreply($replyId, $uid);
 if($reply === false){ Resp::error('sql_query', 'SQL 查詢時發生錯誤'); }
 if(!$reply){ Resp::warning('reply_not_found', '找不到該回覆留言'); }
 $reply = Arr::nd($reply);

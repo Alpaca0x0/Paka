@@ -113,7 +113,7 @@ $config = Inc::config('account');
         let fields = reactive({
             email: {
                 status: 'warning', 
-                value: '<?=(DEV)?'gzmalxnsk8246@gmail.com':''?>',
+                value: '<?=(DEV)?'alpaca0x0.tw@gmail.com':''?>',
                 regex: [<?=$config['email']?>],
             },
             username: {

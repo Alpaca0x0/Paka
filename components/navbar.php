@@ -6,11 +6,11 @@ Inc::clas('user');
     <div class="ts-box is-squared is-very-elevated">
         <div class="ts-row">
             <div class="column is-fluid">
-                <div class="ts-tab">
+                <div class="ts-tab is-small">
                     <!-- left items -->
                     <template v-for="(item, name) in items">
                         <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="[item.isActive || name===onMouseItem?'is-active':'', item.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem=name" @mouseleave="onMouseItem=false" class="item">
-                            <div class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']"></div>
+                            <div class="ts-icon is-small tablet-:u-hidden" :class="[item.icon?'is-'+item.icon+'-icon':'']"></div>
                             <div class="label" v-text="item.text"></div>
                         </a>
                     </template>
@@ -18,7 +18,7 @@ Inc::clas('user');
                 </div>
             </div>
             <div class="column">
-                <div class="ts-tab">
+                <div class="ts-tab is-small">
                     <!-- right items -->
                     <template v-for="(item, name) in ritems">
                         <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="[item.isActive || name===onMouseItem?'is-active':'', item.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem=name" @mouseleave="onMouseItem=false" class="item">

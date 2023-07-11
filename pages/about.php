@@ -19,7 +19,7 @@ if(DB::error()){ die('Error - SQL Query.'); }
 
 <div class="ts-space is-large"></div>
     <div class="ts-container is-narrow">
-        <div class="ts-header is-large is-heavy">About</div>
+        <div class="ts-header is-large is-heavy">About (本頁面僅模擬，資料並非事實)</div>
         <div class="ts-text is-secondary">關於我們的站點。</div>
         <div class="ts-space is-large"></div>
         <div class="ts-grid is-relaxed is-3-columns">

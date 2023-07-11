@@ -10,7 +10,8 @@ Inc::clas('user');
         <div class="ts-space is-large"></div>
         <div class="ts-container">
             <div class="ts-grid is-relaxed">
-                <div class="column is-3-wide">
+                <div class="column is-3-wide tablet-:u-hidden">
+					<!-- 
                     <div style="position: sticky; top: 4rem">
                         <div class="ts-divider is-section"></div>
                         <div class="ts-wrap is-middle-aligned">
@@ -30,9 +31,10 @@ Inc::clas('user');
                             <a class="item"> <span class="ts-icon is-gear-icon"></span> 設定 </a>
                         </div>
                     </div>
+					-->
                 </div>
                 <!-- main -->
-                <div class="column is-9-wide">
+                <div class="column tablet-:is-16-wide tablet+:is-10-wide">
 
                     <!-- write post -->
                     <div class="ts-segment">
@@ -141,7 +143,7 @@ Inc::clas('user');
                                                 <div class="ts-space is-small"></div>
 
                                                 <template v-if="!thePost.is.preEditing">
-                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 30rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 60vw; max-width: 32rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                     <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                 </template>
                                                 <template v-else>
@@ -754,9 +756,10 @@ Inc::clas('user');
                     </div> -->
 
                 </div>
-                <div class="column is-4-wide">
+                <div class="column is-3-wide tablet-:u-hidden">
+					<!-- 
                     <div style="position: sticky; top: 4rem">
-                        <!-- <div class="ts-segment">
+                        <div class="ts-segment">
                             <div class="ts-header is-heavy">限時動態</div>
                             <div class="ts-space"></div>
                             <div class="ts-wrap">
@@ -771,7 +774,7 @@ Inc::clas('user');
                                 </div>
                             </div>
                         </div>
-                        <div class="ts-space"></div> -->
+                        <div class="ts-space"></div>
                         <div class="ts-segment">
                             <div class="ts-header is-heavy">最近看過的商品</div>
                             <div class="ts-space"></div>
@@ -837,6 +840,7 @@ Inc::clas('user');
                             <a href="#!" class="item">廣告資訊</a>
                         </div>
                     </div>
+					-->
                 </div>
             </div>
         </div>

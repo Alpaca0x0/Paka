@@ -34,7 +34,7 @@ class DB{
 		}
 		#
 		try{
-			self::$connect = new PDO($config['type'].":host=".$config['host'].";dbname=".$config['name'].";charset=utf8mb4", $config['user'], $config['pass']);
+			self::$connect = new PDO($config['type'].":host=".$config['host'].";dbname=".$config['name'].";charset=utf8mb4", $config['user'], $config['pass'], [PDO::ATTR_TIMEOUT => 8, ]);
 			if(!self::$connect){ self::error(true); return false; }
 			// setting PDO
 			self::$connect->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);

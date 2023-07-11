@@ -100,7 +100,7 @@ DB::commit();
 Inc::clas('email');
 if(!Email::init()){ Resp::error('smtp_init', '糟糕，SMTP 伺服器無法連接，暫時無法寄信'); };
 //
-$url = Protocol.'://'.Domain.Uri::auth('account/verify').'?token='.$token;
+$url = Protocol.'://'.Domain.':'.Port.Uri::auth('account/verify').'?token='.$token;
 $title = 'Verify your email for '.NAME.' !';
 $username = htmlentities($username);
 $content = "

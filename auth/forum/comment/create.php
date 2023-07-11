@@ -34,7 +34,7 @@ if($commentId === false){ Resp::error('sql_insert', 'SQL 語法執行錯誤'); }
 if(is_null($commentId)){ Resp::error('sql_insert_null', 'SQL 寫入留言時發生錯誤'); }
 
 # return new comment
-$newComment = Forum::getComment($commentId);
+$newComment = Forum::getComment($commentId, $uid);
 if($newComment === false){ Resp::error('sql_query', 'SQL 查詢新留言的資訊時發生錯誤'); }
 if(!$newComment){ Resp::error('unexpected', '發生非預期錯誤，無法返回新發布的留言'); }
 

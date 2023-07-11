@@ -2,3 +2,4 @@
 /configs/db.php
 /configs/email.php
 pages/test.php
+/.docker/mysql/
