@@ -544,16 +544,22 @@ Inc::clas('user');
 
                                                                         <!-- reply actions -->
                                                                         <div v-show="user.id===theReply.replier.id" class="column" style="max-height: 20px; max-width: 30px">
-                                                                            <a @click="theComment.reply.preActionReply=theReply.id" v-click-outside="()=>theComment.reply.preActionReply=theComment.reply.preActionReply===theReply.id?false:theComment.reply.preActionReply" style="cursor: pointer;">
+                                                                            <a class="iten" :data-dropdown="'reply-'+theReply.id" style="cursor: pointer;">
                                                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                                                             </a>
-                                                                            <div :class="{ 'is-visible': theComment.reply.preActionReply===theReply.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                                                <button class="item" @click="theReply.preEditing.content=theReply.content; theReply.is.preEditing=true">編輯</button>
+                                                                            <div class="ts-dropdown" :data-name="'reply-'+theReply.id">
+                                                                                <button class="item" @click="theReply.preEditing.content=theReply.content; theReply.is.preEditing=true;">        
+                                                                                    <div class="ts-icon is-pen-icon"></div>
+                                                                                    編輯
+                                                                                </button>
                                                                                 <div class="ts-divider"></div>
-                                                                                <button class="item" @click="reply.delete(theReply)">刪除</button>
+                                                                                <button class="item" @click="reply.delete(theReply)">
+                                                                                    <div class="ts-icon is-trash-can-icon is-negative"></div>
+                                                                                    刪除
+                                                                                </button>
                                                                             </div>
                                                                         </div>
-                                                                        <!-- reply actions end -->
+                                                                        <!-- /reply actions -->
                                                                         
                                                                     </div>
                                                                 </transition>
