@@ -195,13 +195,19 @@ Inc::clas('user');
 
                                             <!-- post actions -->
                                             <div v-show="user.id===thePost.poster.id" class="column" style="max-height: 20px">
-                                                <a @click="post.preActionPost=thePost.id" v-click-outside="()=>post.preActionPost=post.preActionPost===thePost.id?false:post.preActionPost" style="cursor: pointer;">
-                                                    <span class="ts-icon is-spaced is-ellipsis-icon"></span>
+                                                <a :data-dropdown="'post-'+thePost.id+'-action'" style="cursor: pointer;">
+                                                    <span class="ts-icon is-ellipsis-icon"></span>
                                                 </a>
-                                                <div :class="{ 'is-visible': post.preActionPost===thePost.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                    <button class="item" @click="thePost.preEditing.content=thePost.content; thePost.is.preEditing=true">編輯</button>
+                                                <div class="ts-dropdown" :data-name="'post-'+thePost.id+'-action'" data-position="bottom-end">
+                                                    <button class="item" @click="thePost.preEditing.content=thePost.content; thePost.is.preEditing=true">
+                                                        <div class="ts-icon is-pen-icon"></div>
+                                                        編輯
+                                                    </button>
                                                     <div class="ts-divider"></div>
-                                                    <button class="item" @click="post.delete(thePost)">刪除</button>
+                                                    <button class="item" @click="post.delete(thePost)">
+                                                        <div class="ts-icon is-trash-can-icon is-negative"></div>
+                                                        刪除
+                                                    </button>
                                                 </div>
                                             </div>
                                             <!-- post actions end -->
@@ -213,23 +219,23 @@ Inc::clas('user');
                                             <div class="column is-fluid">
                                                 <button @click="thePost.liked.have ? post.unlike(thePost) : post.like(thePost)" :disabled="thePost.is.liking || thePost.is.unliking" :class="{'is-disabled': thePost.is.liking || thePost.is.unliking}" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span :class="{'is-regular':!thePost.liked.have}" class="ts-icon is-heart-icon"></span>
-                                                    {{ thePost.liked.have ? '收回喜歡' : '喜歡' }}
+                                                    <span class="ts-text">{{ thePost.liked.have ? '收回喜歡' : '喜歡' }}</span>
                                                     <span v-show="thePost.liked.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.liked.count }}</span>
                                                 </button>
                                             </div>
                                             <div class="column is-fluid">
                                                 <button @click="thePost.comments.is.visible=!thePost.comments.is.visible; thePost.comments.is.init || getComments(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span :class="{'is-regular':!thePost.comments.is.visible}" class="ts-icon is-comment-icon"></span>
-                                                    留言
+                                                    <span class="ts-text">留言</span>
                                                     <span v-show="thePost.comments.count" class="ts-badge is-outlined is-start-spaced">{{ thePost.comments.count }}</span>
                                                 </button>
                                             </div>
-                                            <div class="column is-fluid">
+                                            <!-- <div class="column is-fluid">
                                                 <button @click="post.share(thePost)" class="ts-button is-dense is-start-icon is-ghost is-fluid">
                                                     <span :class="{'is-regular':!thePost.is.preSharing}" class="ts-icon is-share-from-square-icon"></span>
                                                     分享
                                                 </button>
-                                            </div>
+                                            </div> -->
                                         </div>
                                         <!-- post interactive end -->
 
@@ -253,10 +259,10 @@ Inc::clas('user');
                                         <template v-if="!thePost.comments.is.noMore && thePost.comments.is.visible && !thePost.comments.is.getting" v-cloak>
                                             <div class="ts-space"></div>
                                             <div class="ts-divider is-start-text">
-                                                <a @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則貼文的 {{thePost.comments.count - thePost.comments.data.length }} 則留言</a>
+                                                <a @click="getComments(thePost)" href="#!" class="item ts-text is-tiny is-link">載入更多相關的 {{thePost.comments.count - thePost.comments.data.length }} 則留言</a>
                                             </div>
                                             <div v-show="thePost.comments.is.getError" class="ts-divider is-start-text">
-                                                <span class="ts-text is-tiny is-negative">載入關於這則貼文的留言時發生錯誤</span>
+                                                <span class="ts-text is-tiny is-negative">載入更多相關的留言時發生錯誤</span>
                                             </div>
                                         </template>
                                         <!-- comments loading end -->
@@ -335,7 +341,7 @@ Inc::clas('user');
                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
                                                                             <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
                                                                                 <input type="checkbox" :checked="theComment.liked.have" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)" />
-                                                                                <div class="content">👍{{ theComment.liked.count > 0 ? " "+theComment.liked.have : "" }}</div>
+                                                                                <div class="content">👍{{ theComment.liked.count > 0 ? " "+theComment.liked.count : "" }}</div>
                                                                             </label>
                                                                             <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                                             <div class="item">
@@ -407,12 +413,12 @@ Inc::clas('user');
                                                         <template v-if="!theComment.replies.is.noMore && !theComment.replies.is.getting">
                                                             <div class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
-                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多關於這則留言的 {{theComment.replies.count - theComment.replies.data.length }} 則回應</a>
+                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多相關的 {{theComment.replies.count - theComment.replies.data.length }} 則回應</a>
                                                                 </div>
                                                             </div>
                                                             <div v-show="theComment.replies.is.getError" class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
-                                                                    <span class="ts-text is-tiny is-negative">載入關於這則留言的回應時發生錯誤</span>
+                                                                    <span class="ts-text is-tiny is-negative">載入更多相關的回應時發生錯誤</span>
                                                                 </div>
                                                             </div>
                                                         </template>
@@ -502,7 +508,7 @@ Inc::clas('user');
                                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
                                                                                             <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
                                                                                                 <input type="checkbox" :checked="theReply.liked.have" @click="theReply.liked.have ? reply.unlike(theReply) : reply.like(theReply)" />
-                                                                                                <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.have : "" }}</div>
+                                                                                                <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.count : "" }}</div>
                                                                                             </label>
                                                                                             <div class="item">
                                                                                                 <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
