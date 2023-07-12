@@ -143,12 +143,12 @@ Inc::clas('user');
                                                 <div class="ts-space is-small"></div>
 
                                                 <template v-if="!thePost.is.preEditing">
-                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 60vw; max-width: 32rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                    <div v-html="thePost.content" :style="{'max-height': thePost.is.viewAllContent ? '' : '8.6rem' }" style="width: 60vw; max-width: 38rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                     <a v-show="thePost.content.split(/\r\n|\r|\n/).length > 4" @click="thePost.is.viewAllContent=!thePost.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ thePost.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                 </template>
                                                 <template v-else>
                                                     <!-- when post is preEditing -->
-                                                    <div class="ts-input is-fluid is-underlined" style="width: 30.2rem;">
+                                                    <div class="ts-input is-fluid is-underlined" style="max-width: 64vw; width: 38rem;">
                                                         <textarea 
                                                             :readonly="thePost.is.editing"
                                                             v-model="thePost.preEditing.content" 
