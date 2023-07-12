@@ -130,9 +130,11 @@ Inc::clas('user');
                                                             <div class="ts-icon is-clock-icon"></div>
                                                             {{ moment(thePost.datetime*1000).fromNow() }}
                                                         </a>
-                                                        <a v-if="thePost.edited.last_datetime" href="#!" class="item" :title="'在 ' + moment(thePost.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                        <a v-if="thePost.edited.last_datetime" class="item" :title="'在 ' + moment(thePost.edited.last_datetime*1000).fromNow() + ' 編輯'">
                                                             <div class="ts-icon is-pen-to-square-icon"></div>
-                                                            已編輯
+                                                            <span class="[420px]-:u-hidden">
+                                                                {{ thePost.edited.count > 0 ? ' 已編輯' : ''  }}
+                                                            </span>
                                                         </a>
                                                         <div v-if="is.Dev" class="item">
                                                             <div class="ts-icon is-hashtag-icon"></div>
@@ -287,7 +289,7 @@ Inc::clas('user');
                                                         <div class="column">
                                                             <div class="ts-conversation">
                                                                 <div class="avatar ts-image">
-                                                                    <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault">
+                                                                    <img :src="theComment.commenter.avatar?('data:image/jpeg;base64,'+theComment.commenter.avatar):user.avatarDefault" class="ts-image is-small">
                                                                 </div>
                                                                 <div class="content" style="max-width: 35rem;">
                                                                     <div class="bubble">
@@ -295,12 +297,12 @@ Inc::clas('user');
                                                                             <a class="ts-text is-undecorated">{{ theComment.commenter.username }}</a>
                                                                         </div>
                                                                         <template v-if="!theComment.is.preEditing">
-                                                                            <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 28rem; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
+                                                                            <div v-html="theComment.content" :style="{'max-height': theComment.is.viewAllContent ? '' : '4.3rem' }" style="max-width: 53vw; overflow: hidden; overflow-wrap: break-word; white-space: pre-line;"></div>
                                                                             <a v-show="theComment.content.split(/\r\n|\r|\n/).length > 4" @click="theComment.is.viewAllContent=!theComment.is.viewAllContent" href="#!" class="item ts-text is-tiny is-link">{{ theComment.is.viewAllContent ? '顯示較少' : '…顯示更多' }}</a>
                                                                         </template>
                                                                         <template v-else>
                                                                             <!-- when comment is preEditing -->
-                                                                            <div class="ts-input is-fluid is-underlined" style="width: 30rem;">
+                                                                            <div class="ts-input is-fluid is-underlined" style="width: 55vw; max-width: 30rem;">
                                                                                 <textarea 
                                                                                     @keydown.enter.exact.prevent="comment.edit(theComment)" 
                                                                                     @keydown.enter.shift.exact.prevent="theComment.preEditing.content += '\n'" 
@@ -348,11 +350,14 @@ Inc::clas('user');
                                                                                 <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                     {{ moment(theComment.datetime*1000).fromNow() }}
                                                                                 </a>
-                                                                                <a href="#!" :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
-                                                                                    {{ theComment.edited.count > 0 ? ' (已編輯)' : '' }}
-                                                                                </a>
                                                                             </div>
-                                                                            <div v-show="is.Dev" class="item">
+                                                                            <a :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                <div class="ts-icon is-pen-to-square-icon"></div>
+                                                                                <span class="[450px]-:u-hidden">
+                                                                                    {{ theComment.edited.count > 0 ? ' 已編輯' : '' }}
+                                                                                </span>
+                                                                            </a>
+                                                                            <div v-if="is.Dev" class="item">
                                                                                 <div class="ts-icon is-hashtag-icon"></div>
                                                                                 {{ theComment.id }}
                                                                             </div>
@@ -419,12 +424,12 @@ Inc::clas('user');
                                                         <template v-if="!theComment.replies.is.noMore && !theComment.replies.is.getting">
                                                             <div class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
-                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">載入更多相關的 {{theComment.replies.count - theComment.replies.data.length }} 則回應</a>
+                                                                    <a @click="getReplies(theComment)" href="#!" class="item ts-text is-tiny is-link">更多相關的 {{theComment.replies.count - theComment.replies.data.length }} 則回應</a>
                                                                 </div>
                                                             </div>
                                                             <div v-show="theComment.replies.is.getError" class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
-                                                                    <span class="ts-text is-tiny is-negative">載入更多相關的回應時發生錯誤</span>
+                                                                    <span class="ts-text is-tiny is-negative">載入更多相關回應時發生錯誤</span>
                                                                 </div>
                                                             </div>
                                                         </template>
@@ -433,7 +438,7 @@ Inc::clas('user');
                                                             <div class="ts-divider is-start-text">
                                                                 <div class="column is-fluid">
                                                                     <a @click="theComment.replies.is.visible=!theComment.replies.is.visible" href="#!" class="item ts-text is-tiny is-link">
-                                                                        {{theComment.replies.is.visible ? '隱藏以下 '+theComment.replies.data.length+' 則回應' : '顯示關於這則留言的 '+theComment.replies.data.length+' 則回應'}}
+                                                                        {{theComment.replies.is.visible ? '隱藏以下 '+theComment.replies.data.length+' 則回應' : '更多相關的 '+theComment.replies.data.length+' 則回應'}}
                                                                     </a>
                                                                 </div>
                                                             </div>
@@ -461,7 +466,7 @@ Inc::clas('user');
                                                                                 <div class="avatar ts-image">
                                                                                     <img :src="theReply.replier.avatar?('data:image/jpeg;base64,'+theReply.replier.avatar):user.avatarDefault">
                                                                                 </div>
-                                                                                <div class="content" style="max-width: 28rem;">
+                                                                                <div class="content" style="max-width: 48vw;">
                                                                                     <div class="bubble">
                                                                                         <div class="author">
                                                                                             <a class="ts-text is-undecorated">{{ theReply.replier.username }}</a>
@@ -472,7 +477,7 @@ Inc::clas('user');
                                                                                         </template>
                                                                                         <template v-else>
                                                                                             <!-- when reply is preEditing -->
-                                                                                            <div class="ts-input is-fluid is-underlined" style="width: 26.3rem;">
+                                                                                            <div class="ts-input is-fluid is-underlined" style="width: 26.3rem; max-width: 42vw;">
                                                                                                 <textarea 
                                                                                                     @keydown.enter.exact.prevent="reply.edit(theReply)" 
                                                                                                     @keydown.enter.shift.exact.prevent="theReply.preEditing.content += '\n'" 
@@ -520,11 +525,14 @@ Inc::clas('user');
                                                                                                 <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                                     {{ moment(theReply.datetime*1000).fromNow() }}
                                                                                                 </a>
-                                                                                                <a href="#!" :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
-                                                                                                    {{ theReply.edited.count > 0 ? ' (已編輯)' : '' }}
-                                                                                                </a>
                                                                                             </div>
-                                                                                            <div v-show="is.Dev" class="item">
+                                                                                            <a :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
+                                                                                                <div class="ts-icon is-pen-to-square-icon"></div>
+                                                                                                <span class="[450px]-:u-hidden">
+                                                                                                    {{ theReply.edited.count > 0 ? ' 已編輯' : '' }}
+                                                                                                </span>
+                                                                                            </a>
+                                                                                            <div v-if="is.Dev" class="item">
                                                                                                 <div class="ts-icon is-hashtag-icon"></div>
                                                                                                 {{ theReply.id }}
                                                                                             </div>
@@ -583,7 +591,7 @@ Inc::clas('user');
                                                                                 @keydown.enter.exact.prevent="reply.create(theComment)" 
                                                                                 @keydown.enter.shift.exact.prevent="theComment.reply.creating.content += '\n'" 
                                                                                 v-model="theComment.reply.creating.content" 
-                                                                                placeholder="回覆這則留言... (可以使用 Shift + Enter 換行)" 
+                                                                                placeholder="回覆... (可以使用 Shift + Enter 換行)" 
                                                                                 style="height: 2.5rem"
                                                                                 oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
                                                                                 onkeydown="this.oninput()" 
@@ -630,7 +638,7 @@ Inc::clas('user');
                                                                 @keydown.enter.exact.prevent="comment.create(thePost)" 
                                                                 @keydown.enter.shift.exact.prevent="thePost.comment.creating.content += '\n'" 
                                                                 v-model="thePost.comment.creating.content" 
-                                                                placeholder="回覆這則貼文... (可以使用 Shift + Enter 換行)" 
+                                                                placeholder="留言... (可以使用 Shift + Enter 換行)" 
                                                                 style="height: 2.5rem"
                                                                 oninput="this.style.height='1px'; this.style.height=this.scrollHeight+4+'px';" 
                                                                 onkeydown="this.oninput()" 
