@@ -53,11 +53,7 @@ location ^~ /paka/ {
 
 ## :cactus: Update
 
-### :bug: Bugs
-
-- [x] 待驗證的帳號可以被其他使用者繼續註冊。
-- [x] `config.php` 缺少 `NAME`。
-- [x] 按讚功能失效，無法區分不同使用者。(忘記加上 `AND uid=uid` 判斷)
+<!-- ### :bug: Bugs -->
 
 <!-- ### :wrench: Issues -->
 
