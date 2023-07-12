@@ -371,16 +371,22 @@ Inc::clas('user');
 
                                                         <!-- comment actions -->
                                                         <div v-show="user.id===theComment.commenter.id" class="column" style="max-height: 20px; max-width: 30px">
-                                                            <a @click="thePost.comment.preActionComment=theComment.id" v-click-outside="()=>thePost.comment.preActionComment=thePost.comment.preActionComment===theComment.id?false:thePost.comment.preActionComment" style="cursor: pointer;">
+                                                            <a class="iten" :data-dropdown="'comment-'+theComment.id" style="cursor: pointer;">
                                                                 <span class="ts-icon is-ellipsis-icon"></span>
                                                             </a>
-                                                            <div :class="{ 'is-visible': thePost.comment.preActionComment===theComment.id }" class="ts-dropdown is-small is-dense is-separated is-bottom-right">
-                                                                <button class="item" @click="theComment.preEditing.content=theComment.content; theComment.is.preEditing=true;">編輯</button>
+                                                            <div class="ts-dropdown" :data-name="'comment-'+theComment.id">
+                                                                <button class="item" @click="theComment.preEditing.content=theComment.content; theComment.is.preEditing=true;">        
+                                                                    <div class="ts-icon is-pen-icon"></div>
+                                                                    編輯
+                                                                </button>
                                                                 <div class="ts-divider"></div>
-                                                                <button class="item" @click="comment.delete(theComment)">刪除</button>
+                                                                <button class="item" @click="comment.delete(theComment)">
+                                                                    <div class="ts-icon is-trash-can-icon is-negative"></div>
+                                                                    刪除
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <!-- comment actions end -->
+                                                        <!-- /comment actions -->
 
                                                     </div>
                                                 </transition>
