@@ -341,26 +341,28 @@ Inc::clas('user');
                                                                     
                                                                     <div class="ts-row">
                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
-                                                                            <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
-                                                                                <input type="checkbox" :checked="theComment.liked.have" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)" />
-                                                                                <div class="content">👍{{ theComment.liked.count > 0 ? " "+theComment.liked.count : "" }}</div>
-                                                                            </label>
-                                                                            <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
-                                                                            <div class="item">
-                                                                                <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
-                                                                                    {{ moment(theComment.datetime*1000).fromNow() }}
+                                                                            <template v-if="!theComment.is.preEditing">
+                                                                                <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
+                                                                                    <input type="checkbox" :checked="theComment.liked.have" @click="theComment.liked.have ? comment.unlike(theComment) : comment.like(theComment)" />
+                                                                                    <div class="content">👍{{ theComment.liked.count > 0 ? " "+theComment.liked.count : "" }}</div>
+                                                                                </label>
+                                                                                <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
+                                                                                <div class="item">
+                                                                                    <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
+                                                                                        {{ moment(theComment.datetime*1000).fromNow() }}
+                                                                                    </a>
+                                                                                </div>
+                                                                                <a :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                    <div class="ts-icon is-pen-to-square-icon"></div>
+                                                                                    <span class="[450px]-:u-hidden">
+                                                                                        {{ theComment.edited.count > 0 ? ' 已編輯' : '' }}
+                                                                                    </span>
                                                                                 </a>
-                                                                            </div>
-                                                                            <a :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
-                                                                                <div class="ts-icon is-pen-to-square-icon"></div>
-                                                                                <span class="[450px]-:u-hidden">
-                                                                                    {{ theComment.edited.count > 0 ? ' 已編輯' : '' }}
-                                                                                </span>
-                                                                            </a>
-                                                                            <div v-if="is.Dev" class="item">
-                                                                                <div class="ts-icon is-hashtag-icon"></div>
-                                                                                {{ theComment.id }}
-                                                                            </div>
+                                                                                <div v-if="is.Dev" class="item">
+                                                                                    <div class="ts-icon is-hashtag-icon"></div>
+                                                                                    {{ theComment.id }}
+                                                                                </div>
+                                                                            </template>
                                                                         </div>
                                                                         <div class="column">
                                                                             <div v-show="theComment.is.preEditing && !theComment.is.editing">
@@ -517,25 +519,27 @@ Inc::clas('user');
 
                                                                                     <div class="ts-row">
                                                                                         <div class="ts-meta is-small is-secondary column is-fluid">
-                                                                                            <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
-                                                                                                <input type="checkbox" :checked="theReply.liked.have" @click="theReply.liked.have ? reply.unlike(theReply) : reply.like(theReply)" />
-                                                                                                <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.count : "" }}</div>
-                                                                                            </label>
-                                                                                            <div class="item">
-                                                                                                <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
-                                                                                                    {{ moment(theReply.datetime*1000).fromNow() }}
+                                                                                            <template v-if="!theReply.is.preEditing">
+                                                                                                <label class="item ts-chip is-small is-toggle is-secondary is-circular is-dense">
+                                                                                                    <input type="checkbox" :checked="theReply.liked.have" @click="theReply.liked.have ? reply.unlike(theReply) : reply.like(theReply)" />
+                                                                                                    <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.count : "" }}</div>
+                                                                                                </label>
+                                                                                                <div class="item">
+                                                                                                    <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
+                                                                                                        {{ moment(theReply.datetime*1000).fromNow() }}
+                                                                                                    </a>
+                                                                                                </div>
+                                                                                                <a :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
+                                                                                                    <div class="ts-icon is-pen-to-square-icon"></div>
+                                                                                                    <span class="[450px]-:u-hidden">
+                                                                                                        {{ theReply.edited.count > 0 ? ' 已編輯' : '' }}
+                                                                                                    </span>
                                                                                                 </a>
-                                                                                            </div>
-                                                                                            <a :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
-                                                                                                <div class="ts-icon is-pen-to-square-icon"></div>
-                                                                                                <span class="[450px]-:u-hidden">
-                                                                                                    {{ theReply.edited.count > 0 ? ' 已編輯' : '' }}
-                                                                                                </span>
-                                                                                            </a>
-                                                                                            <div v-if="is.Dev" class="item">
-                                                                                                <div class="ts-icon is-hashtag-icon"></div>
-                                                                                                {{ theReply.id }}
-                                                                                            </div>
+                                                                                                <div v-if="is.Dev" class="item">
+                                                                                                    <div class="ts-icon is-hashtag-icon"></div>
+                                                                                                    {{ theReply.id }}
+                                                                                                </div>
+                                                                                            </template>
                                                                                         </div>
                                                                                         <div class="column">
                                                                                             <div v-show="theReply.is.preEditing && !theReply.is.editing">
