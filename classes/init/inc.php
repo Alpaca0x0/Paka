@@ -47,4 +47,13 @@ class Inc{
         if($filename === false){ die('Inc::asset(): Error - Can not include asset "'.$name.'".'); }
         return require($filename);
     }
+
+    static function lib($name){
+        foreach(['', '.php'] as $exName){
+            $filename = File::in(Path::lib)::exist($name.$exName);
+            if($filename) break;
+        }
+        if($filename === false){ die('Inc::lib(): Error - Can not include lib "'.$name.'".'); }
+        return require($filename);
+    }
 }

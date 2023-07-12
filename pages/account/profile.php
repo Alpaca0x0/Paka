@@ -6,63 +6,160 @@ Inc::component('navbar');
 $config = Inc::config('account');
 ?>
 
+<style>
+    .cropper-view-box {
+        border-radius: 50%;
+    }
+    .cropper-face {
+        background-color:inherit !important;
+    }
+</style>
+
 <div id="Profile" class="cell is-fluid is-secondary">
     <div class="ts-space is-large"></div>
     <div class="ts-container is-narrow">
-
+        
         <!-- Profile -->
         <div class="ts-header is-large is-heavy">帳戶資料</div>
         <div class="ts-text is-secondary">關於您帳戶的基本資訊。</div>
         <div class="ts-space is-large"></div>
         <!--  -->
-        <div class="ts-grid is-stackable">
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Username</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('username')" class="ts-input is-start-labeled">
-                    <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
-                    <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+
+        <!-- avatar view modal -->
+        <div :class="{'is-visible': fields.avatar.is.cropping}" class="ts-modal is-big" v-cloak>
+            <div class="content">
+                <!-- close button -->
+                <div class="ts-content is-dense">
+                    <div class="ts-row">
+                        <div class="column is-fluid">
+                            <!-- <div class="ts-header">裁剪您的頭貼</div> -->
+                        </div>
+                        <div class="column">
+                            <button @click="fields.avatar.is.cropping=false" type="button" class="ts-close"></button>
+                        </div>
+                    </div>
                 </div>
+                <!-- /close button -->
+                <div class="ts-container">
+                    <div class="ts-divider is-start-text">預覽</div>
+                    <!-- <div class="ts-box is-horizontal is-hollowed"> -->
+                    <div class="ts-row">
+                        <div class="column is-fluid">
+                            <div class="ts-content">
+                                <!-- <div class="ts-header">
+                                    裁切您的大頭貼
+                                </div> -->
+                                <!-- tool buttons -->
+                                <!-- <div class="ts-wrap">
+                                    <button type="button" class="ts-button is-icon" @click="fields.avatar.object.rotate(-5)">
+                                        <span class="ts-icon is-arrow-rotate-left-icon"></span>
+                                    </button>
+                                    <button type="button" class="ts-button is-icon">
+                                        <span class="ts-icon is-arrow-rotate-right-icon"></span>
+                                    </button>
+                                </div> -->
+                                <!-- /tool buttons --> 
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="ts-image is-1-by-1 is-covered">
+                                <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 200px; height: 200px; border-radius: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="column is-fluid"></div>
+                    </div>
+
+                    <div class="ts-divider is-start-text">裁減圖片</div>
+                    <div class="ts-content">
+                        <div class="ts-image is-small is-centered" style="height: 480px;">
+                            <img :src="fields.avatar.view" data-ref-id="avatarView" :ref="setRef">
+                            <div class="ts-space is-small"></div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider is-end-text">
+                        <button type="button" class="ts-button is-end-icon" @click="fields.avatar.cropped()">
+                            完成
+                            <span class="ts-icon is-check-icon"></span>
+                        </button>
+                    </div>
+                </div>
+                <br>
             </div>
+        </div>
+        <!-- /avatar view modal -->
+
+        <form @submit.prevent="submit()">
+            <div class="ts-grid is-stackable">
+                <!-- avatar -->
+                <div class="column is-4-wide">
+                    <div class="ts-center">
+                        <label for="avatarFile">
+                            <div class="ts-image is-circular is-small is-centered is-covered">
+                                <img :src="fields.avatar.value" data-ref-id="avatar" :ref="setRef">
+                            </div>
+                            <input id="avatarFile" data-ref-id="avatarFile" :ref="setRef" type="file" accept="image/*" style="display: none;">
+                        </label>
+                    </div>
+                </div>
+                <!-- /avatar -->
+
+                <!-- profile fields -->
+                <div class="column is-12-wide">
+                    <div class="ts-grid is-stackable">
+                        <!--  -->
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Username</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('username')" class="ts-input is-start-labeled">
+                                <span class="label ts-text is-disabled" v-text="'#'+user.id" v-once></span>
+                                <input class="ts-segment is-tertiary" v-model="user.username" v-once readonly>
+                            </div>
+                        </div>
+                        <!--  -->
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">E-Mail</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('email')" class="ts-input">
+                                <input @input="checkDatas()" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" data-ref-id="email" :ref="setRef" readonly>
+                            </div>
+                        </div>
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Nickname</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('nickname')" class="ts-input">
+                                <input @input="checkDatas()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" data-ref-id="nickname" :ref="setRef">
+                            </div>
+                        </div>
+                        <div class="column is-8-wide">
+                            <div class="ts-text is-label">Birthday</div>
+                            <div class="ts-space is-small"></div>
+                            <div :class="classObjects('birthday')" class="ts-input">
+                                <input @input="checkDatas()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" data-ref-id="birthday" :ref="setRef">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /profile fields -->
+            </div>
+
             <!--  -->
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">E-Mail</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('email')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" type="email" class="ts-segment is-tertiary" v-model="fields.email.value" :ref="setRef" id="email" readonly>
+            <div class="ts-space is-small"></div>
+            <!--  -->
+            <div class="ts-row">
+                <div class="column is-end-aligned is-fluid">
+                    <button type="button" @click="reset()" :class="classObjects('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
+                        <span class="ts-icon is-rotate-left-icon"></span>
+                    </button>
+                </div>
+                <div class="column is-end-aligned">
+                    <button type="submit" :class="classObjects('submit')" :disabled="is.submitting" data-ref-id="submit" :ref="setRef" class="ts-button is-end-icon is-dense is-small">
+                        保存設定
+                        <span class="ts-icon is-check-icon"></span>
+                    </button>
                 </div>
             </div>
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Nickname</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('nickname')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" type="text" v-model="fields.nickname.value" :ref="setRef" id="nickname">
-                </div>
-            </div>
-            <div class="column is-8-wide">
-                <div class="ts-text is-label">Birthday</div>
-                <div class="ts-space is-small"></div>
-                <div :class="classObjects('birthday')" class="ts-input">
-                    <input @input="check()" :readonly="is.submitting" :min="fields.birthday.range[0]" :max="fields.birthday.range[1]" type="date" v-model="fields.birthday.value" :ref="setRef" id="birthday">
-                </div>
-            </div>
-        </div>
-        <!--  -->
-        <div class="ts-space is-small"></div>
-        <!--  -->
-        <div class="ts-row">
-            <div class="column is-end-aligned is-fluid">
-                <button @click="reset()" :class="classObjects('reset')" :disabled="is.submitting" class="ts-button is-icon is-dense is-small is-secondary">
-                    <span class="ts-icon is-rotate-left-icon"></span>
-                </button>
-            </div>
-            <div class="column is-end-aligned">
-                <button @click="submit()" :class="classObjects('submit')" :disabled="is.submitting" class="ts-button is-end-icon is-dense is-small">
-                    保存設定
-                    <span class="ts-icon is-check-icon"></span>
-                </button>
-            </div>
-        </div>
+        </form>
         <!--  -->
 
         <div class="ts-space is-small"></div>
@@ -74,7 +171,7 @@ $config = Inc::config('account');
             <div class="column is-16-wide">
                 <div class="ts-box is-top-indicated" style="overflow-x:auto;">
                     <div class="ts-content is-dense">
-                        <div class="ts-header is-heavy">事件記錄簿</div>
+                        <div class="ts-header is-heavy">事件記錄簿 (僅模擬，功能尚未完成)</div>
                     </div>
                     <div class="ts-divider"></div>
                     <table class="ts-table is-basic">
@@ -123,7 +220,7 @@ $config = Inc::config('account');
         <div class="ts-space is-small"></div>
 
         <!-- 統計資訊 -->
-        <div class="ts-header is-large is-heavy">統計</div>
+        <div class="ts-header is-large is-heavy">統計 (僅模擬，功能尚未完成)</div>
         <div class="ts-text is-secondary">帳戶創立至今的數據。</div>
         <div class="ts-space is-large"></div>
         <div class="ts-grid is-2-columns is-stackable">
@@ -160,26 +257,32 @@ $config = Inc::config('account');
     </div>
 </div>
 
+<style> @import '<?=Uri::css('cropper')?>'; </style>
+
 <script type="module">
-    import { createApp, ref, reactive, onMounted, } from '<?=Uri::js('vue')?>';
-    import * as directives from '<?=Uri::js('vue/directives')?>';
+    import { createApp, ref, reactive, onMounted, nextTick, } from '<?=Uri::js('vue')?>';
+    import { focus } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus };
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
+    import Cropper from '<?=Uri::js('cropper')?>';
 
     const Profile = createApp({setup(){
         let user = reactive({
-            'id': <?=User::get('id', 0)?>,
-            'username': '<?=User::get('username', '-')?>',
-            'email': '<?=User::get('email', '')?>',
-            'nickname': '<?=User::get('nickname', '')?>',
-            'birthday': '<?=User::get('birthday', '')?>',
+            id: <?=User::get('id', 0)?>,
+            avatarDefault: '<?=Uri::img('user.png')?>',
+            avatar: <?=User::get('avatar', null) !== null ? "'".'data:image/jpeg;base64,'.User::get('avatar')."'" : 'null'?>,
+            username: '<?=User::get('username', '-')?>',
+            email: '<?=User::get('email', '')?>',
+            nickname: '<?=User::get('nickname', '')?>',
+            birthday: '<?=User::get('birthday', '')?>',
         });
         // 
         let refs = reactive({});
-        let setRef = (el) => { refs[el.id] = el; }
+        let setRef = (el) => { refs[el.getAttribute('data-ref-id')] = el; }
         // 
         let is = reactive({
-            submit: false,
+            submitting: false,
         });
         // 
         let fields = reactive({
@@ -198,7 +301,33 @@ $config = Inc::config('account');
                 value: user.birthday,
                 range: [null, null]
             },
+            avatar: {
+                is: {
+                    cropping: false,
+                },
+                value: user.avatar || user.avatarDefault,
+                view: user.avatar || user.avatarDefault,
+                object: null,
+                cropped: undefined,
+                image: undefined,
+                blob: null,
+            },
         });
+        fields.avatar.cropped = () => {
+            let image = fields.avatar.image;
+            fields.avatar.object.getCroppedCanvas({
+                width: 320,
+                height: 320,
+            }).toBlob(function(blob){
+                fields.avatar.value = URL.createObjectURL(blob);
+                let file = new File([blob], image.name,{type:image.type, lastModified:new Date().getTime()});
+                let container = new DataTransfer();
+                container.items.add(file);
+                refs.avatarFile.files = container.files;
+                fields.avatar.blob = blob;
+            }, image.type,0.8);
+            fields.avatar.is.cropping = false;
+        }
         // set birthday range
         {let today = new Date();
         let dd = String(today.getDate()).padStart(2, '0');
@@ -227,6 +356,7 @@ $config = Inc::config('account');
                 },
                 submit: {
                     'is-loading': is.submitting,
+                    'is-disabled': is.submitting,
                 },
                 reset: {
                     'is-disabled': is.submitting,
@@ -235,7 +365,7 @@ $config = Inc::config('account');
             return objects[key];
         }
         // 
-        const check = () => {
+        const checkDatas = () => {
             let isPass = true;
             fields.nickname.value = fields.nickname.value.replace(/\s+/g, ' ').trim(' '); // remove all space in nickname
             Object.values(fields).forEach((field) => {
@@ -259,15 +389,23 @@ $config = Inc::config('account');
         }
         // 
         const submit = () => {
-            if(is.submitting){ return; }
-            if(!check()){ return; }
+            if(is.submitting || !checkDatas()){ return; }
             is.submitting = true;
+            // make no element be focused
+            refs.submit.focus();
+            refs.submit.blur();
             // 
             let datas = {
                 email: fields.email.value,
                 nickname: fields.nickname.value,
                 birthday: fields.birthday.value,
+                avatar: refs.avatarFile.files,
             };
+            datas = new FormData();
+            datas.append('email', fields.email.value);
+            datas.append('nickname', fields.nickname.value);
+            datas.append('birthday', fields.birthday.value);
+            datas.append('avatar', fields.avatar.blob);
             // 
             let info = {
                 type: 'error',
@@ -279,6 +417,8 @@ $config = Inc::config('account');
                 url: '<?=Uri::auth('account/profile')?>',
                 data: datas,
                 dataType: 'json',
+                contentType: false,
+                processData: false,
             }).fail((xhr, status, error) => {
                 console.error(xhr.responseText);
             }).done((resp) => {
@@ -290,13 +430,15 @@ $config = Inc::config('account');
                 // 
                 if(resp.type === 'success'){
                     for(const [key, val] of Object.entries(resp.data)){
-                        fields[key]['value'] = val;
+                        fields[key]['value'] = val === null ? '' : val;
                     }update();
                 }else{
                     if(['nickname_format'].includes(resp.status)){
                         fields.nickname.status = 'warning';
+                        refs.nickname.focus();
                     }else if(['birthday_format','too_young','too_old'].includes(resp.status)){
                         fields.birthday.status = 'warning';
+                        refs.birthday.focus();
                     }
                 }
             }).always(() => {
@@ -321,21 +463,40 @@ $config = Inc::config('account');
             fields.email.value = user.email;
             fields.nickname.value = user.nickname;
             fields.birthday.value = user.birthday;
-            check();
+            checkDatas();
         }
         // 
         onMounted(() => {
-            // 
+            fields.avatar.object = new Cropper(refs.avatarView);
+            refs.avatarFile.onchange = () => {
+                fields.avatar.image = refs.avatarFile.files[0];
+                if(!fields.avatar.image){ return; }
+                (async ()=>{
+                    fields.avatar.object.destroy();
+                    fields.avatar.view = URL.createObjectURL(fields.avatar.image);
+                    await nextTick();
+                    fields.avatar.object = new Cropper(refs.avatarView, {
+                        viewMode: 2,
+                        aspectRatio: 1 / 1,
+                        initialAspectRatio: 1 / 1,
+                        preview: refs.avatarPreview,
+                    });
+                    fields.avatar.is.cropping = true;
+                    fields.avatar.object.crop();
+                })();
+            };
         });
         // 
-        return { user, refs, setRef, check, submit, fields, classObjects, is, reset }
+        return {
+            user, refs, setRef, checkDatas, submit, fields, classObjects, is, reset,
+        }
     }}).directive('focus',
-        directives.focus
-    );
-
-
-    Profile.mount('#Profile');
+        Directives.focus
+    ).mount('#Profile');
 </script>
+
+
+
 
 
 <?php

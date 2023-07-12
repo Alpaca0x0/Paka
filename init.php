@@ -27,7 +27,10 @@ foreach ($libraries as $library)
 # Basic web info
 
 # Domain
-define('Domain', isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''));
+define('Domain', explode(':', isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''))[0]);
+
+# Port
+define('Port', $_SERVER['SERVER_PORT']);
 
 # Protocol
 define('Protocol', isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http');
@@ -42,7 +45,8 @@ class Path{
         config = 'configs/',
         component = 'components/',
         router = 'routers/',
-        asset = 'assets/'
+        asset = 'assets/',
+        lib = 'libraries/'
     ;
     const
         js = 'js/',

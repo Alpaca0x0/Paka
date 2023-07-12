@@ -8,7 +8,8 @@ if(User::isLogin()){ Resp::success('is_login','當前已經是登入狀態了');
 Arr::every($_POST, 'username','password') or Resp::warning('data_missing', '資料缺失');
 
 // # type
-$datetime = time();
+$timestamp = time();
+$datetime = date("Y-m-d H:i:s", $timestamp);
 $username = Type::string($_POST['username'], '');
 $password = Type::string($_POST['password'], '');
 
@@ -34,14 +35,18 @@ $result = DB::query(
 ]);
 if($result::error()){ Resp::error('sql_query', 'SQL 語法執行錯誤'); }
 $user = DB::fetch();
-if(!$user){ Resp::warning('not_found_user',$username, "找不到使用者 \"{$username}\""); }
+if(!$user){ Resp::warning('not_found_user', $username, "找不到帳號 \"{$username}\""); }
+
+# check status
+if($user['status'] === 'unverified'){ Resp::warning('user_status_unverifie', $username, "帳號 \"{$username}\" 尚未驗證信箱"); }
+else if($user['status'] !== 'alive'){ Resp::warning('user_status', $username, "帳號 \"{$username}\" 暫時無法使用"); }
 
 # found user, check if have too many requests
 # tried times limit, more than 3 times since 15 minutes, needs captcha
 $loginMaxTimes = 3;
 $result = DB::query(
-    'SELECT COUNT(`id`) AS `count` FROM `event` 
-    WHERE `commit`=:commit AND `uid`=:uid AND (:datetime-`datetime`)<15*60  # 15 mins
+    'SELECT COUNT(DISTINCT `id`) AS `count` FROM `account_event` 
+    WHERE `commit`=:commit AND `uid`=:uid AND UNIX_TIMESTAMP((:datetime-`datetime`))<15*60  # 15 mins
     LIMIT 1;'
 )::execute([
     ':commit' => "login_failed",
@@ -64,7 +69,7 @@ if($row['count'] > $loginMaxTimes){
 $ip = Type::string(trim($_SERVER["REMOTE_ADDR"]));
 if($user['password'] !== hash('sha256',$password)){ 
     $result = DB::query(
-        'INSERT INTO `event`(`uid`,`commit`,`ip`,`datetime`) 
+        'INSERT INTO `account_event`(`uid`,`commit`,`ip`,`datetime`) 
         VALUES(:uid, :commit, :ip, :datetime);'
     )::execute([
         ':uid' => $user['id'], 
@@ -79,9 +84,10 @@ if($user['password'] !== hash('sha256',$password)){
 # login success
 # write into account event
 $token = hash('sha256',bin2hex(random_bytes(16)));
-$expire = $datetime + $config['timeout']['login'];
+$expireTimestamp = $timestamp + $config['timeout']['login'];
+$expire = date("Y-m-d H:i:s", $expireTimestamp);
 $result = DB::query(
-    'INSERT INTO `event`(`uid`,`commit`,`token`,`ip`,`expire`,`datetime`) 
+    'INSERT INTO `account_event`(`uid`,`commit`,`token`,`ip`,`expire`,`datetime`) 
     VALUES(:uid, :commit, :token, :ip, :expire, :datetime);'
 )::execute([
     ':uid' => $user['id'], 
@@ -92,5 +98,12 @@ $result = DB::query(
     ':datetime' => $datetime, 
 ]);
 if($result::error()){ Resp::error('db_cannot_insert','account_event_login', '資料庫無法寫入資料'); }
-setcookie('token', $token, $expire, Root);
+setcookie('token', $token, [
+    'expires' => $expireTimestamp,
+    'path' => Root,
+    'domain' => Domain,
+    'secure' => false,
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
 Resp::success('successfully_login', [$user['id'], $user['username']], "登入成功");

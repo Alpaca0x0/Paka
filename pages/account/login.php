@@ -35,21 +35,22 @@ $config = Inc::config('account');
                     <div class="item" :class="classObjects('info')" v-text="info.msg"></div>
                 </div>
             </div>
-            <!--  -->
+
+            <!-- main -->
             <div class="ts-segment" style="width: 320px">
                 <div class="ts-wrap is-vertical">
 
                     <div class="ts-text is-label">使用者帳號 / E-Mail</div>
                     <div :class="classObjects('username')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-user-icon"></span>
-                        <input type="text" ref="refUsername" v-model="fields.username.value" :readonly="is.submitting" v-focus>
+                        <input type="text" data-ref-id="username" :ref="setRef" v-model="fields.username.value" :readonly="is.submitting" v-focus>
                     </div>
                     
 
                     <div class="ts-text is-label">密碼</div>
                     <div :class="classObjects('password')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-lock-icon"></span>
-                        <input type="password" ref="refPassword" v-model="fields.password.value" :readonly="is.submitting">
+                        <input type="password" data-ref-id="password" :ref="setRef" v-model="fields.password.value" :readonly="is.submitting">
                     </div>
                     <!-- <div class="ts-meta is-end-aligned ts-text is-tiny is-description">
                         <a class="item" href="#!">忘記密碼?</a>
@@ -58,14 +59,18 @@ $config = Inc::config('account');
                     <img v-if="is.need.verified" :src="fields.captcha.src" @click="fields.captcha.change()" style="cursor: pointer;">
                     <div v-show="is.need.verified" :class="classObjects('captcha')" @input="checkDatas()" class="ts-input is-start-icon is-underlined is-fluid">
                         <span class="ts-icon is-robot-icon"></span>
-                        <input type="text" ref="refCaptcha" v-model="fields.captcha.value" :readonly="is.submitting" maxlength="6">
+                        <input type="text" data-ref-id="captcha" :ref="setRef" v-model="fields.captcha.value" :readonly="is.submitting" maxlength="6">
                     </div>
 
-                    <button type="submit" ref="refSubmit" :class="{'is-loading': is.submitting}" :disabled="is.submitting" class="ts-button is-fluid">登入</button>
+                    <button v-show="!is.submitting" v-cloak type="submit" data-ref-id="submit" :ref="setRef" :disabled="is.submitting" class="ts-button is-fluid">登入</button>
+                    <div v-show="is.submitting" v-cloak class="ts-progress is-indeterminate is-large">
+                        <div class="bar" style="--value: 50;"></div>
+                    </div>
                     
-
                 </div>
             </div>
+            <!-- main end -->
+            
         </form>
         
     </div>
@@ -74,16 +79,12 @@ $config = Inc::config('account');
 
 <script type="module">
     import { createApp, reactive, ref, onMounted, nextTick, } from '<?=Uri::js('vue')?>';
-    import * as directives from '<?=Uri::js('vue/directives')?>';
+    import { focus } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { focus };
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
     // 
     const Login = createApp({setup(){
-        const refUsername = ref();
-        const refPassword = ref();
-        const refCaptcha = ref();
-        const refSubmit = ref();
-        // 
         let is = reactive({
             submit: false,
             login: <?=User::isLogin() ? 'true' : 'false'?>,
@@ -91,6 +92,9 @@ $config = Inc::config('account');
                 'verified': false
             }
         });
+        // 
+        let refs = reactive({});
+        let setRef = (el) => { refs[el.getAttribute('data-ref-id')] = el; }
         // 
         let fields = reactive({
             username: {
@@ -113,10 +117,8 @@ $config = Inc::config('account');
                     (async ()=>{
                         fields.captcha.src='<?=Captcha::src()?>?' + Math.random();
                         await nextTick();
-                        <?php if(DEV){ ?>
-                            // auto type captcha when in DEV mode
-                            fields.captcha.value = Dev.getCaptcha(); 
-                        <?php } ?>
+                        // auto type captcha when in DEV mode
+                        fields.captcha.value = Dev.getCaptcha(); 
                     })();
                 },
             }
@@ -162,14 +164,17 @@ $config = Inc::config('account');
         // 
         const Dev = {
             getCaptcha: () => {
-                var captcha = '';
+                let captcha = '';
+                <?php if(DEV){ ?>
                 $.ajax({
                     type: "GET",
                     url: '<?=Uri::api('captcha')?>',
                     dataType: 'json',
                     async : false,
                     success: (resp) => { captcha = resp; }
-                }); return captcha;
+                });
+                <?php } ?>
+                return captcha;
             }
         };
         // 
@@ -182,7 +187,7 @@ $config = Inc::config('account');
         const submit = () => {
             if(is.submitting || !checkDatas()){ return false; }
             is.submitting = true;
-            refSubmit.value.focus();
+            refs.submit.focus();
             // info
             info.type = null;
             info.title = 'Info';
@@ -227,31 +232,23 @@ $config = Inc::config('account');
                 if(['needs_captcha', 'captcha_not_match'].includes(resp.status)
                     || (['password_not_match'].includes(resp.status) && resp.data < 1) ){
                     fields.captcha.change();
-                    fields.captcha.value = '';
-                    // show dom first
-                    (async ()=>{
-                        is.need.verified = true;
-                        await nextTick();
-                        refCaptcha.value.focus();
-                    })();
+                    is.need.verified = true;
+                    refs.captcha.focus();
                 }else{ is.need.verified = false; }
                 fields.captcha.optional = !is.need.verified;
                 // other fields status
                 if(['password_not_match'].includes(resp.status)){
-                    (async ()=>{
-                        fields.password.value = '';
-                        await nextTick();
-                        refPassword.value.focus();
-                    })();
+                    fields.password.value = '';
+                    refs.password.focus();
+                }else if(['not_found_user'].includes(resp.status)){
+                    fields.username.value = '';
+                    refs.username.focus();
                 }
                 // update fields status
-                checkDatas();
-                // other fields status, dont update status
-                if(['not_found_user'].includes(resp.status)){
-                    fields.username.status = 'warning';
-                    fields.username.value = '';
-                    refUsername.value.focus();
-                }
+                (async ()=>{
+                    await nextTick();
+                    checkDatas();
+                })();
                 // submitting off
                 is.submitting = false;
             });
@@ -263,11 +260,10 @@ $config = Inc::config('account');
         });
         // 
         return {
-            fields, submit, checkDatas, is, classObjects, Dev, info,
-            refUsername, refPassword, refCaptcha, refSubmit
+            fields, submit, checkDatas, is, classObjects, Dev, info, setRef
         }
     }}).directive('focus',
-        directives.focus,
+        Directives.focus,
     ).mount('#Login');
 
 </script>

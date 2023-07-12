@@ -4,11 +4,14 @@
 # Usually needed to be set      ##
 ##################################
 
+# Name of project
+define('NAME', 'Paka');
+
 # Debug mode, show errors
-define('DEBUG', true);
+define('DEBUG', false);
 
 # Development mode, show info
-define('DEV', true);
+define('DEV', false);
 
 # Development mode, show more info
 define('FULL_DEV', false);

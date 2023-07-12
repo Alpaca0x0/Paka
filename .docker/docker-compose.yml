@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+
+  paka-db:
+    image: mariadb
+    container_name: paka-db
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+      #- MARIADB_USER=user
+      #- MARIADB_PASSWORD=password
+      - MARIADB_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=paka
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      default:
+        ipv4_address: 172.30.0.2
+
+  paka-app:
+    image: alpaca/paka
+    container_name: paka-app
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - ../:/usr/share/nginx/html
+      - ./nginx:/etc/nginx
+      #- ./php:/etc/php
+      - ./entrypoint.sh:/docker-entrypoint.d/custom.sh
+    networks:
+      default:
+        ipv4_address: 172.30.0.3
+      
+networks:
+  default:
+    name: paka
+    driver: bridge
+    external: true
+

@@ -2,6 +2,7 @@
 class DB{
 	static private $connect = false;
 	static private $query = false; // self::Query->execute([...])
+	static private $message = '';
 	static private $status = [
 		'error' => null, // true when error
 		'success' => null, // true when success
@@ -33,7 +34,7 @@ class DB{
 		}
 		#
 		try{
-			self::$connect = new PDO("mysql:host=".$config['host'].";dbname=".$config['name'].";charset=utf8mb4", $config['user'], $config['pass']);
+			self::$connect = new PDO($config['type'].":host=".$config['host'].";dbname=".$config['name'].";charset=utf8mb4", $config['user'], $config['pass'], [PDO::ATTR_TIMEOUT => 8, ]);
 			if(!self::$connect){ self::error(true); return false; }
 			// setting PDO
 			self::$connect->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
@@ -41,9 +42,12 @@ class DB{
 			self::$connect->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, false);
 			// error throw to try catch
 			self::$connect->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-		}catch(Exception $e){ self::error(true); return false; }
+		}catch(Exception $e){ self::$message=$e; self::error(true); return false; }
 		self::success(true); return true;
 	}
+
+	// show message
+	static function message(){ return self::$message; }
 
 	// reset all status
 	static function unstatus($keys=false, $set=false){
@@ -82,7 +86,7 @@ class DB{
 		try{
 			self::$query = self::$connect->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
 			return self::success(true);
-		}catch (Exception $e) { return self::error(true); }
+		}catch (Exception $e) { self::$message=$e; return self::error(true); }
 	}
 
 	static function execute($values=[]){
@@ -91,13 +95,11 @@ class DB{
 		    if(self::$query->execute($values) === false){ // e.g. [':example'=>'value']
 		    	return self::error(true); // self::$query->debugDumpParams();
 			}else{ return self::success(true); }
-		}catch (Exception $e) { return self::error(true); }
+		}catch (Exception $e) { self::$message=$e; return self::error(true); }
 	}
 
-	static function sentence(){
-		if(!self::isConnected()){ return false; }
-		return self::$query->queryString;
-	}
+	static function sentence(){ return self::$query->queryString; }
+	static function debugDumpParams(){ return self::$query->debugDumpParams(); }
 
 	static function fetch($type='assoc'){
 		if(!self::isConnected() || self::error()){ self::error(true); return false; }
@@ -138,4 +140,8 @@ class DB{
 		if(!self::isConnected() || self::error()){ return false; }
 		return self::$connect->lastInsertId();
 	}
+
+	static function beginTransaction(){ self::$connect->beginTransaction(); }
+	static function commit(){ self::$connect->commit(); }
+	static function rollback(){ self::$connect->rollback(); }
 }

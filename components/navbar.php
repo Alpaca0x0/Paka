@@ -6,11 +6,11 @@ Inc::clas('user');
     <div class="ts-box is-squared is-very-elevated">
         <div class="ts-row">
             <div class="column is-fluid">
-                <div class="ts-tab">
+                <div class="ts-tab is-small">
                     <!-- left items -->
                     <template v-for="(item, name) in items">
                         <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="[item.isActive || name===onMouseItem?'is-active':'', item.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem=name" @mouseleave="onMouseItem=false" class="item">
-                            <div class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']"></div>
+                            <div class="ts-icon is-small tablet-:u-hidden" :class="[item.icon?'is-'+item.icon+'-icon':'']"></div>
                             <div class="label" v-text="item.text"></div>
                         </a>
                     </template>
@@ -18,7 +18,7 @@ Inc::clas('user');
                 </div>
             </div>
             <div class="column">
-                <div class="ts-tab">
+                <div class="ts-tab is-small">
                     <!-- right items -->
                     <template v-for="(item, name) in ritems">
                         <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="[item.isActive || name===onMouseItem?'is-active':'', item.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem=name" @mouseleave="onMouseItem=false" class="item">
@@ -27,41 +27,38 @@ Inc::clas('user');
                         </a>
                     </template>
                     <!-- if login -->
-                    <a v-if="is.login" href="#!" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" @click="ritems.account.isDropdown=true;" class="item">
-                        <div class="label">
-                            <div class="content">
+                    <template v-if="is.login">
+                        <a class="item is-end-icon" data-dropdown="profile-dropdown" @mouseover="onMouseItem='account';" @mouseleave="onMouseItem=false;" :class="[ritems.account.isActive || 'account'===onMouseItem?'is-active':'', ritems.account.isDisabled ? 'is-disabled':'']">
+                            <div class="label">
                                 <span class="ts-avatar is-small is-circular">
                                     <img src="<?=User::get('avatar', false) ? 'data:image/jpeg;base64,'.User::get('avatar','') : Uri::img('user.png')?>">
                                 </span>
                                 <?=User::get('username')?>
-                            </div>        
+                            </div>
+                            <span class="ts-icon is-chevron-down-icon"></span>
+                        </a>
+                        <div class="ts-dropdown" data-name="profile-dropdown" data-position="bottom-end">
+                            <!-- sub items -->
+                            <template v-for="(item, nmae) in subItems.account">
+                                <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="{'is-selected':item.isActive, 'is-disabled':item.isDisabled}" class="item">
+                                    {{ item.text }}
+                                    <span class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']">
+                                </a>
+                            </template>
+                            <!-- /sub item -->
+                            <!-- bottom items -->
+                            <div class="ts-divider"></div>
+                            <!-- logout -->
+                            <a @click="logout()" class="item">
+                                登出 <span class="ts-icon is-right-from-bracket-icon"></span>
+                            </a>
                         </div>
-                        <div class="ts-icon is-caret-down-icon"></div>
-                    </a>
+                    </template>
                     <!--  -->
                 </div>
             </div>
         </div>    
     </div>
-    <!-- dropdown -->
-
-    <div @mouseleave="ritems.account.isDropdown=false;">
-        <div :class="{'is-visible': ritems.account.isDropdown}" class="ts-dropdown is-separated is-bottom-right is-end-icon" style="margin-right: 1rem;">
-            <!-- sub items -->
-            <template v-for="(item, nmae) in subItems.account">
-                <a v-if="!item.isHidden" :href="item.isActive?'#!':item.link" :class="{'is-selected':item.isActive, 'is-disabled':item.isDisabled}" class="item">
-                    {{ item.text }} <span class="ts-icon" :class="[item.icon?'is-'+item.icon+'-icon':'']">
-                </button>
-            </template>
-            <!-- bottom items -->
-            <div class="ts-divider"></div>
-            <!-- logout -->
-            <button @click="logout()" class="item">
-                登出 <span class="ts-icon is-right-from-bracket-icon"></span>
-            </button>
-        </div>
-    </div>
-    <!--  -->
 </div>
 
 <!-- <div class="ts-divider"></div> -->
@@ -71,6 +68,8 @@ Inc::clas('user');
     import { createApp, ref, reactive, onMounted } from '<?=Uri::js('vue')?>';
     import '<?=Uri::js('ajax')?>';
     import * as Resp from '<?=Uri::js('resp')?>';
+    import { clickOutside } from '<?=Uri::js('vue/directives')?>';
+    const Directives = { clickOutside };
 
     const Navbar = createApp({setup(){
         let is = reactive({
@@ -86,11 +85,11 @@ Inc::clas('user');
             },
             // 
             'rule': {
-                'id': '<?=ID(Router::tryFile(Path::page.'rule'))?>',
-                'text': '社群規範',
-                'link': '<?=Uri::page('#!')?>',
+                'id': '<?=ID(Router::tryFile(Path::page.'rules'))?>',
+                'text': '社群規章',
+                'link': '<?=Uri::page('rules')?>',
                 'icon': 'info',
-                'isDisabled': true,
+                'isDisabled': false,
                 'isHidden': false,
             },
             'about': {
@@ -112,7 +111,6 @@ Inc::clas('user');
                 'link': '<?=User::isLogin()?Uri::page('account/profile.php'):Uri::page('account/')?>',
                 'icon': 'user',
                 'isHidden': is.login,
-                'isDropdown': false,
             },
         });
         let subItems = reactive({
@@ -170,7 +168,7 @@ Inc::clas('user');
                         if(!Resp.object(resp)){ return false; }
                         // 
                         let isSuccess = resp.type==='success';
-                        if(isSuccess){ window.location.replace('<?=Root?>'); }
+                        if(isSuccess){ window.location.replace('<?=Uri::page('account/login')?>'); }
                         else{
                             Swal.fire({
                                 icon: resp.type,
@@ -201,7 +199,9 @@ Inc::clas('user');
         })
         //
         return { is, items, ritems, subItems, currentPageId, onMouseItem, logout }
-    }}).mount('div#Navbar');
+    }}).directive("clickOutside",
+        Directives.clickOutside
+    ).mount('#Navbar');
 </script>
 
 <style>
