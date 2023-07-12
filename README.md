@@ -61,9 +61,7 @@ location ^~ /paka/ {
 
 <!-- ### :wrench: Issues -->
 
-### :seedling: Optimization, Beautify
-
-- [ ] `Register` 驗證信內容排版不好看QQ
+<!-- ### :seedling: Optimization, Beautify -->
 
 ### :memo: Todo list
 
@@ -76,7 +74,7 @@ location ^~ /paka/ {
   - [ ] change email
   - [x] profile
   - [x] edit profile
-  - [ ] edit avatar
+  - [x] edit avatar
   - [ ] events note
 - Forum
   - [x] posts api & view post `(UI not all)`
@@ -95,7 +93,7 @@ location ^~ /paka/ {
 - RWD
   - [x] login & register pages
   - [x] profile
-  - [ ] forum
+  - [x] forum
 
 ---
 
@@ -169,7 +167,7 @@ location ^~ /paka/ {
 
 ### :art: CSS
 
-- [`Tocas-UI`](https://tocas-ui.com) (v4.1.0)
+- [`Tocas-UI`](https://tocas-ui.com) (v4.2.4)
 - [`Animate.css`](https://animate.style/) (v4.1.1)
 
 ### :magic_wand: JS
