@@ -41,7 +41,7 @@ $config = Inc::config('account');
                 </div>
                 <!-- /close button -->
                 <div class="ts-container">
-                    <div class="ts-divider is-start-text">編輯工具</div>
+                    <div class="ts-divider is-start-text">預覽</div>
                     <!-- <div class="ts-box is-horizontal is-hollowed"> -->
                     <div class="ts-row">
                         <div class="column is-fluid">
@@ -50,14 +50,14 @@ $config = Inc::config('account');
                                     裁切您的大頭貼
                                 </div> -->
                                 <!-- tool buttons -->
-                                <div class="ts-wrap">
+                                <!-- <div class="ts-wrap">
                                     <button type="button" class="ts-button is-icon" @click="fields.avatar.object.rotate(-5)">
                                         <span class="ts-icon is-arrow-rotate-left-icon"></span>
                                     </button>
                                     <button type="button" class="ts-button is-icon">
                                         <span class="ts-icon is-arrow-rotate-right-icon"></span>
                                     </button>
-                                </div>
+                                </div> -->
                                 <!-- /tool buttons --> 
                             </div>
                         </div>
@@ -66,6 +66,7 @@ $config = Inc::config('account');
                                 <div data-ref-id="avatarPreview" :ref="setRef" style="overflow: hidden; width: 200px; height: 200px; border-radius: 50%;"></div>
                             </div>
                         </div>
+                        <div class="column is-fluid"></div>
                     </div>
 
                     <div class="ts-divider is-start-text">裁減圖片</div>
