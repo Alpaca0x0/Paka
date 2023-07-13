@@ -15,7 +15,7 @@ return [
     ],
     'timeout' => [
         'verify' => 60*15, // 15 mins
-        'login' => 60*60*6, // login session keeping 6 hours
+        'login' => 60*60*24*7*2, // login session keeping 2 weeks
     ],
     'description' => [
         'email' => '僅允許二級網域 (如 gmail.com)',
