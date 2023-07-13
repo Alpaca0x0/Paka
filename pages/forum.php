@@ -348,15 +348,13 @@ Inc::clas('user');
                                                                                 </label>
                                                                                 <a @click="thePost.comment.preReplyComment=(thePost.comment.preReplyComment===theComment.id) ? false : theComment.id" href="#!" class="item">回覆</a>
                                                                                 <div class="item">
-                                                                                    <a href="#!" :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
+                                                                                    <a :title="moment(theComment.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                         {{ moment(theComment.datetime*1000).fromNow() }}
                                                                                     </a>
                                                                                 </div>
-                                                                                <a :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                <a v-if="theComment.edited.count > 0" class="item" :title="'在 ' + moment(theComment.edited.last_datetime*1000).fromNow() + ' 編輯'">
                                                                                     <div class="ts-icon is-pen-to-square-icon"></div>
-                                                                                    <span class="[450px]-:u-hidden">
-                                                                                        {{ theComment.edited.count > 0 ? ' 已編輯' : '' }}
-                                                                                    </span>
+                                                                                    <span class="[450px]-:u-hidden"> 已編輯</span>
                                                                                 </a>
                                                                                 <div v-if="is.Dev" class="item">
                                                                                     <div class="ts-icon is-hashtag-icon"></div>
@@ -525,15 +523,19 @@ Inc::clas('user');
                                                                                                     <div class="content">👍{{ theReply.liked.count > 0 ? " "+theReply.liked.count : "" }}</div>
                                                                                                 </label>
                                                                                                 <div class="item">
-                                                                                                    <a href="#!" :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
+                                                                                                    <a :title="moment(theReply.datetime*1000).format('YYYY/MM/DD hh:mm:ss')" class="ts-text is-undecorated">
                                                                                                         {{ moment(theReply.datetime*1000).fromNow() }}
                                                                                                     </a>
                                                                                                 </div>
-                                                                                                <a :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
+                                                                                                <!-- <a :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'" class="ts-text is-undecorated">
                                                                                                     <div class="ts-icon is-pen-to-square-icon"></div>
                                                                                                     <span class="[450px]-:u-hidden">
                                                                                                         {{ theReply.edited.count > 0 ? ' 已編輯' : '' }}
                                                                                                     </span>
+                                                                                                </a> -->
+                                                                                                <a v-if="theReply.edited.count > 0" class="item" :title="'在 ' + moment(theReply.edited.last_datetime*1000).fromNow() + ' 編輯'">
+                                                                                                    <div class="ts-icon is-pen-to-square-icon"></div>
+                                                                                                    <span class="[450px]-:u-hidden"> 已編輯</span>
                                                                                                 </a>
                                                                                                 <div v-if="is.Dev" class="item">
                                                                                                     <div class="ts-icon is-hashtag-icon"></div>
