@@ -27,6 +27,14 @@ if(DEBUG){ ini_set('display_errors','1'); error_reporting(E_ALL); }
 	define('ID', ID('page', $_SERVER['SCRIPT_NAME'])); // ID of Current Page
 	define('PATH', dirname($_SERVER['SCRIPT_NAME']).'/'); // Path of Current Page
 }
+
+# Basic web info
+{
+	# Domain
+	define('Domain', explode(':', isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''))[0]);
+	# Protocol
+	define('Protocol', isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http');
+}
 /****************************************************************/
 # Including file paths
 {
@@ -45,7 +53,6 @@ if(DEBUG){ ini_set('display_errors','1'); error_reporting(E_ALL); }
 	define('API', ROOT.'api/');
 	// Both
 	define('Mod', Asset.'module/');
-	
 }
 /****************************************************************/
 # Get-Path functions

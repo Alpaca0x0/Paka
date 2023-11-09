@@ -1,4 +1,5 @@
 <?php require('../../init.php'); ?>
+<?php header('Content-Type: application/json'); ?>
 
 <?php
 @include_once(Func('loger'));
@@ -90,7 +91,9 @@ if($Loger->Check()){ $Loger->Resp(); }
 
 // send the email
 @include_once(Func('email'));
-$url = (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS'])?'https':'http').'://'.$_SERVER['SERVER_NAME'].Page('account/verify').'?token='.$token;
+$Loger->Push('success','successfully');
+$Loger->Resp();
+$url = Protocol.'://'.Domain.Page('account/verify').'?token='.$token;
 $title = 'Verify your email';
 $html_content = "
 Hello ${username}<br>
