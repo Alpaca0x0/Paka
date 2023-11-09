@@ -47,6 +47,19 @@ location ^~ /paka/ {
 }
 ```
 
+For docker：
+
+```nginx
+location / {
+  proxy_pass http://127.0.0.1; # Your proxy
+  proxy_buffering off;
+  proxy_set_header X-Remote-Addr $remote_addr;
+  proxy_set_header X-Forwarded-Host $host;
+  proxy_set_header X-Forwarded-Port $server_port;	
+  proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
 :grin: Have fun.
 
 ---

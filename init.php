@@ -33,7 +33,7 @@ define('Domain', explode(':', isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVE
 define('Port', $_SERVER['SERVER_PORT']);
 
 # Protocol
-define('Protocol', isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http');
+define('Protocol', isset($_SERVER['HTTP_X_FORWARDED_PROTO']) ? $_SERVER['HTTP_X_FORWARDED_PROTO'] : (isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http'));
 
 # Paths
 class Path{
