@@ -1,6 +1,6 @@
 <?php
 return [
-	'host' => 'smtp.gmail.com',
+	'host' => 'tls://smtp.gmail.com',
 	'port' => 587,
 	'email' => 'service@example.com',
 	'pass' => 'password',
