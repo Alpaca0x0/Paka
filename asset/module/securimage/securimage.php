@@ -39,7 +39,7 @@
  * @link https://www.phpcaptcha.org/Securimage_Docs/ Online Documentation
  * @copyright 2018 Drew Phillips
  * @author Drew Phillips <drew@drew-phillips.com>
- * @version 3.6.7 (March 2018)
+ * @version 3.6.9 (May 2022)
  * @package Securimage
  *
  */
@@ -47,6 +47,17 @@
 /**
 
  ChangeLog
+3.6.9
+ - Compatibility with PHP 8.1
+
+ 3.6.8
+ - Ability to fix open_basedir warning by setting Securimage::$lame_binary_path = ''; (#63)
+ - Fix division by zero if captcha length is 1 (#88)
+ - Add options to getCaptchaHtml input_required (#82) and js_url (#95)
+ - PHP 7.3/7.4 compat fixes (#101)
+ - Project status: https://github.com/dapphp/securimage/issues/99
+ - Improve handling of multi-byte wordlists (#87)
+
  3.6.7
  - Merge changes from 4.0.1-nextgen
  - Increase captcha difficulty
@@ -226,6 +237,7 @@
  * @author     Drew Phillips <drew@drew-phillips.com>
  *
  */
+#[AllowDynamicProperties]
 class Securimage
 {
     // All of the public variables below are securimage options
@@ -484,7 +496,7 @@ class Securimage
      *
      * @var string
      */
-    public $session_name   = null;
+    public $session_name   = 'captcha'; # null
 
     /**
      * true to use the wordlist file, false to generate random captcha codes
@@ -1308,6 +1320,8 @@ class Securimage
      *         true/false  Whether or not to show a button to refresh the image (default: true)
      *     'audio_icon_url':
      *         URL to the image used for showing the HTML5 audio icon
+     *     'js_url':
+     *         URL to the javascript file
      *     'icon_size':
      *         Size (for both height & width) in pixels of the audio and refresh buttons
      *     'show_text_input':
@@ -1362,12 +1376,14 @@ class Securimage
         $icon_size         = (isset($options['icon_size'])) ? $options['icon_size'] : 32;
         $audio_play_url    = (isset($options['audio_play_url'])) ? $options['audio_play_url'] : null;
         $audio_swf_url     = (isset($options['audio_swf_url'])) ? $options['audio_swf_url'] : null;
+        $js_url            = (isset($options['js_url'])) ? $options['js_url'] : null;
         $show_input        = (isset($options['show_text_input'])) ? (bool)$options['show_text_input'] : true;
         $refresh_alt       = (isset($options['refresh_alt_text'])) ? $options['refresh_alt_text'] : 'Refresh Image';
         $refresh_title     = (isset($options['refresh_title_text'])) ? $options['refresh_title_text'] : 'Refresh Image';
         $input_text        = (isset($options['input_text'])) ? $options['input_text'] : 'Type the text:';
         $input_id          = (isset($options['input_id'])) ? $options['input_id'] : 'captcha_code';
         $input_name        = (isset($options['input_name'])) ? $options['input_name'] :  $input_id;
+        $input_required    = (isset($options['input_required'])) ? (bool)$options['input_required'] : true;
         $input_attrs       = (isset($options['input_attributes'])) ? $options['input_attributes'] : array();
         $image_attrs       = (isset($options['image_attributes'])) ? $options['image_attributes'] : array();
         $error_html        = (isset($options['error_html'])) ? $options['error_html'] : null;
@@ -1431,6 +1447,10 @@ class Securimage
             $swf_path = $audio_swf_url;
         }
 
+        if (!empty($js_url)) {
+            $js_path = $js_url;
+        }
+
         $audio_obj = $image_id . '_audioObj';
         $html      = '';
 
@@ -1445,7 +1465,7 @@ class Securimage
 
             // check for existence and executability of LAME binary
             // prefer mp3 over wav by sourcing it first, if available
-            if (is_executable(Securimage::$lame_binary_path)) {
+            if (!empty(Securimage::$lame_binary_path) && is_executable(Securimage::$lame_binary_path)) {
                 $html .= sprintf('<source id="%s_source_mp3" src="%sid=%s&amp;format=mp3" type="audio/mpeg">', $image_id, $play_path, uniqid()) . "\n";
             }
 
@@ -1533,6 +1553,7 @@ class Securimage
             $input_attrs['name'] = $input_name;
             $input_attrs['id']   = $input_id;
             $input_attrs['autocomplete'] = 'off';
+            if ($input_required) $input_attrs['required'] = $input_required;
 
             foreach($input_attrs as $name => $val) {
                 $input_attr .= sprintf('%s="%s" ', $name, htmlspecialchars($val));
@@ -1583,7 +1604,7 @@ class Securimage
      *
      * @param string $format
      */
-    public function outputAudioFile($format = null)
+    public function outputAudioFile($format = '')
     {
         set_error_handler(array(&$this, 'errorHandler'));
 
@@ -1729,10 +1750,8 @@ class Securimage
     public function getCode($array = false, $returnExisting = false)
     {
         $code = array();
-        $time = 0;
-        $disp = 'error';
 
-        if ($returnExisting && strlen($this->code) > 0) {
+        if ($returnExisting && strlen((string)$this->code) > 0) {
             if ($array) {
                 return array(
                     'code'         => $this->code,
@@ -1769,9 +1788,11 @@ class Securimage
 
         if ($array == true) {
             return $code;
-        } else {
+        } elseif (!empty($code['code'])) {
             return $code['code'];
         }
+
+        return '';
     }
 
     /**
@@ -2109,7 +2130,7 @@ class Securimage
             $angleN = -$angleN;
         }
 
-        $step   = abs($angle0 - $angleN) / ($this->strlen($captcha_text) - 1);
+        $step   = abs($angle0 - $angleN) / (max(1, $this->strlen($captcha_text) - 1));
         $step   = ($angle0 > $angleN) ? -$step : $step;
         $angle  = $angle0;
 
@@ -2232,11 +2253,11 @@ class Securimage
         $py       = array(); // y coordinates of poles
         $rad      = array(); // radius of distortion from pole
         $amp      = array(); // amplitude
-        $x        = ($this->image_width / 4); // lowest x coordinate of a pole
+        $x        = round ($this->image_width / 4); // lowest x coordinate of a pole
         $maxX     = $this->image_width - $x;  // maximum x coordinate of a pole
-        $dx       = mt_rand($x / 10, $x);     // horizontal distance between poles
+        $dx       = mt_rand(round($x / 10), $x);     // horizontal distance between poles
         $y        = mt_rand(20, $this->image_height - 20);  // random y coord
-        $dy       = mt_rand(20, $this->image_height * 0.7); // y distance
+        $dy       = mt_rand(20, round($this->image_height * 0.7)); // y distance
         $minY     = 20;                                     // minimum y coordinate
         $maxY     = $this->image_height - 20;               // maximum y cooddinate
 
@@ -2274,8 +2295,10 @@ class Securimage
                     $y += $dy * $rscale;
                 }
                 $c = $bgCol;
-                $x *= $this->iscale;
-                $y *= $this->iscale;
+
+                $x = (int) ($x * $this->iscale);
+                $y = (int) ($y * $this->iscale);
+
                 if ($x >= 0 && $x < $width2 && $y >= 0 && $y < $height2) {
                     $c = imagecolorat($this->tmpimg, $x, $y);
                 }
@@ -2298,7 +2321,7 @@ class Securimage
 
             $theta = ($this->frand() - 0.5) * M_PI * 0.33;
             $w = $this->image_width;
-            $len = mt_rand($w * 0.4, $w * 0.7);
+            $len = mt_rand(round($w * 0.4), round($w * 0.7));
             $lwid = mt_rand(0, 2);
 
             $k = $this->frand() * 0.6 + 0.2;
@@ -2316,8 +2339,8 @@ class Securimage
             $ldy = round($dx * $lwid);
 
             for ($i = 0; $i < $n; ++ $i) {
-                $x = $x0 + $i * $dx + $amp * $dy * sin($k * $i * $step + $phi);
-                $y = $y0 + $i * $dy - $amp * $dx * sin($k * $i * $step + $phi);
+                $x = (int) ($x0 + $i * $dx + $amp * $dy * sin($k * $i * $step + $phi));
+                $y = (int) ($y0 + $i * $dy - $amp * $dx * sin($k * $i * $step + $phi));
                 imagefilledrectangle($this->im, $x, $y, $x + $lwid, $y + $lwid, $this->gdlinecolor);
             }
         }
@@ -2430,7 +2453,7 @@ class Securimage
         $code    = $this->getCode(true, true);
 
         if (empty($code) || empty($code['code'])) {
-            if (strlen($this->display_value) > 0) {
+            if (strlen((string)$this->display_value) > 0) {
                 $code = array('code' => $this->display_value, 'display' => $this->display_value);
             } else {
                 $this->createCode();
@@ -2503,33 +2526,43 @@ class Securimage
         if (!$fp) return false;
 
         $fsize = filesize($this->wordlist_file);
-        if ($fsize < 128) return false; // too small of a list to be effective
+        if ($fsize < 512) return false; // too small of a list to be effective
 
         if ((int)$numWords < 1 || (int)$numWords > 5) $numWords = 1;
 
         $words = array();
-        $i = 0;
+        $w     = 0;
+        $tries = 0;
         do {
-            fseek($fp, mt_rand(0, $fsize - 128), SEEK_SET); // seek to a random position of file from 0 to filesize-128
-            $data = fread($fp, 128); // read a chunk from our random position
+            fseek($fp, mt_rand(0, $fsize - 512), SEEK_SET); // seek to a random position of file from 0 to filesize - 512 bytes
+            $data = fread($fp, 512); // read a chunk from our random position
 
-            if ($mb_support !== false) {
-                $data = mb_ereg_replace("\r?\n", "\n", $data);
-            } else {
-                $data = preg_replace("/\r?\n/", "\n", $data);
+            if ( ($p = $this->strpos($data, "\n")) !== false) {
+                $data = $this->substr($data, $p + 1);
             }
 
-            $start = @$this->strpos($data, "\n", mt_rand(0, 56)) + 1; // random start position
-            $end   = @$this->strpos($data, "\n", $start);          // find end of word
-
-            if ($start === false) {
-                // picked start position at end of file
+            if ( ($start = @$this->strpos($data, "\n", mt_rand(0, $this->strlen($data) / 2))) === false) {
                 continue;
-            } else if ($end === false) {
-                $end = $this->strlen($data);
             }
 
-            $word = $strtolower_func($this->substr($data, $start, $end - $start)); // return a line of the file
+            $data = $this->substr($data,$start + 1);
+            $word = '';
+
+            for ($i = 0; $i < $this->strlen($data); ++$i) {
+                $c = $this->substr($data, $i, 1);
+                if ($c == "\r") continue;
+                if ($c == "\n") break;
+
+                $word .= $c;
+            }
+
+            $word = trim($word);
+
+            if (empty($word)) {
+                continue;
+            }
+
+            $word = $strtolower_func($word);
 
             if ($mb_support) {
                 // convert to UTF-8 for imagettftext
@@ -2537,11 +2570,15 @@ class Securimage
             }
 
             $words[] = $word;
-        } while (++$i < $numWords);
+        } while (++$w < $numWords && $tries++ < $numWords * 2);
 
         fclose($fp);
 
-        if ($numWords < 2) {
+        if (count($words) < $numWords) {
+            return false;
+        }
+
+        if ($numWords == 1) {
             return $words[0];
         } else {
             return $words;
@@ -3419,7 +3456,7 @@ class Securimage
     protected function wavToMp3($data)
     {
         if (!file_exists(self::$lame_binary_path) || !is_executable(self::$lame_binary_path)) {
-            throw new Exception('Lame binary "' . $this->lame_binary_path . '" does not exist or is not executable');
+            throw new Exception('Lame binary "' . self::$lame_binary_path . '" does not exist or is not executable');
         }
 
         // size of wav data input
