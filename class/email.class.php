@@ -26,7 +26,7 @@ class Email{
 		$this->Mailer->SMTPDebug = false; // 1,2,3,4 or false 
 		$this->Mailer->IsSMTP(); // Using SMTP method
 		$this->Mailer->SMTPAuth = true;
-		$this->Mailer->SMTPSecure = 'ssl'; // TLS/SSL
+		$this->Mailer->SMTPSecure = 'tls'; // TLS/SSL
 		$this->Mailer->IsHTML(true); // the content is html format
 		$this->Mailer->CharSet = "utf8";
 		$this->Mailer->Timeout = 30;
