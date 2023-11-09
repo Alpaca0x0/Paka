@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+
+  paka-v1-db:
+    image: mariadb
+    container_name: ${db_container_name}
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+      #- MARIADB_USER=user
+      #- MARIADB_PASSWORD=password
+      - MARIADB_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=${db_name}
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      default:
+        ipv4_address: ${subnet}.0.2
+
+  paka-v1-app:
+    image: ${app_image}
+    container_name: ${app_container_name}
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - ../:/usr/share/nginx/html
+      - ./nginx:/etc/nginx
+      #- ./php:/etc/php
+      - ./entrypoint.sh:/docker-entrypoint.d/custom.sh
+    networks:
+      default:
+        ipv4_address: ${subnet}.0.3
+      
+networks:
+  default:
+    name: ${net_name}
+    driver: bridge
+    external: true
+
+
