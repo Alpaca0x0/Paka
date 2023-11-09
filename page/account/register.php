@@ -47,7 +47,6 @@ $password = hash('sha256',$password);
 # Check if the user is not exist
 $block_list = @require(Conf('account')); 
 $block_list = "'".implode("','",$block_list['no_status']['register'])."'";
-// $Loger->Resp('error','db_cannot_query',[$block_list]);
 $sql = "
 	SELECT MAX(IF(`username`=:username, 1, 0)) AS `username_exist`, MAX(IF(`email`=:email, 1,0)) AS `email_exist` 
 	FROM `account` 
@@ -91,8 +90,6 @@ if($Loger->Check()){ $Loger->Resp(); }
 
 // send the email
 @include_once(Func('email'));
-$Loger->Push('success','successfully');
-$Loger->Resp();
 $url = Protocol.'://'.Domain.Page('account/verify').'?token='.$token;
 $title = 'Verify your email';
 $html_content = "
