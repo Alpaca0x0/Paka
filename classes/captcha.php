@@ -7,7 +7,7 @@ class Captcha{
 
 	static function init($force=false){
 		if(self::$Init && !$force){ return; } self::$Init = true;
-		self::$src = Uri::plugin('securimage/securimage_show.php');
+		self::$src = Uri::plugin('securimage/securimage_show/');
 		self::$captcha = new Securimage();
 		self::$config = Inc::config('captcha');
 		self::set(self::$config);
